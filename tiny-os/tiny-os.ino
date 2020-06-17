@@ -22,8 +22,10 @@ void loop()
     // bin_smart_draw("/demo/root.bin", 800, 600, 0, 0, 800, 600, 0, 0);
   }
 
-  // if(Serial.available() && Serial.read() == '1') {
-  //   download_inflate("demo2", "http://192.168.1.183:9898/app/demo");
-  //   bin_smart_draw("/demo2/root.bin", 800, 600, 0, 0, 800, 600, 0, 0);
-  // }
+  if (Serial.available() && Serial.read() == 'F')
+  {
+    USE_FS.end();
+    USE_FS.format();
+    ESP.restart();
+  }
 }

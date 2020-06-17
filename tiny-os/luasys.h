@@ -1,24 +1,94 @@
 #ifndef GUARD_LUASYS
 #define GUARD_LUASYS
 
+#include "hardware.h"
 #include "display.h"
 #include "drawbin.h"
-#include <"Preferences.h">
-
+#include <Preferences.h>
 #include "Arduino.h"
+
 #define LUA_USE_C89
 #include "src/lua/lua/lua.hpp"
 
-Preferences pref;
+Preferences preferences;
 extern "C"
 {
 
-    static int expose_save_var(lua_State *lua)
+    static int expose_file_as_string(lua_State *lua)
+    {
+        File f = USE_FS.open(luaL_checkstring(lua, 1));
+        String json = f.readString();
+        lua_pushstring(lua, json.c_str());
+        return 1;
+    }
+
+    static int expose_save_int(lua_State *lua)
     {
         //namespace, key, value
         String ns = String(luaL_checkstring(lua, 1));
-        preferences.begin("my-app",false);
-        pinMode(io, mode);
+        const char *key = (luaL_checkstring(lua, 2));
+        int val = (luaL_checkinteger(lua, 3));
+        preferences.begin((ns).c_str(), false);
+        preferences.putInt(key, val);
+        preferences.end();
+    }
+
+    static int expose_save_float(lua_State *lua)
+    {
+        //namespace, key, value
+        String ns = String(luaL_checkstring(lua, 1));
+        const char *key = (luaL_checkstring(lua, 2));
+        float val = (luaL_checknumber(lua, 3));
+        preferences.begin((ns).c_str(), false);
+        preferences.putFloat(key, val);
+        preferences.end();
+    }
+
+    static int expose_save_string(lua_State *lua)
+    {
+        //namespace, key, value
+        String ns = String(luaL_checkstring(lua, 1));
+        const char *key = (luaL_checkstring(lua, 2));
+        String val = String(luaL_checkstring(lua, 3));
+        preferences.begin((ns).c_str(), false);
+        preferences.putString(key, val);
+        preferences.end();
+    }
+
+    static int expose_load_int(lua_State *lua)
+    {
+        //namespace, key, value
+        String ns = String(luaL_checkstring(lua, 1));
+        const char *key = (luaL_checkstring(lua, 2));
+        preferences.begin((ns).c_str(), false);
+        int val = preferences.getInt(key, val);
+        preferences.end();
+        lua_pushnumber(lua, (lua_Number)val);
+        return 1;
+    }
+
+    static int expose_load_float(lua_State *lua)
+    {
+        //namespace, key, value
+        String ns = String(luaL_checkstring(lua, 1));
+        const char *key = (luaL_checkstring(lua, 2));
+        preferences.begin((ns).c_str(), false);
+        float val = preferences.getFloat(key);
+        preferences.end();
+        lua_pushnumber(lua, (lua_Number)val);
+        return 1;
+    }
+
+    static int expose_load_string(lua_State *lua)
+    {
+        //namespace, key, value
+        String ns = String(luaL_checkstring(lua, 1));
+        const char *key = (luaL_checkstring(lua, 2));
+        preferences.begin((ns).c_str(), false);
+        String val = preferences.getString(key);
+        preferences.end();
+        lua_pushstring(lua, val.c_str());
+        return 1;
     }
 
     static int expose_gpio_pinmode(lua_State *lua)
@@ -37,13 +107,13 @@ extern "C"
 
     static int expose_millis(lua_State *lua)
     {
-        lua_pushnumber(lua, (lua_Number) millis());
+        lua_pushnumber(lua, (lua_Number)millis());
         return 1;
     }
 
     static int expose_micros(lua_State *lua)
     {
-        lua_pushnumber(lua, (lua_Number) micros());
+        lua_pushnumber(lua, (lua_Number)micros());
         return 1;
     }
 
@@ -99,7 +169,7 @@ extern "C"
             display.println(final);
         } while (display.nextPage());
     }
-    
+
     static int expose_serial_print(lua_State *lua)
     {
         String a = String(luaL_checkstring(lua, 1));
@@ -118,6 +188,7 @@ extern "C"
         int16_t srcmaxy = (luaL_checkinteger(lua, 7));
         int16_t dstx = (luaL_checkinteger(lua, 8));
         int16_t dsty = (luaL_checkinteger(lua, 9));
+        int16_t flush_count = (luaL_checkinteger(lua, 10));
         power_eink(1);
         bin_smart_draw(asset.c_str(),
                        _w, _h,
@@ -126,7 +197,8 @@ extern "C"
                        srcmaxx,
                        srcmaxy,
                        dstx,
-                       dsty);
+                       dsty,
+                       flush_count);
     }
 
     static int expose_flush_screen(lua_State *lua)
@@ -166,6 +238,17 @@ void lua_shell_inject_function(const String name, const lua_CFunction function)
 void lua_shell_prep()
 {
     _state = luaL_newstate();
+    luaL_requiref(_state, "", luaopen_base, 1);
+    lua_pop(_state, 1);
+    luaL_requiref(_state, LUA_TABLIBNAME, luaopen_table, 1);
+    lua_pop(_state, 1);
+    luaL_requiref(_state, LUA_STRLIBNAME, luaopen_string, 1);
+    lua_pop(_state, 1);
+    luaL_requiref(_state, LUA_DBLIBNAME, luaopen_debug, 1);
+    lua_pop(_state, 1);
+    luaL_requiref(_state, LUA_MATHLIBNAME, luaopen_math, 1);
+    lua_pop(_state, 1);
+
     lua_shell_inject_function("sprint", (const lua_CFunction)&expose_serial_print);
     lua_shell_inject_function("delay", (const lua_CFunction)&expose_delay);
     lua_shell_inject_function("pinMode", (const lua_CFunction)&expose_gpio_pinmode);
@@ -177,6 +260,50 @@ void lua_shell_prep()
     lua_shell_inject_function("smart_draw", (const lua_CFunction)&expose_smart_draw);
     lua_shell_inject_function("sys_yield", (const lua_CFunction)&expose_yield);
     lua_shell_inject_function("flush_screen", (const lua_CFunction)&expose_flush_screen);
+
+    lua_shell_inject_function("load_float", (const lua_CFunction)&expose_load_float);
+    lua_shell_inject_function("load_int", (const lua_CFunction)&expose_load_int);
+    lua_shell_inject_function("load_string", (const lua_CFunction)&expose_load_string);
+    lua_shell_inject_function("save_float", (const lua_CFunction)&expose_save_float);
+    lua_shell_inject_function("save_int", (const lua_CFunction)&expose_save_int);
+    lua_shell_inject_function("save_string", (const lua_CFunction)&expose_save_string);
+
+    lua_shell_inject_function("file_string", (const lua_CFunction)&expose_file_as_string);
+
+    //inject libs
+    File shared_root = USE_FS.open("/shared");
+    if (!shared_root.isDirectory())
+    {
+        Serial.println("Shared is not a directory, many things might not work");
+        return;
+    }
+
+    File file = shared_root.openNextFile();
+    while (file)
+    {
+        if (file.isDirectory())
+        {
+            //skip
+        }
+        else
+        {
+            if (String(file.name()).endsWith(".lua"))
+            {
+                Serial.print("LOAD LIB: ");
+                Serial.print(file.name());
+                Serial.print("\tSIZE: ");
+                Serial.println(file.size());
+                const int ret = luaL_dostring(_state, file.readString().c_str());
+                if (ret != LUA_OK)
+                {
+                    Serial.println("Error\n");
+                    Serial.println(lua_tostring(_state, -1));
+                    lua_pop(_state, 1); // pop error message
+                }
+            }
+        }
+        file = shared_root.openNextFile();
+    }
 }
 
 void lua_shell_destroy() //this should be it
@@ -190,6 +317,8 @@ String lua_shell_run_code(String code)
     if (luaL_dostring(_state, code.c_str()))
     {
         result += "# lua error:\n" + String(lua_tostring(_state, -1));
+        Serial.println("Error");
+        Serial.println(result);
         lua_pop(_state, 1);
     }
     return result;

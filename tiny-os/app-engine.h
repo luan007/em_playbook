@@ -5,10 +5,13 @@
 #include "hardware.h"
 #include "display.h"
 #include "luasys.h"
+#include "presist.h"
 #define APP_ROOT "http://192.168.9.104:9898/"
 
 #define UPDATE_VERSION_INTERVAL 30000
 long _last_update = 0;
+
+DynamicJsonDocument app_data(2048); //good chunk of memory
 
 //download one app & inflate
 int app_mgr_fetch_app(String app)
@@ -24,7 +27,6 @@ bool __exists(const String &path)
 
 int app_mgr_package_healthy(String app)
 {
-
     if (!__exists(String("/") + app) || !__exists(String("/") + app + "/meta.json"))
     {
         Serial.println(app + " does not exist / malformed");
@@ -65,7 +67,6 @@ int app_mgr_is_update_needed(String app, JsonObject new_version)
     return -1;
 }
 
-DynamicJsonDocument app_data(2048); //good chunk of memory
 //periodic update of app list
 int app_mgr_load_versions()
 {
@@ -101,10 +102,12 @@ int app_mgr_load_versions()
     }
 }
 
-int app_mgr_run_program(String app, String procedure) {
+int app_mgr_run_file(String app, String procedure)
+{
     String path = String("/") + app + "/" + procedure + ".lua";
     File f = USE_FS.open(path);
-    if(!f) {
+    if (!f)
+    {
         f.close();
         Serial.println("APP MGR ERROR: App / Procedure not found");
         Serial.println(path);
@@ -117,6 +120,53 @@ int app_mgr_run_program(String app, String procedure) {
     return 1;
 }
 
+int app_mgr_run_procedure_meta_loaded(String app, String key, JsonObject root)
+{
+    if (!root.containsKey("capability"))
+    {
+        return -3;
+    }
+    JsonObject caps = root["capability"].as<JsonObject>();
+    if (!caps.containsKey(key))
+    {
+        return -4;
+    }
+    String target = caps[key].as<String>();
+    return app_mgr_run_file(app, target);
+}
+
+int app_mgr_run_procedure(String app, String key)
+{
+    if (app_mgr_package_healthy(app) <= 0)
+    {
+        return -1;
+    }
+    DynamicJsonDocument doc(512); //load from disk
+    File f = USE_FS.open(String("/") + app + "/meta.json");
+    String json = f.readString();
+    DeserializationError error = deserializeJson(doc, json);
+    f.close();
+    if (error)
+    {
+        Serial.println(json);
+        Serial.println(app + " malformed json meta file.");
+        return -2;
+    }
+    JsonObject root = doc.as<JsonObject>();
+    return app_mgr_run_procedure_meta_loaded(app, key, root);
+}
+
+int app_mgr_loop_procedures(String key)
+{
+    JsonObject root = app_data.as<JsonObject>();
+    for (auto p : root)
+    {
+        app_mgr_run_procedure_meta_loaded(String(p.key().c_str()), key, p.value().as<JsonObject>());
+    }
+}
+
+bool full_refresh = false;
+
 //pseudo OS loop
 int app_lifecycle()
 {
@@ -124,9 +174,23 @@ int app_lifecycle()
     {
         _last_update = millis();
         app_mgr_load_versions();
-        app_mgr_run_program("os", "main");
+        full_refresh = true;
     }
 
+    if (full_refresh)
+    {
+        String current_app = getString("APP");
+        if (current_app != "")
+        {
+            app_mgr_run_procedure(getString("APP"), "main");
+        }
+        else
+        {
+            app_mgr_run_procedure("os", "main");
+        }
+        app_mgr_loop_procedures("os");
+        app_mgr_loop_procedures("overlay");
+        full_refresh = false;
+    }
 }
-
 #endif
