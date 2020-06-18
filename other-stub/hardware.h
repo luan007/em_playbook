@@ -62,28 +62,23 @@ void setup_serial()
 void setup_hardware()
 {
   Wire.begin();
+  sensor.begin();
+  sensor.setSensitivity(SENSITIVITY_128X);
+  sensor.setInterruptEnabled();
 
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  digitalWrite(LED1, HIGH);
-  digitalWrite(LED2, HIGH);
-
+  // pinMode(LED1, OUTPUT);
+  // pinMode(LED2, OUTPUT);
+  // digitalWrite(LED1, HIGH);
+  // digitalWrite(LED2, HIGH);
   pinMode(SW, INPUT);
   pinMode(DT, INPUT);
   pinMode(CLK, INPUT);
   pinMode(CAP_ALERT, INPUT);
-
   // attachInterrupt(SW, swInterrupt, FALLING);
   // attachInterrupt(CAP_ALERT, capInterrupt, FALLING);
   // attachInterrupt(DT, encoderInterrupt, FALLING);
   // attachInterrupt(CLK, encoderInterrupt, FALLING);
   encoder.attachHalfQuad(CLK, DT);
-  if (sensor.begin() == false)
-  {
-    Serial.println("Not connected. Please check connections and read the hookup guide.");
-  }
-  sensor.setSensitivity(SENSITIVITY_128X);
-  sensor.setInterruptEnabled();
 }
 
 #endif

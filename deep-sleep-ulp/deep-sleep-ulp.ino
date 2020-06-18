@@ -153,7 +153,6 @@ void press_button_update()
 
 }
 
-
 void _wake_from_ulp()
 {
     last_user_interaction = 1;

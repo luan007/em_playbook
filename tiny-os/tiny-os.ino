@@ -1,26 +1,21 @@
-#include "hardware.h";
-#include "network.h";
-#include "drawbin.h";
-#include "luasys.h";
 
-#include "app-engine.h";
+#include "io.h"
+#include "network.h"
+#include "drawbin.h"
+#include "luasys.h"
+#include "app-engine.h"
+#include "nap.h"
 
 void setup()
 {
-  setup_hardware();
-  setup_serial();
-  setup_fs();
-  // setup_lua();
+  setup_io();
+  nap_wake();
 }
 
 void loop()
 {
-  Serial.print(digitalRead(DT));
-  Serial.print(":");
-  Serial.print(digitalRead(CLK));
-  Serial.print(":");
-  Serial.println(digitalRead(CAP_ALERT));
-  delay(50);
+  io_loop();
+  nap_loop();
   // ensure_network();
   // if (ensure_network() == 1) //connected to net
   // {

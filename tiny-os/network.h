@@ -3,7 +3,7 @@
 
 #include <WiFi.h>
 #include <WiFiManager.h> //https://github.com/khoih-prog/ESP_WiFiManager
-#include "hardware.h"
+#include "io.h"
 #include "display.h"
 #include <HTTPClient.h>
 #include <FS.h>

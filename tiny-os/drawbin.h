@@ -1,7 +1,7 @@
 #ifndef GUARD_BIN
 #define GUARD_BIN
 
-#include "hardware.h"
+#include "io.h"
 #include "display.h"
 
 int bin_flush_screen(int16_t x, int16_t y, int16_t w, int16_t h, bool partial_mode)

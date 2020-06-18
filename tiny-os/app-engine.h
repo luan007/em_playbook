@@ -2,7 +2,7 @@
 #define GUARD_APP_ENGINE
 #include <ArduinoJson.h>
 #include "network.h"
-#include "hardware.h"
+#include "io.h"
 #include "display.h"
 #include "luasys.h"
 #include "presist.h"

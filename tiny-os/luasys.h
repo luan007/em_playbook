@@ -1,7 +1,7 @@
 #ifndef GUARD_LUASYS
 #define GUARD_LUASYS
 
-#include "hardware.h"
+#include "io.h"
 #include "display.h"
 #include "drawbin.h"
 #include <Preferences.h>
