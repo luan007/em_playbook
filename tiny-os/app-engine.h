@@ -6,7 +6,7 @@
 #include "display.h"
 #include "luasys.h"
 #include "presist.h"
-#define APP_ROOT "http://192.168.9.104:9898/"
+#define APP_ROOT "http://192.168.40.68:9898/"
 
 #define UPDATE_VERSION_INTERVAL 30000
 long _last_update = 0;

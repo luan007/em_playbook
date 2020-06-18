@@ -20,10 +20,14 @@ void setup_fs()
 #define LED2 33
 
 #define SW 27
+#define SW_GPIO GPIO_NUM_27
 #define DT 13
+#define DT_GPIO GPIO_NUM_13
 #define CLK 14
+#define CLK_GPIO GPIO_NUM_14
 
 #define CAP_ALERT 26
+#define CAP_ALERT_GPIO GPIO_NUM_26
 #define CAP_SDA 21
 #define CAP_SCL 22
 
@@ -36,20 +40,19 @@ CAP1203 sensor;
 
 void IRAM_ATTR swInterrupt()
 {
-  if (!digitalRead(SW))
-  {
-    //Serial.println("SSSSSSWWWWWW");
-  }
+  Serial.println("SW");
 }
-
+void IRAM_ATTR encoderInterrupt()
+{
+  Serial.println("ENCODER");
+  Serial.println(digitalRead(DT));
+  Serial.println(digitalRead(CLK));
+}
 void IRAM_ATTR capInterrupt()
 {
-  if (!digitalRead(CAP_ALERT))
-  {
-    Serial.println("CAP_ALERT");
-  }
+  Serial.println("CAP");
+  Serial.println(sensor.isInterruptEnabled());
 }
-
 
 void setup_serial()
 {
@@ -68,23 +71,20 @@ void setup_hardware()
   pinMode(SW, INPUT);
   pinMode(DT, INPUT);
   pinMode(CLK, INPUT);
-
   pinMode(CAP_ALERT, INPUT);
-  attachInterrupt(SW, swInterrupt, FALLING);
-  attachInterrupt(CAP_ALERT, capInterrupt, FALLING);
+
+  // attachInterrupt(SW, swInterrupt, FALLING);
+  // attachInterrupt(CAP_ALERT, capInterrupt, FALLING);
+  // attachInterrupt(DT, encoderInterrupt, FALLING);
+  // attachInterrupt(CLK, encoderInterrupt, FALLING);
   encoder.attachHalfQuad(CLK, DT);
+
   if (sensor.begin() == false)
   {
     Serial.println("Not connected. Please check connections and read the hookup guide.");
-    while (1)
-      ;
-  }
-  else
-  {
-    Serial.println("Connected!");
   }
   sensor.setSensitivity(SENSITIVITY_128X);
+  sensor.setInterruptEnabled();
 }
-
 
 #endif

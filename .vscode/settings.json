@@ -9,6 +9,7 @@
         "initializer_list": "cpp",
         "algorithm": "cpp",
         "typeinfo": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "random": "c"
     }
 }
