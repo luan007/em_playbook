@@ -9,3 +9,5 @@ extern uint32_t ulp_entry;
 //// pointer to counter in counter.c
 extern uint32_t ulp__switch;
 extern uint32_t ulp__touch;
+extern uint32_t ulp__prev_encoder_state;
+extern uint32_t ulp__encoder_state;
