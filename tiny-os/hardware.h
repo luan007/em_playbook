@@ -78,7 +78,6 @@ void setup_hardware()
   // attachInterrupt(DT, encoderInterrupt, FALLING);
   // attachInterrupt(CLK, encoderInterrupt, FALLING);
   encoder.attachHalfQuad(CLK, DT);
-
   if (sensor.begin() == false)
   {
     Serial.println("Not connected. Please check connections and read the hookup guide.");
