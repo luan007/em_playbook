@@ -31,14 +31,14 @@ public:
   static const bool hasFastPartialUpdate = true;
   static const uint16_t reset_to_ready_time = 10; // ms, e.g. 1721883us
   static const uint16_t power_on_time = 10;         // ms, e.g. 3879us
-  static const uint16_t power_off_time = 10;       // ms, e.g. 109875us
-  static const uint16_t full_refresh_time = 600;    // ms, e.g. 573921us
-  static const uint16_t partial_refresh_time = 300; // ms, e.g. 246948us
+  static const uint16_t power_off_time = 10;       // ms, e.g. 109875us 1000
+  static const uint16_t full_refresh_time = 300;    // ms, e.g. 573921us 600
+  static const uint16_t partial_refresh_time = 100; // ms, e.g. 246948us 300
   static const uint16_t refresh_cmd_time = 10;      // ms, e.g. 6460us
   static const uint16_t refresh_par_time = 2;       // ms, e.g. 1921us
   static const uint16_t default_wait_time = 1;      // ms, default busy check, needed?
   static const uint16_t diag_min_time = 3;          // ms, e.g. > refresh_par_time
-  static const uint16_t set_vcom_time = 40;         // ms, e.g. 37833us
+  static const uint16_t set_vcom_time = 20;         // ms, e.g. 37833us 40
   // constructor
   GxEPD2_it60(int8_t cs, int8_t dc, int8_t rst, int8_t busy);
   // methods (virtual)

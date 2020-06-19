@@ -165,32 +165,33 @@ int app_mgr_loop_procedures(String key)
     }
 }
 
-bool full_refresh = false;
+
+int app_version_updator()
+{
+    _last_update = millis();
+    app_mgr_load_versions();
+    return 0;
+}
 
 //pseudo OS loop
-int app_lifecycle()
+int app_full_refresh()
 {
-    if (_last_update == 0 || millis() - _last_update > UPDATE_VERSION_INTERVAL)
+    String current_app = getString("APP");
+    if (current_app != "")
     {
-        _last_update = millis();
-        app_mgr_load_versions();
-        full_refresh = true;
+        app_mgr_run_procedure(getString("APP"), "main");
     }
+    else
+    {
+        app_mgr_run_procedure("os", "main");
+    }
+    app_mgr_loop_procedures("os");
+    app_mgr_loop_procedures("overlay");
+    return 0;
+}
 
-    if (full_refresh)
-    {
-        String current_app = getString("APP");
-        if (current_app != "")
-        {
-            app_mgr_run_procedure(getString("APP"), "main");
-        }
-        else
-        {
-            app_mgr_run_procedure("os", "main");
-        }
-        app_mgr_loop_procedures("os");
-        app_mgr_loop_procedures("overlay");
-        full_refresh = false;
-    }
+int app_signal()
+{
+    app_mgr_loop_procedures("signal");
 }
 #endif

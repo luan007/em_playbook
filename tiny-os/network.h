@@ -196,6 +196,6 @@ int ensure_network()
     }
     dbg_print("Connected to WiFi");
     ensure_time();
-    return 2;
+    return 1;
 }
 #endif

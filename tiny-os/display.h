@@ -10,7 +10,7 @@
 #include "io.h"
 //GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ SS, /*DC=*/0, /*RST=*/2, /*BUSY=*/4));
 //
-GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ 5, /*DC=*/0, /*RST=*/15, /*BUSY=*/4));
+GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ 5, /*DC=*/0, /*RST=*/-1, /*BUSY=*/4));
 
 // const char DisplayInit[] = "Display Init..";
 void setup_eink()

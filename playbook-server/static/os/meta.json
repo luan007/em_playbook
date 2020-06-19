@@ -4,6 +4,6 @@
         "main": "main",
         "os": "os",
         "overlay": "overlay",
-        "trigger": "trigger"
+        "trigger": "os"
     }
 }

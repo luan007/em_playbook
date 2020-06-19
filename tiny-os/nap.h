@@ -8,9 +8,10 @@
 #include "ulptool.h"
 #include "driver/rtc_io.h"
 #include "driver/gpio.h"
-#define ULP_INTERVAL 50
-#define NAP_AFTER_INTERACTION 15000
 #include "io.h"
+
+#define ULP_INTERVAL 100
+#define NAP_AFTER_INTERACTION 30000
 
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[] asm("_binary_ulp_main_bin_end");

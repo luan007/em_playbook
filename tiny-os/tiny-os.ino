@@ -43,12 +43,26 @@ void loop()
   //   // bin_smart_draw("/demo/root.bin", 800, 600, 0, 0, 800, 600, 0, 0);
   // }
 
-  // if (Serial.available() && Serial.read() == 'F')
-  // {
-  //   USE_FS.end();
-  //   USE_FS.format();
-  //   ESP.restart();
-  // }
+  if (Serial.available())
+  {
+    switch (Serial.read())
+    {
+    case 'F':
+      USE_FS.end();
+      USE_FS.format();
+      ESP.restart();
+      break;
+    case 'U':
+      if (ensure_network() == 1)
+      { 
+        app_version_updator();
+      }
+      break;
+    case 'R':
+      app_full_refresh();
+      break;
+    }
+  }
 
   // esp_sleep_enable_timer_wakeup(10 * 1000000);
   // esp_sleep_enable_ext1_wakeup(1ULL << DT, ESP_EXT1_WAKEUP_ANY_HIGH);
