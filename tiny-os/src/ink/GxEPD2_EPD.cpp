@@ -86,7 +86,7 @@ void GxEPD2_EPD::_reset()
       digitalWrite(_rst, LOW);
       delay(20);
       digitalWrite(_rst, HIGH);
-      delay(200);
+      delay(100);
     }
     _hibernating = false;
   }

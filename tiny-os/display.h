@@ -15,7 +15,8 @@ GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ 5,
 // const char DisplayInit[] = "Display Init..";
 void setup_eink()
 {
-    display.init(115200);
+    // display.init(115200);
+    display.init(115200, false, false);
 }
 
 void shutdown_eink()
@@ -37,13 +38,13 @@ void power_eink(int ON_OFF)
     {
         pinMode(IT8951_RESET, OUTPUT);
         digitalWrite(IT8951_RESET, LOW);
-        delay(50);
+        delay(100);
         digitalWrite(IT8951_RESET, HIGH);
         setup_eink();
     }
     else
     {
-        shutdown_eink();
+        // shutdown_eink();
     }
 }
 

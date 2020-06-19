@@ -29,9 +29,9 @@ public:
   static const bool hasColor = false;
   static const bool hasPartialUpdate = true;
   static const bool hasFastPartialUpdate = true;
-  static const uint16_t reset_to_ready_time = 1800; // ms, e.g. 1721883us
+  static const uint16_t reset_to_ready_time = 10; // ms, e.g. 1721883us
   static const uint16_t power_on_time = 10;         // ms, e.g. 3879us
-  static const uint16_t power_off_time = 200;       // ms, e.g. 109875us
+  static const uint16_t power_off_time = 10;       // ms, e.g. 109875us
   static const uint16_t full_refresh_time = 600;    // ms, e.g. 573921us
   static const uint16_t partial_refresh_time = 300; // ms, e.g. 246948us
   static const uint16_t refresh_cmd_time = 10;      // ms, e.g. 6460us

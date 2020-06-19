@@ -10,6 +10,12 @@
         "algorithm": "cpp",
         "typeinfo": "cpp",
         "functional": "cpp",
-        "random": "c"
+        "random": "c",
+        "*.tcc": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp"
     }
 }

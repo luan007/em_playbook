@@ -57,6 +57,7 @@ void io_user_interaction()
     INTERACTION_TIMESTAMP = millis(); //sanity
 }
 
+int prev_count = 0;
 void io_encoder_update(int A, int B)
 {
     SIG_ENCODER_DELTA = 0;
@@ -84,6 +85,11 @@ void io_encoder_update(int A, int B)
     else
     {
         int dir = encoder.getCount();
+        if (prev_count != dir)
+        {
+            prev_count = dir;
+        }
+        // Serial.println(String("count:") + dir);
         SIG_ENCODER_DELTA = dir;
         SIG_ENCODER_DELTA = SIG_ENCODER_DELTA > 0 ? 1 : (SIG_ENCODER_DELTA < 0 ? -1 : SIG_ENCODER_DELTA);
         encoder.clearCount();
@@ -163,10 +169,19 @@ void setup_serial()
     Serial.begin(115200);
 }
 
+int _prev_rot = 0;
+int _cur_rot = 0;
+int _cur_confirmed = 0;
+long sample_time = 0;
+
+void IRAM_ATTR encoderInterrupt()
+{
+    sample_time = millis();
+    _cur_rot = ((digitalRead(DT) & 0x01) << 1) | (digitalRead(CLK) & 0x01);
+}
+
 void setup_io()
 {
-    setup_serial();
-    setup_fs();
     Wire.begin();
     sensor.begin();
     sensor.setSensitivity(SENSITIVITY_128X);
@@ -184,9 +199,10 @@ void setup_io()
     // attachInterrupt(CAP_ALERT, capInterrupt, FALLING);
     // attachInterrupt(DT, encoderInterrupt, FALLING);
     // attachInterrupt(CLK, encoderInterrupt, FALLING);
-    encoder.attachHalfQuad(CLK, DT);
+    encoder.attachHalfQuad(DT, CLK);
 }
 
+long last_update_io_loop = 0;
 void io_loop()
 {
     // _sleep();
@@ -210,9 +226,22 @@ void io_loop()
         Serial.println("SIG_ENCODER_HOLD");
         Serial.println(SIG_ENCODER_HOLD);
     }
-    io_encoder_update(-1, -1);
     io_touch_update();
     io_press_button_update();
+    // if(millis() - sample_time > 50) {
+    //     _cur_confirmed = _cur_rot;
+    // }
+
+    // _cur_confirmed = ((digitalRead(DT) & 0x01) << 1) | (digitalRead(CLK) & 0x01);
+    // if (millis() - last_update_io_loop > 30)
+    // {
+    //     Serial.println("Too late, syncing input");
+    //     _prev_rot = _cur_confirmed;
+    // }
+    io_encoder_update(-1, -1);
+    // Serial.println(String(_prev_rot) + ":" + String(_cur_rot) + " > " + String(SIG_ENCODER_DELTA));
+    // _prev_rot = _cur_confirmed;
+    // last_update_io_loop = millis();
 }
 
 #endif

@@ -166,6 +166,15 @@ int download_inflate(String pack_name, String url)
     _dbg_ls_dir("/", 10);
 }
 
+const char *ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600;
+const int daylightOffset_sec = 3600;
+
+int ensure_time()
+{
+    configTzTime("GMT-8", ntpServer);
+}
+
 int ensure_network()
 {
     if (WiFi.status() == WL_CONNECTED)
@@ -186,8 +195,7 @@ int ensure_network()
         return -1;
     }
     dbg_print("Connected to WiFi");
+    ensure_time();
     return 2;
 }
-
-
 #endif

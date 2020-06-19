@@ -74,39 +74,38 @@ void GxEPD2_it60::init(uint32_t serial_diag_bitrate, bool initial, bool pulldown
   // we need a long reset pulse
   if (_rst >= 0)
   {
-    digitalWrite(_rst, LOW);
-    delay(200);
-    digitalWrite(_rst, HIGH);
-    delay(200);
-    _waitWhileBusy("init reset_to_ready", reset_to_ready_time);
+    // digitalWrite(_rst, LOW);
+    // delay(5);
+    // digitalWrite(_rst, HIGH);
+    // delay(5);
+    // _waitWhileBusy("init reset_to_ready", reset_to_ready_time);
   }
 
-  _writeCommand16(USDEF_I80_CMD_GET_DEV_INFO);
-  _waitWhileBusy("GetIT8951SystemInfo", power_on_time);
-  _readData16((uint16_t *)&IT8951DevInfo, sizeof(IT8951DevInfo) / 2);
-  if (_diag_enabled)
-  {
-    //Show Device information of IT8951
-    printf("Panel(W,H) = (%d,%d)\r\n",
-           IT8951DevInfo.usPanelW, IT8951DevInfo.usPanelH);
-    printf("Image Buffer Address = %X\r\n",
-           IT8951DevInfo.usImgBufAddrL | (IT8951DevInfo.usImgBufAddrH << 16));
-    //Show Firmware and LUT Version
-    printf("FW Version = %s\r\n", (uint8_t *)IT8951DevInfo.usFWVersion);
-    printf("LUT Version = %s\r\n", (uint8_t *)IT8951DevInfo.usLUTVersion);
-  }
+  // _writeCommand16(USDEF_I80_CMD_GET_DEV_INFO);
+  // _waitWhileBusy("GetIT8951SystemInfo", power_on_time);
+  // _readData16((uint16_t *)&IT8951DevInfo, sizeof(IT8951DevInfo) / 2);
+  // if (_diag_enabled)
+  // {
+  //   printf("Panel(W,H) = (%d,%d)\r\n",
+  //          IT8951DevInfo.usPanelW, IT8951DevInfo.usPanelH);
+  //   printf("Image Buffer Address = %X\r\n",
+  //          IT8951DevInfo.usImgBufAddrL | (IT8951DevInfo.usImgBufAddrH << 16));
+  //   printf("FW Version = %s\r\n", (uint8_t *)IT8951DevInfo.usFWVersion);
+  //   printf("LUT Version = %s\r\n", (uint8_t *)IT8951DevInfo.usLUTVersion);
+  // }
   //Set to Enable I80 Packed mode
   _IT8951WriteReg(I80CPCR, 0x0001);
-  if (VCOM != _IT8951GetVCOM())
-  {
-    _IT8951SetVCOM(VCOM);
-    printf("VCOM = -%.02fV\n", (float)_IT8951GetVCOM() / 1000);
-  }
-  printf("VCOM = -%.02fV\n", (float)_IT8951GetVCOM() / 1000);
+  _IT8951SetVCOM(VCOM);
+  // if (VCOM != _IT8951GetVCOM())
+  // {
+  //   printf("VCOM = -%.02fV\n", (float)_IT8951GetVCOM() / 1000);
+  // }
+  // printf("VCOM = -%.02fV\n", (float)_IT8951GetVCOM() / 1000);
 }
 
 void GxEPD2_it60::clearScreen(uint8_t value)
 {
+  printf("clear screen");
   _initial_write = false; // initial full screen buffer clean done
   if (_initial_refresh)
     _Init_Full();
@@ -527,10 +526,10 @@ void GxEPD2_it60::_InitDisplay()
   // we need a long reset pulse
   if (_hibernating && (_rst >= 0))
   {
-    digitalWrite(_rst, LOW);
-    delay(200);
-    digitalWrite(_rst, HIGH);
-    delay(200);
+    // digitalWrite(_rst, LOW);
+    // delay(200);
+    // digitalWrite(_rst, HIGH);
+    // delay(200);
   }
 }
 

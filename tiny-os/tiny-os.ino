@@ -1,21 +1,40 @@
 
 #include "io.h"
 #include "network.h"
-#include "drawbin.h"
+#include "display.h"
 #include "luasys.h"
 #include "app-engine.h"
 #include "nap.h"
 
 void setup()
 {
+  power_eink(1);
+  setup_serial();
+  setup_fs();
   setup_io();
   nap_wake();
+  dbg_print("WAKE");
 }
 
 void loop()
 {
+  if (SIG_ENCODER_DELTA != 0)
+  {
+    dbg_print(String(SIG_ENCODER_DELTA) + " - ENCODER - " + String(millis()));
+  }
+  if (SIG_TOUCH_CLICK != 0)
+  {
+    dbg_print(String(SIG_TOUCH_CLICK) + " - TOUCH - " + String(millis()));
+  }
+  if (SIG_GOING_SLEEP)
+  {
+    dbg_print("> SLEEP");
+  }
   io_loop();
   nap_loop();
+
+  // _cur_rot = (digitalRead(CLK) << 0) | (digitalRead(DT) << 1);
+
   // ensure_network();
   // if (ensure_network() == 1) //connected to net
   // {

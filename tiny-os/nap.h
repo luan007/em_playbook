@@ -8,8 +8,8 @@
 #include "ulptool.h"
 #include "driver/rtc_io.h"
 #include "driver/gpio.h"
-#define ULP_INTERVAL 5000
-#define NAP_AFTER_INTERACTION 5000
+#define ULP_INTERVAL 50
+#define NAP_AFTER_INTERACTION 15000
 #include "io.h"
 
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
@@ -86,7 +86,6 @@ void _wake_from_timer()
 void nap_wake()
 {
     REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
-    Serial.println(millis());
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
     switch (wakeup_reason)
