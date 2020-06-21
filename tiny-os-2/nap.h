@@ -6,12 +6,33 @@
 #include "ulptool.h"
 #include "driver/rtc_io.h"
 #include "driver/gpio.h"
+#include "defs.h"
+#include "hal-io.h"
+
+#define WAKE_REASON_ULP 2
+#define WAKE_REASON_NONE 1
+#define WAKE_REASON_TIMER 3
+
+SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
+
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[] asm("_binary_ulp_main_bin_end");
 
 uint32_t nap_next_wake = 60 * 1000; //1min at a time
 
 //kickstart ULP
+
+void nap_loop()
+{
+    if (SIG_BEFORE_SLEEP.value > 0)
+    {
+        //ready to sleep
+        nap_enter_sleep(nap_next_wake); //TODO: THIS IS STILL WRONG
+        //YOU SHOULD NEVER GET HERE (HALT)
+    }
+}
+
 void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
 {
     rtc_gpio_init(GPIO_NUM_26);
@@ -42,51 +63,41 @@ void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
     esp_deep_sleep_start();
 }
 
-// void _wake_from_ulp()
-// {
-//     if ((ulp__touch & 0xFFFF) > 0)
-//     {
-//         Serial.println("from touch");
-//         io_touch_update();
-//     }
-//     else if ((ulp__switch & 0xFFFF) > 0)
-//     {
-//         Serial.println("from sw");
-//         SIG_ENCODER_PRESS = -10;
-//     }
-//     else if ((ulp__encoder_state & 0xFFFF) != (ulp__prev_encoder_state & 0xFFFF))
-//     {
-//         Serial.println("from encoder");
-//         io_encoder_update(ulp__encoder_state, ulp__prev_encoder_state);
-//     }
-//     SIG_WAKE_BY_INPUT = 1;
-//     INTERACTION_TIMESTAMP = 1;
-// }
-
-// void _wake_from_timer()
-// {
-//     SIG_WAKE_BY_TIMER = 1;
-//     Serial.println("Woke from Timer");
-//     INTERACTION_TIMESTAMP = NAP_AFTER_INTERACTION / 2; //you have 2 sec to op - ready to sleep actually
-// }
-
-void nap_wake()
+void nap_read_input_from_ulp()
 {
+    if ((ulp__touch & 0xFFFF) > 0)
+    {
+        io_touch_update();
+    }
+    else if ((ulp__switch & 0xFFFF) > 0)
+    {
+        io_sw_update(); //TODO: THIS MIGHT BE WRONG
+    }
+    else if ((ulp__encoder_state & 0xFFFF) != (ulp__prev_encoder_state & 0xFFFF))
+    {
+        io_encoder_update(ulp__encoder_state, ulp__prev_encoder_state);
+    }
+}
+
+void nap_init()
+{
+    signal_register(&SIG_WAKE_REASON);
+    signal_register(&SIG_BEFORE_SLEEP);
+
     REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
     switch (wakeup_reason)
     {
     case ESP_SLEEP_WAKEUP_TIMER:
-        Serial.println("Wakeup caused by timer");
-        // _wake_from_timer();
+        signal_raise(&SIG_WAKE_REASON, WAKE_REASON_TIMER, "Wake from Timer");
         break;
     case ESP_SLEEP_WAKEUP_ULP:
-        Serial.println("Wakeup caused by ULP program");
-        // _wake_from_ulp();
+        signal_raise(&SIG_WAKE_REASON, WAKE_REASON_ULP, "Wake from ULP");
+        nap_read_input_from_ulp();
         break;
     default:
-        Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
+        signal_raise(&SIG_WAKE_REASON, WAKE_REASON_NONE, "Wake from RESET or Other");
         break;
     }
 }

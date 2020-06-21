@@ -5,23 +5,24 @@
 #define CPU 1
 #include "defs.h"
 #include "nap.h"
+#include "hal-io.h"
 
 void TaskMain(void *pvParameters);
 
-SIGNAL(TESTQ, "Test signal", SIGNAL_VIZ_APP | SIGNAL_VIZ_OS | SIGNAL_VIZ_USER, SIGNAL_PRESIST_POWERLOSS, 0)
-CONFIG(DUMMY, 394, "Hello world")
+// SIGNAL(TESTQ, "Test signal", SIGNAL_VIZ_APP | SIGNAL_VIZ_OS | SIGNAL_VIZ_USER, SIGNAL_PRESIST_POWERLOSS, 0)
+// CONFIG(DUMMY, "Dummy Test", 394, "Hello world")
 
 void setup()
 {
   Serial.begin(115200);
 
+  hal_io_setup();
+  nap_init();
 
-  signal_register(&SIG_TESTQ);
-  config_register(&CFG_DUMMY);
   base_subsys_init();
 
-  signal_raise(&SIG_FLUSH_SIGS, 0, NULL);
-  signal_raise(&SIG_TESTQ, 392, NULL);
+  // signal_raise(&SIG_FLUSH_SIGS, 0, NULL);
+  // signal_raise(&SIG_TESTQ, 392, NULL);
 
   //start os
   xTaskCreatePinnedToCore(
@@ -33,7 +34,9 @@ void setup()
 void loop()
 {
   // Serial.println("Test from Loop");
+  hal_io_loop();
   base_subsys_loop();
+  nap_loop();
 }
 
 void TaskMain(void *pvParameters)

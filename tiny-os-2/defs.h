@@ -2,6 +2,7 @@
 #define _GUARD_H_DEF
 //TODO: note, wear levelling should be considered
 #include "time.h"
+#include <sys/time.h>
 #include <list>
 #include <Preferences.h>
 
@@ -13,12 +14,16 @@ void DEBUG(const char *module, const char *stuff, int LEVEL = DBG_LEVEL_LOG)
     Serial.println(msg.c_str());
 }
 
-long epochs()
+int64_t epochs()
 {
-    return static_cast<long>(time(NULL));
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    int64_t milliseconds = tv.tv_sec * 1000LL + tv.tv_usec / 1000LL;
 }
 
-long r_millis() //trustworthy time!
+#define r_millis epochs
+
+long r_secs() //trustworthy time!
 {
     return static_cast<long>(time(NULL));
 }
@@ -198,8 +203,13 @@ void signal_presist_init()
 
 //put this at the VERY END of your runtime loop
 //ensures correct presist_behavior
-void signal_presist_update()
+unsigned long sig_last_save = 0;
+unsigned long sig_save_min_freq = 10000; //limit qps (like 10)
+void signal_presist_update(bool LAST_CYCLE = false)
 {
+    //qps limit
+    bool can_save = LAST_CYCLE || (millis() - sig_last_save > sig_save_min_freq);
+    bool has_saved = false;
     for (auto i : signals)
     {
         if (i->presist_behavior == SIGNAL_PRESIST_ONCE)
@@ -212,12 +222,20 @@ void signal_presist_update()
         }
         else if (i->presist_behavior == SIGNAL_PRESIST_POWERLOSS && (i->value != i->_saved_value))
         {
-            _signal_store.begin("signal_store", false); //preferences.h already checks _started for us
-            _signal_store.putInt(i->name, i->value);
-            _signal_store.putInt((String("resolved_") + i->name).c_str(), i->resolved);
-            i->_saved_value = i->value;
-            DEBUG("SIGNAL", (String("Save ") + i->name + " = " + i->value).c_str());
+            if (can_save)
+            {
+                has_saved = true;
+                _signal_store.begin("signal_store", false); //preferences.h already checks _started for us
+                _signal_store.putInt(i->name, i->value);
+                _signal_store.putInt((String("resolved_") + i->name).c_str(), i->resolved);
+                i->_saved_value = i->value;
+                DEBUG("SIGNAL", (String("Save ") + i->name + " = " + i->value).c_str());
+            }
         }
+    }
+    if (has_saved)
+    {
+        sig_last_save = millis();
     }
     _signal_store.end();
 }
@@ -231,13 +249,15 @@ typedef struct config
     int value64;
     String valueString;
 
+    String meta;
+
     int old_value64;
     String old_valueString;
 
     int changed;
 };
 
-#define CONFIG(NAME, default_64, str) struct config CFG_##NAME = {#NAME, default_64, String(str)};
+#define CONFIG(NAME, meta, default_64, str) struct config CFG_##NAME = {#NAME, default_64, String(str), String(meta)};
 
 std::list<struct config *> configs;
 
@@ -346,7 +366,7 @@ void base_subsys_init()
 
 void base_subsys_loop()
 {
-    signal_presist_update();
+    signal_presist_update(SIG_BEFORE_SLEEP.value > 0);
     config_presist_update();
 }
 

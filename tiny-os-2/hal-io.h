@@ -14,9 +14,12 @@ SIGNAL(TOUCH_DOWN, "Touched", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TOUCH_CLICK, "Touch Click", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
 SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 
+CONFIG(SW_DEBOUNCE, "Switch Debounce Time (ms)", 20, "")
+CONFIG(SW_HOLD_T, "Switch Hold Duration (ms)", 3000, "")
+
 void io_user_interaction()
 {
-    signal_raise(&SIG_USER_ACTION, r_millis(), "User Action Recorded");
+    signal_raise(&SIG_USER_ACTION, millis(), "User Action Recorded");
 }
 
 void io_encoder_update(int A, int B)
@@ -84,33 +87,36 @@ void io_touch_update()
     }
 }
 
+int _hold_flag = 0;
 void io_sw_update()
 {
     int sw_state = digitalRead(SW);
     if (SIG_SW_DOWN.value == 0 && sw_state == 0)
     {
         //pressed, record
-        signal_raise(&SIG_SW_DOWN, r_millis()); //trigger
+        signal_raise(&SIG_SW_DOWN, millis()); //trigger
     }
-    if (sw_state == 1)
+    if (sw_state == 1 && SIG_SW_DOWN.value > 0)
     {
         int _press_start = SIG_SW_DOWN.value;
         signal_raise(&SIG_SW_DOWN, 0);        //release trigger
-        signal_raise(&SIG_SW_UP, r_millis()); //duration
-        if ((r_millis() - _press_start) > SW_DEBOUNCE)
+        signal_raise(&SIG_SW_UP, millis()); //duration
+        if ((millis() - _press_start) > CFG_SW_DEBOUNCE.value64)
         {
             signal_raise(&SIG_SW_CLICK, 1);
         }
-        SIG_ENCODER_PRESS = 0;
+        _hold_flag = 0; //reset hold detection
     }
 
-    if (__SIG_ENCODER_HOLD__triggered == 0 && SIG_ENCODER_PRESS > 0 && (millis() - SIG_ENCODER_PRESS) > 2000)
+    if (sw_state == 0 && _hold_flag == 0)
     {
-        SIG_ENCODER_HOLD = 1;
-        __SIG_ENCODER_HOLD__triggered = 1;
+        if ((millis() - SIG_SW_DOWN.value) > CFG_SW_HOLD_T.value64)
+        {
+            _hold_flag = 1;
+            signal_raise(&SIG_SW_HOLD, 1);
+        }
     }
-
-    if (SIG_ENCODER_PRESS > 0)
+    if (sw_state == 0)
     {
         io_user_interaction();
     }
@@ -118,45 +124,34 @@ void io_sw_update()
 
 void hal_io_setup()
 {
-    Serial.begin(115200);
+    signal_register(&SIG_ENC_DELTA);
+    signal_register(&SIG_ENC_COUNT);
+    signal_register(&SIG_SW_DOWN);
+    signal_register(&SIG_SW_UP);
+    signal_register(&SIG_SW_CLICK);
+    signal_register(&SIG_SW_HOLD);
+    signal_register(&SIG_TOUCH_DOWN);
+    signal_register(&SIG_TOUCH_CLICK);
+    signal_register(&SIG_USER_ACTION);
+    config_register(&CFG_SW_DEBOUNCE);
+    config_register(&CFG_SW_HOLD_T);
+
     Wire.begin();
-    sensor.begin();
-    sensor.setSensitivity(SENSITIVITY_128X);
+    hw_cap_sensor.begin();
+    hw_cap_sensor.setSensitivity(SENSITIVITY_128X);
 
     pinMode(SW, INPUT);
     pinMode(DT, INPUT);
     pinMode(CLK, INPUT);
     pinMode(CAP_ALERT, INPUT);
 
-    encoder.attachHalfQuad(DT, CLK);
+    hw_encoder.attachHalfQuad(DT, CLK);
 }
 
 void hal_io_loop()
 {
-    // _sleep();
-    // if (SIG_ENCODER_DELTA != 0)
-    // {
-    //     Serial.println("SIG_ENCODER_DELTA");
-    //     Serial.println(SIG_ENCODER_DELTA);
-    // }
-    // if (SIG_TOUCH_CLICK != 0)
-    // {
-    //     Serial.println("SIG_TOUCH_CLICK");
-    //     Serial.println(SIG_TOUCH_CLICK);
-    // }
-    // if (SIG_ENCODER_CLICK != 0)
-    // {
-    //     Serial.println("SIG_ENCODER_CLICK");
-    //     Serial.println(SIG_ENCODER_CLICK);
-    // }
-    // if (SIG_ENCODER_HOLD != 0)
-    // {
-    //     Serial.println("SIG_ENCODER_HOLD");
-    //     Serial.println(SIG_ENCODER_HOLD);
-    // }
-
     io_touch_update();
-    io_press_button_update();
+    io_sw_update();
     io_encoder_update(-1, -1);
 }
 
