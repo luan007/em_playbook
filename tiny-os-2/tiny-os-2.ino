@@ -8,20 +8,18 @@
 
 void TaskMain(void *pvParameters);
 
-SIGNAL(TEST, "Test signal", SIGNAL_VIZ_APP | SIGNAL_VIZ_OS | SIGNAL_VIZ_USER, SIGNAL_PRESIST_POWERLOSS, 0)
+SIGNAL(TESTQ, "Test signal", SIGNAL_VIZ_APP | SIGNAL_VIZ_OS | SIGNAL_VIZ_USER, SIGNAL_PRESIST_POWERLOSS, 0)
 
 void setup()
 {
   Serial.begin(115200);
 
-  signal_register(&TEST);
 
-  signal_presist_init();
+  signal_register(&SIG_TESTQ);
+  signal_subsys_init();
 
-  signal_raise(&TEST, 2, NULL);
-
-
-
+  signal_raise(&SIG_FLUSH_SIGS, 1, NULL);
+  signal_raise(&SIG_TESTQ, 392, NULL);
 
   //start os
   xTaskCreatePinnedToCore(
@@ -33,7 +31,7 @@ void setup()
 void loop()
 {
   // Serial.println("Test from Loop");
-  signal_presist_update();
+  signal_subsys_loop();
 }
 
 void TaskMain(void *pvParameters)

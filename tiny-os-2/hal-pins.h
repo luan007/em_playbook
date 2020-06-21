@@ -20,4 +20,14 @@
 #define TPS_CONTROL 15
 #define IT8951_RESET 16
 
+#include <ESP32Encoder.h>
+#include <SparkFun_CAP1203_Registers.h>
+#include <SparkFun_CAP1203_Types.h>
+#include <Wire.h>
+
+ESP32Encoder hw_encoder;
+CAP1203 hw_cap_sensor;
+
+
+
 #endif

@@ -1,86 +1,83 @@
 #ifndef _GUARD_IO_H
 #define _GUARD_IO_H
 
-#include <ESP32Encoder.h>
-#include <SparkFun_CAP1203_Registers.h>
-#include <SparkFun_CAP1203_Types.h>
-#include <Wire.h>
-#include "def.h"
+#include "defs.h"
 #include "hal-pins.h"
 
-
-
-ESP32Encoder encoder;
-CAP1203 sensor;
-
+SIGNAL(ENC_DELTA, "Encoder Value Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
+SIGNAL(ENC_COUNT, "Encoder Count Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0) //this is handly
+SIGNAL(SW_DOWN, "Encoder Button Pressed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)    //records button down
+SIGNAL(SW_UP, "Encoder Button Released", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)     //records button down
+SIGNAL(SW_HOLD, "Long Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0) //records button down
+SIGNAL(TOUCH_DOWN, "Touched", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(TOUCH_CLICK, "Touch Click", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
+SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 
 void io_user_interaction()
 {
+    signal_raise(&SIG_USER_ACTION, r_millis(), "User Action Recorded");
 }
 
-int prev_count = 0;
 void io_encoder_update(int A, int B)
 {
-    SIG_ENCODER_DELTA = 0;
-    if (A >= 0 && B >= 0)
+    int delta = 0;
+    //TODO, alg from ULP is really crude.. need fix
+    if (A >= 0 && B >= 0) //this compares stuff from ULP
     {
         A = A & 0xffff;
         B = B & 0xffff;
         if ((A == 1 && B == 3) || (A == 2 && B == 0))
         {
-            SIG_ENCODER_DELTA = 1;
+            delta = 1;
         }
         else if ((A == 0 && B == 1) || (A == 3 && B == 2))
         {
-            SIG_ENCODER_DELTA = 1;
+            delta = 1;
         }
         else if ((A == 1 && B == 0) || (A == 2 && B == 3))
         {
-            SIG_ENCODER_DELTA = -1;
+            delta = -1;
         }
         else if ((A == 3 && B == 1) || (A == 0 && B == 2))
         {
-            SIG_ENCODER_DELTA = -1;
+            delta = -1;
         }
     }
     else
     {
-        int dir = encoder.getCount();
-        if (prev_count != dir)
-        {
-            prev_count = dir;
-        }
-        // Serial.println(String("count:") + dir);
-        SIG_ENCODER_DELTA = dir;
-        SIG_ENCODER_DELTA = SIG_ENCODER_DELTA > 0 ? 1 : (SIG_ENCODER_DELTA < 0 ? -1 : SIG_ENCODER_DELTA);
-        encoder.clearCount();
+        delta = hw_encoder.getCount();
+        hw_encoder.clearCount(); //ensures we see only delta
     }
-    if (SIG_ENCODER_DELTA != 0)
+    if (delta != 0)
     {
+        signal_raise(&SIG_ENC_DELTA, delta, "Encoder change detected");
+        signal_raise(&SIG_ENC_COUNT, SIG_ENC_COUNT.value + delta, "Rotation change saved"); //TODO: THIS MIGHT OVERFLOW
         io_user_interaction();
     }
 }
 
 void io_touch_update()
 {
-    int _prev_touch = SIG_TOUCH;
-    if (sensor.isLeftTouched() == true)
+    int prev_state = SIG_TOUCH_DOWN.value;
+    int cur_state = 0;
+    if (hw_cap_sensor.isLeftTouched() == true)
     {
-        SIG_TOUCH = 1;
+        cur_state = 1;
     }
-    if (sensor.isMiddleTouched() == true)
+    if (hw_cap_sensor.isMiddleTouched() == true)
     {
-        SIG_TOUCH = 2;
+        cur_state = 2;
     }
-    if (sensor.isRightTouched() == true)
+    if (hw_cap_sensor.isRightTouched() == true)
     {
-        SIG_TOUCH = 3;
+        cur_state = 3;
     }
-    if (_prev_touch != SIG_TOUCH)
+    if (prev_state != cur_state)
     {
-        SIG_TOUCH_CLICK = _prev_touch;
+        signal_raise(&SIG_TOUCH_CLICK, prev_state); //Hit!
     }
-    if (SIG_TOUCH != 0 || SIG_TOUCH_CLICK > 0)
+    signal_raise(&SIG_TOUCH_DOWN, cur_state);
+    if (cur_state != 0 || SIG_TOUCH_CLICK.value > 0)
     {
         io_user_interaction();
     }
@@ -154,6 +151,7 @@ void hal_io_loop()
     //     Serial.println("SIG_ENCODER_HOLD");
     //     Serial.println(SIG_ENCODER_HOLD);
     // }
+
     io_touch_update();
     io_press_button_update();
     io_encoder_update(-1, -1);
