@@ -13,14 +13,14 @@ void DEBUG(const char *module, const char *stuff, int LEVEL = DBG_LEVEL_LOG)
     Serial.println(msg.c_str());
 }
 
-int64_t epochs()
+long epochs()
 {
-    return static_cast<int64_t>(time(NULL));
+    return static_cast<long>(time(NULL));
 }
 
-int64_t r_millis() //trustworthy time!
+long r_millis() //trustworthy time!
 {
-    return static_cast<int64_t>(time(NULL));
+    return static_cast<long>(time(NULL));
 }
 
 typedef struct schedule
@@ -88,7 +88,7 @@ typedef struct signal
     int visibility;
     int presist_behavior;
     int resolved;
-    int64_t value;
+    int value;
     int _saved_value; //to ensure not writing too many times during loop
 };
 
@@ -118,14 +118,14 @@ struct signal *signal_get(const char *name)
 }
 
 //this is NOT recommended, as it loops through all sigs
-struct signal *signal_raise(const char *name, int64_t v, const char *fallback_msg = NULL)
+struct signal *signal_raise(const char *name, int v, const char *fallback_msg = NULL)
 {
     auto sig = signal_get(name);
     return sig;
 }
 
 //call this when possible!
-struct signal *signal_raise(struct signal *sig, int64_t v, const char *fallback_msg = NULL)
+struct signal *signal_raise(struct signal *sig, int v, const char *fallback_msg = NULL)
 {
     if (sig == NULL)
     {
@@ -143,7 +143,7 @@ struct signal *signal_raise(struct signal *sig, int64_t v, const char *fallback_
     }
 }
 
-void signal_resolve(struct signal *sig, int64_t v)
+void signal_resolve(struct signal *sig, int v)
 {
     if (sig->resolved != SIGNAL_RESOLVED)
     {
@@ -183,14 +183,13 @@ void signal_presist_init()
         if (i->presist_behavior == SIGNAL_PRESIST_POWERLOSS)
         {
             _signal_store.begin("signal_store", false);
-            i->value = _signal_store.getLong64(i->name, 0);
+            i->value = _signal_store.getInt(i->name);
             i->resolved = _signal_store.getInt((String("resolved_") + i->name).c_str(), 0);
             i->_saved_value = i->value;
             DEBUG("SIGNAL", (String("Load ") + i->name + " = " + i->value).c_str());
         }
     }
     _signal_store.end();
-
     if (SIG_FLUSH_SIGS.value > 0)
     {
         signal_flush_store();
@@ -214,7 +213,7 @@ void signal_presist_update()
         else if (i->presist_behavior == SIGNAL_PRESIST_POWERLOSS && (i->value != i->_saved_value))
         {
             _signal_store.begin("signal_store", false); //preferences.h already checks _started for us
-            _signal_store.putLong64(i->name, i->value);
+            _signal_store.putInt(i->name, i->value);
             _signal_store.putInt((String("resolved_") + i->name).c_str(), i->resolved);
             i->_saved_value = i->value;
             DEBUG("SIGNAL", (String("Save ") + i->name + " = " + i->value).c_str());
@@ -229,20 +228,36 @@ Preferences _config_store;
 typedef struct config
 {
     const char *name;
-    int64_t value64;
+    int value64;
     String valueString;
 
-    int64_t old_value64;
+    int old_value64;
     String old_valueString;
 
     int changed;
 };
+
+#define CONFIG(NAME, default_64, str) struct config CFG_##NAME = {#NAME, default_64, String(str)};
 
 std::list<struct config *> configs;
 
 void config_register(struct config *conf)
 {
     configs.push_back(conf);
+}
+
+void config_flush_store()
+{
+    _config_store.begin("config_store", false);
+    _config_store.clear();
+    DEBUG("CONFIG", "Store Flushed");
+    _config_store.end();
+    for (auto i : configs)
+    {
+        i->old_valueString = String();
+        i->old_value64 = 0;
+    }
+    signal_resolve(&SIG_FLUSH_CONFIG, 0);
 }
 
 struct config *config_get(const char *name)
@@ -259,26 +274,38 @@ struct config *config_get(const char *name)
 
 void config_presist_init()
 {
+    int has_change = 0;
     //this loads stuff if previously saved
     for (auto i : configs)
     {
-        _signal_store.begin("config_store", false);
-        i->value = _signal_store.getLong64(i->name, 0);
-        i->resolved = _signal_store.getInt((String("resolved_") + i->name).c_str(), 0);
-        i->_saved_value = i->value;
-        DEBUG("SIGNAL", (String("Load ") + i->name + " = " + i->value).c_str());
-    }
-    _signal_store.end();
+        _config_store.begin("config_store", false);
+        i->value64 = _config_store.getInt((String(i->name) + "_64").c_str(), i->value64);
+        i->valueString = _config_store.getString((String(i->name) + "_str").c_str(), i->valueString);
+        i->old_value64 = _config_store.getInt((String(i->name) + "_64").c_str());
+        i->old_valueString = _config_store.getString((String(i->name) + "_str").c_str());
+        i->changed = 1;
 
-    if (SIG_FLUSH_SIGS.value > 0)
+        DEBUG("CONFIG", (String("Load ") + i->name + " V64 = " + i->value64).c_str());
+        DEBUG("CONFIG", (String("Load ") + i->name + " STR = " + i->valueString).c_str());
+        has_change = 1;
+    }
+    _config_store.end();
+
+    if (SIG_FLUSH_CONFIG.value > 0)
     {
-        signal_flush_store();
+        config_flush_store();
+    }
+
+    if (has_change)
+    {
+        signal_raise(&SIG_CONFIG_CHANGED, 1, "Configuration Changed");
     }
 }
 
 //this is very stupid right now
 void config_presist_update()
 {
+    int has_change = 0;
     for (auto i : configs)
     {
         if (i->value64 != i->old_value64 ||
@@ -286,17 +313,26 @@ void config_presist_update()
         {
             //changed
             _config_store.begin("config_store", false); //preferences.h already checks _started for us
-            _config_store.putLong64(String(i->name) + "_64", i->value64);
-            _config_store.putString(String(i->name) + "_str", i->valueString);
+            _config_store.putInt((String(i->name) + "_64").c_str(), i->value64);
+            _config_store.putString((String(i->name) + "_str").c_str(), i->valueString);
             i->old_value64 = i->value64;
             i->old_valueString = String(i->valueString);
             i->changed = 1;
-            DEBUG("CONFIG", (String("Save ") + i->name + " = " + i->value).c_str());
-            signal_raise(&SIG_CONFIG_CHANGED, 1, "Configuration Changed");
+            has_change = 1;
+            DEBUG("CONFIG", (String("Save ") + i->name + " V64 = " + i->value64).c_str());
+            DEBUG("CONFIG", (String("Save ") + i->name + " STR = " + i->valueString).c_str());
+            //ROM
+        }
+        else
+        {
+            i->changed = 0; //restore changed value in RAM
         }
     }
+    if (has_change > 0)
+    {
+        signal_raise(&SIG_CONFIG_CHANGED, 1, "Configuration Changed");
+    }
     _config_store.end();
-    return NULL;
 }
 
 void base_subsys_init()
@@ -305,11 +341,13 @@ void base_subsys_init()
     signal_register(&SIG_FLUSH_CONFIG);
     signal_register(&SIG_CONFIG_CHANGED);
     signal_presist_init();
+    config_presist_init();
 }
 
 void base_subsys_loop()
 {
     signal_presist_update();
+    config_presist_update();
 }
 
 #endif

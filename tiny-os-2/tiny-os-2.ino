@@ -9,6 +9,7 @@
 void TaskMain(void *pvParameters);
 
 SIGNAL(TESTQ, "Test signal", SIGNAL_VIZ_APP | SIGNAL_VIZ_OS | SIGNAL_VIZ_USER, SIGNAL_PRESIST_POWERLOSS, 0)
+CONFIG(DUMMY, 394, "Hello world")
 
 void setup()
 {
@@ -16,9 +17,10 @@ void setup()
 
 
   signal_register(&SIG_TESTQ);
-  signal_subsys_init();
+  config_register(&CFG_DUMMY);
+  base_subsys_init();
 
-  signal_raise(&SIG_FLUSH_SIGS, 1, NULL);
+  signal_raise(&SIG_FLUSH_SIGS, 0, NULL);
   signal_raise(&SIG_TESTQ, 392, NULL);
 
   //start os
@@ -31,7 +33,7 @@ void setup()
 void loop()
 {
   // Serial.println("Test from Loop");
-  signal_subsys_loop();
+  base_subsys_loop();
 }
 
 void TaskMain(void *pvParameters)
