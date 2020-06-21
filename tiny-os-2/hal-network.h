@@ -7,7 +7,7 @@
 #include "defs.h"
 #include "hal-io.h"
 #include "hal-fs.h"
-#include "libs/untar.h"
+#include "src/untar.h"
 
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
@@ -161,11 +161,14 @@ void _dbg_ls_dir(const char *c, int levels)
     }
 }
 
-int download_inflate(String pack_name, String url)
+int net_download_then_inflate(String pack_name, String url)
 {
     //possible streaming option https://github.com/emelianov/untarArduino/blob/master/examples/WebUpdate/WebUpdate.ino
     String temp_pack = String("/") + pack_name + "_tmp";
-    net_download_from_server(temp_pack, url);
+    if(!net_download_from_server(temp_pack, url)) {
+        Serial.println("Network Error");
+        return -1;
+    }
     _dbg_ls_dir("/", 10);
     File f = USE_FS.open(temp_pack, "r"); // Open source file
     String dest = String("/") + pack_name;
@@ -177,6 +180,7 @@ int download_inflate(String pack_name, String url)
         tar.extract();                          // Process with extraction
         f.close();
         USE_FS.remove(temp_pack.c_str());
+        Serial.println(tar._state);
         return tar._state == TAR_DONE ? 1 : -2;
     }
     else
@@ -224,8 +228,7 @@ void _internal_network_loop()
         signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_MORE_TRY);
         return;
     }
-
-    if (!wm.getWiFiIsSaved() && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
+    if ((wm.getWiFiSSID(true).length() == 0) && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
     {
         //empty
         signal_raise(&SIG_WIFI_RETRY, 0);

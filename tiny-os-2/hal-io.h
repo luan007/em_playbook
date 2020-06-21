@@ -18,7 +18,7 @@ SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNT
 CONFIG(SW_DEBOUNCE, "Switch Debounce Time (ms)", 20, "")
 CONFIG(SW_HOLD_T, "Switch Hold Duration (ms)", 3000, "")
 CONFIG(SW_SHOLD_T, "Super Long Switch Hold Duration (ms)", 8000, "")
-CONFIG(UX_AWAKE_TIME, "Controls wake time triggered by UX", 3000, "")
+CONFIG(UX_AWAKE_TIME, "Controls wake time triggered by UX", 15000, "")
 
 void io_user_interaction()
 {
