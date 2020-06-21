@@ -5,10 +5,11 @@
 #include "hal-pins.h"
 
 SIGNAL(ENC_DELTA, "Encoder Value Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
-SIGNAL(ENC_COUNT, "Encoder Count Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0) //this is handly
-SIGNAL(SW_DOWN, "Encoder Button Pressed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)    //records button down
-SIGNAL(SW_UP, "Encoder Button Released", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)     //records button down
-SIGNAL(SW_HOLD, "Long Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0) //records button down
+SIGNAL(ENC_COUNT, "Encoder Count Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)           //this is handly
+SIGNAL(SW_DOWN, "Timestamp of Encoder Button Pressed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0) //records button down
+SIGNAL(SW_UP, "Timestamp Encoder Button Released", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)     //records button down
+SIGNAL(SW_CLICK, "Clicked", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)                     //records button down
+SIGNAL(SW_HOLD, "Long Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)           //records button down
 SIGNAL(TOUCH_DOWN, "Touched", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TOUCH_CLICK, "Touch Click", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
 SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
@@ -83,20 +84,22 @@ void io_touch_update()
     }
 }
 
-void io_press_button_update()
+void io_sw_update()
 {
-    SIG_ENCODER_CLICK = 0;
-    SIG_ENCODER_HOLD = 0;
-    if (SIG_ENCODER_PRESS == 0 && digitalRead(SW) == 0)
+    int sw_state = digitalRead(SW);
+    if (SIG_SW_DOWN.value == 0 && sw_state == 0)
     {
-        SIG_ENCODER_PRESS = millis();
-        __SIG_ENCODER_HOLD__triggered = 0;
+        //pressed, record
+        signal_raise(&SIG_SW_DOWN, r_millis()); //trigger
     }
-    if (digitalRead(SW) == 1)
+    if (sw_state == 1)
     {
-        if (SIG_ENCODER_PRESS > 0 && (millis() - SIG_ENCODER_PRESS) > 10)
+        int _press_start = SIG_SW_DOWN.value;
+        signal_raise(&SIG_SW_DOWN, 0);        //release trigger
+        signal_raise(&SIG_SW_UP, r_millis()); //duration
+        if ((r_millis() - _press_start) > SW_DEBOUNCE)
         {
-            SIG_ENCODER_CLICK = 1;
+            signal_raise(&SIG_SW_CLICK, 1);
         }
         SIG_ENCODER_PRESS = 0;
     }

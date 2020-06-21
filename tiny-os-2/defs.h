@@ -1,6 +1,6 @@
 #ifndef _GUARD_H_DEF
 #define _GUARD_H_DEF
-
+//TODO: note, wear levelling should be considered
 #include "time.h"
 #include <list>
 #include <Preferences.h>
@@ -22,8 +22,6 @@ int64_t r_millis() //trustworthy time!
 {
     return static_cast<int64_t>(time(NULL));
 }
-
-Preferences _signal_store;
 
 typedef struct schedule
 {
@@ -82,6 +80,7 @@ void schedule_recompute_all()
 #define SIGNAL_PRESIST_POWERLOSS 2
 #define SIGNAL_PRESIST_ONCE_AUTO_ZERO 3
 
+Preferences _signal_store;
 typedef struct signal
 {
     const char *name;
@@ -96,6 +95,8 @@ typedef struct signal
 #define SIGNAL(NAME, default_msg, visibility, presist_behavior, default_value) struct signal SIG_##NAME = {#NAME, default_msg, visibility, presist_behavior, 0, default_value};
 
 SIGNAL(FLUSH_SIGS, "Flush Store", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
+SIGNAL(FLUSH_CONFIG, "Flush Config", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
+SIGNAL(CONFIG_CHANGED, "Config Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
 
 std::list<struct signal *> signals;
 
@@ -200,7 +201,6 @@ void signal_presist_init()
 //ensures correct presist_behavior
 void signal_presist_update()
 {
-    bool _store_inited = false;
     for (auto i : signals)
     {
         if (i->presist_behavior == SIGNAL_PRESIST_ONCE)
@@ -223,13 +223,91 @@ void signal_presist_update()
     _signal_store.end();
 }
 
-void signal_subsys_init()
+//always stored value with some versatility
+//i.e capable of storing strings and so on
+Preferences _config_store;
+typedef struct config
+{
+    const char *name;
+    int64_t value64;
+    String valueString;
+
+    int64_t old_value64;
+    String old_valueString;
+
+    int changed;
+};
+
+std::list<struct config *> configs;
+
+void config_register(struct config *conf)
+{
+    configs.push_back(conf);
+}
+
+struct config *config_get(const char *name)
+{
+    for (auto i : configs)
+    {
+        if (strcmp(i->name, name) == 0)
+        {
+            return i;
+        }
+    }
+    return NULL;
+}
+
+void config_presist_init()
+{
+    //this loads stuff if previously saved
+    for (auto i : configs)
+    {
+        _signal_store.begin("config_store", false);
+        i->value = _signal_store.getLong64(i->name, 0);
+        i->resolved = _signal_store.getInt((String("resolved_") + i->name).c_str(), 0);
+        i->_saved_value = i->value;
+        DEBUG("SIGNAL", (String("Load ") + i->name + " = " + i->value).c_str());
+    }
+    _signal_store.end();
+
+    if (SIG_FLUSH_SIGS.value > 0)
+    {
+        signal_flush_store();
+    }
+}
+
+//this is very stupid right now
+void config_presist_update()
+{
+    for (auto i : configs)
+    {
+        if (i->value64 != i->old_value64 ||
+            !i->valueString.equals(i->old_valueString))
+        {
+            //changed
+            _config_store.begin("config_store", false); //preferences.h already checks _started for us
+            _config_store.putLong64(String(i->name) + "_64", i->value64);
+            _config_store.putString(String(i->name) + "_str", i->valueString);
+            i->old_value64 = i->value64;
+            i->old_valueString = String(i->valueString);
+            i->changed = 1;
+            DEBUG("CONFIG", (String("Save ") + i->name + " = " + i->value).c_str());
+            signal_raise(&SIG_CONFIG_CHANGED, 1, "Configuration Changed");
+        }
+    }
+    _config_store.end();
+    return NULL;
+}
+
+void base_subsys_init()
 {
     signal_register(&SIG_FLUSH_SIGS);
+    signal_register(&SIG_FLUSH_CONFIG);
+    signal_register(&SIG_CONFIG_CHANGED);
     signal_presist_init();
 }
 
-void signal_subsys_loop()
+void base_subsys_loop()
 {
     signal_presist_update();
 }
