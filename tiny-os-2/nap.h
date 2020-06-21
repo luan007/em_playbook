@@ -2,44 +2,24 @@
 #define _GUARD_H_NAP
 
 #include "esp32/ulp.h"
-#include "ulp_main.h"
+#include "ulp/ulp_main.h"
 #include "ulptool.h"
 #include "driver/rtc_io.h"
 #include "driver/gpio.h"
-#include "io.h"
-
-#define NAP_AFTER_INTERACTION 30000
-
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[] asm("_binary_ulp_main_bin_end");
 
 uint32_t nap_next_wake = 60 * 1000; //1min at a time
 
-void nap_schedule_next_wake()
-{
-    //TBD: change this
-    esp_sleep_enable_timer_wakeup(1000 * 1000 * 15);
-}
-
-void nap_purpose_sleep_duration(uint32_t next_wake) {
-    if(next_wake < nap_next_wake) {
-        nap_next_wake = next_wake;
-    }
-}
-
 //kickstart ULP
-void nap_enter_sleep()
+void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
 {
-
     rtc_gpio_init(GPIO_NUM_26);
     rtc_gpio_set_direction(GPIO_NUM_26, RTC_GPIO_MODE_INPUT_ONLY);
-
     rtc_gpio_init(GPIO_NUM_27);
     rtc_gpio_set_direction(GPIO_NUM_27, RTC_GPIO_MODE_INPUT_ONLY);
-
     rtc_gpio_init(GPIO_NUM_13);
     rtc_gpio_set_direction(GPIO_NUM_13, RTC_GPIO_MODE_INPUT_ONLY);
-
     rtc_gpio_init(GPIO_NUM_14);
     rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_INPUT_ONLY);
 
@@ -54,40 +34,41 @@ void nap_enter_sleep()
     if (err)
         Serial.println("Error Starting ULP Coprocessor");
 
-    nap_schedule_next_wake();
+    esp_sleep_enable_timer_wakeup(WAKE_DUR_SECONDS * 1000 * 15);
+    // nap_schedule_next_wake();
     ulp_set_wakeup_period(0, 100);
 
     Serial.println("Entering Sleep Now.");
     esp_deep_sleep_start();
 }
 
-void _wake_from_ulp()
-{
-    if ((ulp__touch & 0xFFFF) > 0)
-    {
-        Serial.println("from touch");
-        io_touch_update();
-    }
-    else if ((ulp__switch & 0xFFFF) > 0)
-    {
-        Serial.println("from sw");
-        SIG_ENCODER_PRESS = -10;
-    }
-    else if ((ulp__encoder_state & 0xFFFF) != (ulp__prev_encoder_state & 0xFFFF))
-    {
-        Serial.println("from encoder");
-        io_encoder_update(ulp__encoder_state, ulp__prev_encoder_state);
-    }
-    SIG_WAKE_BY_INPUT = 1;
-    INTERACTION_TIMESTAMP = 1;
-}
+// void _wake_from_ulp()
+// {
+//     if ((ulp__touch & 0xFFFF) > 0)
+//     {
+//         Serial.println("from touch");
+//         io_touch_update();
+//     }
+//     else if ((ulp__switch & 0xFFFF) > 0)
+//     {
+//         Serial.println("from sw");
+//         SIG_ENCODER_PRESS = -10;
+//     }
+//     else if ((ulp__encoder_state & 0xFFFF) != (ulp__prev_encoder_state & 0xFFFF))
+//     {
+//         Serial.println("from encoder");
+//         io_encoder_update(ulp__encoder_state, ulp__prev_encoder_state);
+//     }
+//     SIG_WAKE_BY_INPUT = 1;
+//     INTERACTION_TIMESTAMP = 1;
+// }
 
-void _wake_from_timer()
-{
-    SIG_WAKE_BY_TIMER = 1;
-    Serial.println("Woke from Timer");
-    INTERACTION_TIMESTAMP = NAP_AFTER_INTERACTION / 2; //you have 2 sec to op - ready to sleep actually
-}
+// void _wake_from_timer()
+// {
+//     SIG_WAKE_BY_TIMER = 1;
+//     Serial.println("Woke from Timer");
+//     INTERACTION_TIMESTAMP = NAP_AFTER_INTERACTION / 2; //you have 2 sec to op - ready to sleep actually
+// }
 
 void nap_wake()
 {
@@ -98,11 +79,11 @@ void nap_wake()
     {
     case ESP_SLEEP_WAKEUP_TIMER:
         Serial.println("Wakeup caused by timer");
-        _wake_from_timer();
+        // _wake_from_timer();
         break;
     case ESP_SLEEP_WAKEUP_ULP:
         Serial.println("Wakeup caused by ULP program");
-        _wake_from_ulp();
+        // _wake_from_ulp();
         break;
     default:
         Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
@@ -110,31 +91,4 @@ void nap_wake()
     }
 }
 
-int nap_check_sleep_condition()
-{
-    // //no user interaction for sometime
-    if (INTERACTION_TIMESTAMP == 0)
-    {
-        // compute scheduled update
-        return 1;
-    }
-    if (INTERACTION_TIMESTAMP > 0 && (millis() - INTERACTION_TIMESTAMP > NAP_AFTER_INTERACTION))
-    {
-        return 1;
-    }
-    return 0;
-}
-
-void nap_loop()
-{
-    //action
-    if (SIG_GOING_SLEEP > 0)
-    {
-        nap_enter_sleep();
-        //nothing comes later.
-    }
-    //check sig
-    SIG_GOING_SLEEP = 0; //clear this flag
-    SIG_GOING_SLEEP = nap_check_sleep_condition();
-}
 #endif

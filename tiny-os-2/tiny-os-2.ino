@@ -4,17 +4,13 @@
 */
 #define CPU 1
 #include "defs.h"
-#include "nap.h";
+#include "nap.h"
 
 void TaskMain(void *pvParameters);
 
 void setup()
 {
   Serial.begin(115200);
-
-
-  
-
 
   xTaskCreatePinnedToCore(
       TaskMain, "TaskMain",
@@ -23,7 +19,7 @@ void setup()
 
 void loop()
 {
-  Serial.println("Test from Loop");
+  // Serial.println("Test from Loop");
 }
 
 void TaskMain(void *pvParameters)
@@ -31,7 +27,7 @@ void TaskMain(void *pvParameters)
   (void)pvParameters;
   while (1)
   {
-    Serial.println("Test from Seperate Task");
+    // Serial.println("Test from Seperate Task");
     vTaskDelay(100);
   }
 }
