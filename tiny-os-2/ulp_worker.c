@@ -37,15 +37,15 @@ void entry()
     else if (_prev_encoder_state != _encoder_state)
     {
         wake();
-        WRITE_RTC_FIELD(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN, 0);
         halt();
     }
+
     if (_switch == debounce_limit || _touch == debounce_limit)
     {
         wake();
-        WRITE_RTC_FIELD(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN, 0);
         halt();
     }
+    halt();
 }
 
 #endif

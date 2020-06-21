@@ -6,6 +6,8 @@
 #include "defs.h"
 #include "nap.h"
 #include "hal-io.h"
+#include "hal-fs.h"
+#include "hal-network.h"
 
 void TaskMain(void *pvParameters);
 
@@ -14,39 +16,43 @@ void TaskMain(void *pvParameters);
 
 void setup()
 {
+  REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN); //stop ULP immediately
   Serial.begin(115200);
 
-  hal_io_setup();
+  DEBUG("BOOT", String(millis()).c_str()); //ms
+
+
+  hal_io_sig_register();
+  hal_fs_sig_register();
+  hal_network_sig_register();
   base_subsys_init();
 
-  nap_init();
+
+  hal_io_setup();
+  hal_fs_setup();
+  nap_wake_sequence();
 
 
-  // signal_raise(&SIG_FLUSH_SIGS, 0, NULL);
-  // signal_raise(&SIG_TESTQ, 392, NULL);
-
-  //start os
+  //let us multi task
   xTaskCreatePinnedToCore(
-      TaskMain, "TaskMain",
-      1024, NULL, 2, NULL, CPU);
-
+      HAL_IO_LOOP, "HAL_IO_LOOP",
+      10240, NULL, 2, NULL, CPU);
 }
 
 void loop()
 {
-  //ready to sleep
-  // Serial.println("Test from Loop");
-  hal_io_loop();
   base_subsys_loop();
   nap_loop();
+  //ready to sleep
+  // Serial.println("Test from Loop");
 }
 
-void TaskMain(void *pvParameters)
+void HAL_IO_LOOP(void *pvParameters)
 {
   (void)pvParameters;
   while (1)
   {
-    // Serial.println("Test from Seperate Task");
-    vTaskDelay(100);
+    hal_io_loop();
+    vTaskDelay(15); //not too frequent
   }
 }

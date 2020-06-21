@@ -9,9 +9,6 @@
 #include "defs.h"
 #include "hal-io.h"
 
-#define WAKE_REASON_ULP 2
-#define WAKE_REASON_NONE 1
-#define WAKE_REASON_TIMER 3
 
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[] asm("_binary_ulp_main_bin_end");
@@ -29,20 +26,20 @@ void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
     rtc_gpio_init(GPIO_NUM_14);
     rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_INPUT_ONLY);
 
-    esp_sleep_enable_ulp_wakeup();
-
     ulp__switch = 0;
     ulp__touch = 0;
     ulp__encoder_state = 0;
     ulp__prev_encoder_state = 255;
     esp_err_t err = ulptool_load_binary(0, ulp_main_bin_start, (ulp_main_bin_end - ulp_main_bin_start) / sizeof(uint32_t));
+
+    DEBUG("NAP", (String("NEXT WAKE POINT ") + (WAKE_DUR_SECONDS) + " [MS]").c_str());
+    esp_sleep_enable_timer_wakeup(WAKE_DUR_SECONDS * 1000);
+    // nap_schedule_next_wake();
+    esp_sleep_enable_ulp_wakeup();
+    ulp_set_wakeup_period(0, 50); // needs to be fast in order to get correct result
     err = ulp_run((&ulp_entry - RTC_SLOW_MEM) / sizeof(uint32_t));
     if (err)
         Serial.println("Error Starting ULP Coprocessor");
-
-    esp_sleep_enable_timer_wakeup(WAKE_DUR_SECONDS * 1000 * 15);
-    // nap_schedule_next_wake();
-    ulp_set_wakeup_period(0, 100);
 
     Serial.println("Entering Sleep Now.");
     esp_deep_sleep_start();
@@ -56,7 +53,7 @@ void nap_loop()
         nap_enter_sleep(SIG_NEXT_WAKE.value); //TODO: THIS IS STILL WRONG
         //YOU SHOULD NEVER GET HERE (HALT)
     }
-    if (millis() > SIG_NEXT_SLEEP.value)
+    if (millis() > SIG_NEXT_SLEEP.value && SIG_NO_SLEEP.value == 0)
     {
         signal_raise(&SIG_BEFORE_SLEEP, 1);
     }
@@ -68,19 +65,18 @@ void nap_read_input_from_ulp()
     {
         io_touch_update();
     }
-    else if ((ulp__switch & 0xFFFF) > 0)
+    if ((ulp__switch & 0xFFFF) > 0)
     {
         io_sw_update(); //TODO: THIS MIGHT BE WRONG
     }
-    else if ((ulp__encoder_state & 0xFFFF) != (ulp__prev_encoder_state & 0xFFFF))
+    if ((ulp__encoder_state & 0xFFFF) != (ulp__prev_encoder_state & 0xFFFF))
     {
         io_encoder_update(ulp__encoder_state, ulp__prev_encoder_state);
     }
 }
 
-void nap_init()
+void nap_wake_sequence()
 {
-    REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
     switch (wakeup_reason)
@@ -94,6 +90,7 @@ void nap_init()
         break;
     default:
         signal_raise(&SIG_WAKE_REASON, WAKE_REASON_NONE, "Wake from RESET or Other");
+        signal_raise(&SIG_TIME_VALID, 0); //sorry time!
         break;
     }
 }

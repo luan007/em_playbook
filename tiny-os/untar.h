@@ -57,6 +57,7 @@ public:
 	void onFile(cbTarProcess cb); // Sets callback that executed on each file in archive.
 	void onData(cbTarData cb);	  // Sets callback that executed on each 512 bytes data block in file
 	void onEof(cbTarEof cb);	  // Sets callback that executed on each file end
+	tar_state _state = TAR_IDLE;
 #endif
 private:
 	char *pathprefix;					   // Stores filename prefix to be added to each file
@@ -78,7 +79,6 @@ private:
 	File *f = NULL;
 	size_t bytes_read;
 	int filesize;
-	tar_state _state = TAR_IDLE;
 };
 #ifdef TAR_CALLBACK
 template <typename T>
@@ -251,6 +251,7 @@ void Tar<T>::extract()
 #endif
 	for (;;)
 	{
+		taskYIELD();
 		if (bytes_read > 0)
 		{
 			bytes_read += source->readBytes(buff, 512 - bytes_read);
@@ -368,6 +369,7 @@ void Tar<T>::extract()
 		}
 		while (filesize > 0)
 		{
+			taskYIELD();
 #ifndef TAR_SILENT
 			Serial.print(".");
 #endif
@@ -394,6 +396,8 @@ void Tar<T>::extract()
 					_state = TAR_WRITE_ERROR;
 					f->close();
 					f = NULL;
+					//PATCHED HERE
+					return;
 				}
 			}
 #ifdef TAR_CALLBACK

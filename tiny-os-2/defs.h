@@ -65,6 +65,10 @@ void schedule_recompute_all()
     }
 }
 
+#define WAKE_REASON_ULP 2
+#define WAKE_REASON_NONE 1
+#define WAKE_REASON_TIMER 3
+
 //this is the worst, things are broken, errmsg must be printed
 #define SIGNAL_VIZ_IMMEDIATE_FALLBACK (1 << 4)
 //if not resolved, this msg will be shown as text
@@ -102,10 +106,12 @@ typedef struct signal
 SIGNAL(FLUSH_SIGS, "Flush Store", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(FLUSH_CONFIG, "Flush Config", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(CONFIG_CHANGED, "Config Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
+SIGNAL(NO_SLEEP, "When this is on, the system cannot goto sleep (during update or network activity)", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(NEXT_WAKE, "Signal for saving next wake", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 5 * 1000) //min wake time 5000ms
 SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 10) //min sleep right after 10ms
 SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(TIME_VALID, "time valid from powerloss", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 
 std::list<struct signal *> signals;
 
@@ -361,10 +367,12 @@ void config_presist_update()
 
 void base_subsys_init()
 {
+    signal_register(&SIG_NO_SLEEP);
     signal_register(&SIG_WAKE_REASON);
     signal_register(&SIG_NEXT_WAKE);
     signal_register(&SIG_FLUSH_SIGS);
     signal_register(&SIG_FLUSH_CONFIG);
+    signal_register(&SIG_TIME_VALID);
     signal_register(&SIG_CONFIG_CHANGED);
     signal_register(&SIG_BEFORE_SLEEP);
     signal_presist_init();
