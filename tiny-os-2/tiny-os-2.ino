@@ -17,9 +17,10 @@ void setup()
   Serial.begin(115200);
 
   hal_io_setup();
+  base_subsys_init();
+
   nap_init();
 
-  base_subsys_init();
 
   // signal_raise(&SIG_FLUSH_SIGS, 0, NULL);
   // signal_raise(&SIG_TESTQ, 392, NULL);
@@ -33,6 +34,7 @@ void setup()
 
 void loop()
 {
+  //ready to sleep
   // Serial.println("Test from Loop");
   hal_io_loop();
   base_subsys_loop();

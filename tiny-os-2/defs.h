@@ -102,6 +102,10 @@ typedef struct signal
 SIGNAL(FLUSH_SIGS, "Flush Store", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(FLUSH_CONFIG, "Flush Config", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(CONFIG_CHANGED, "Config Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
+SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(NEXT_WAKE, "Signal for saving next wake", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 5 * 1000) //min wake time 5000ms
+SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 10) //min sleep right after 10ms
+SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 
 std::list<struct signal *> signals;
 
@@ -357,9 +361,12 @@ void config_presist_update()
 
 void base_subsys_init()
 {
+    signal_register(&SIG_WAKE_REASON);
+    signal_register(&SIG_NEXT_WAKE);
     signal_register(&SIG_FLUSH_SIGS);
     signal_register(&SIG_FLUSH_CONFIG);
     signal_register(&SIG_CONFIG_CHANGED);
+    signal_register(&SIG_BEFORE_SLEEP);
     signal_presist_init();
     config_presist_init();
 }

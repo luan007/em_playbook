@@ -2,7 +2,7 @@
 #define _GUARD_H_NAP
 
 #include "esp32/ulp.h"
-#include "ulp/ulp_main.h"
+#include "ulp_main.h"
 #include "ulptool.h"
 #include "driver/rtc_io.h"
 #include "driver/gpio.h"
@@ -13,25 +13,10 @@
 #define WAKE_REASON_NONE 1
 #define WAKE_REASON_TIMER 3
 
-SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
-SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
-
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[] asm("_binary_ulp_main_bin_end");
 
-uint32_t nap_next_wake = 60 * 1000; //1min at a time
-
 //kickstart ULP
-
-void nap_loop()
-{
-    if (SIG_BEFORE_SLEEP.value > 0)
-    {
-        //ready to sleep
-        nap_enter_sleep(nap_next_wake); //TODO: THIS IS STILL WRONG
-        //YOU SHOULD NEVER GET HERE (HALT)
-    }
-}
 
 void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
 {
@@ -63,6 +48,20 @@ void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
     esp_deep_sleep_start();
 }
 
+void nap_loop()
+{
+    if (SIG_BEFORE_SLEEP.value > 0)
+    {
+        //ready to sleep
+        nap_enter_sleep(SIG_NEXT_WAKE.value); //TODO: THIS IS STILL WRONG
+        //YOU SHOULD NEVER GET HERE (HALT)
+    }
+    if (millis() > SIG_NEXT_SLEEP.value)
+    {
+        signal_raise(&SIG_BEFORE_SLEEP, 1);
+    }
+}
+
 void nap_read_input_from_ulp()
 {
     if ((ulp__touch & 0xFFFF) > 0)
@@ -81,9 +80,6 @@ void nap_read_input_from_ulp()
 
 void nap_init()
 {
-    signal_register(&SIG_WAKE_REASON);
-    signal_register(&SIG_BEFORE_SLEEP);
-
     REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
