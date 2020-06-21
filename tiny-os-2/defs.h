@@ -10,6 +10,8 @@
 
 void DEBUG(const char *module, const char *stuff, int LEVEL = DBG_LEVEL_LOG)
 {
+    if (LEVEL < 0)
+        return;
     auto msg = String("[DBG] ") + module + " : " + stuff;
     Serial.println(msg.c_str());
 }
@@ -99,6 +101,7 @@ typedef struct signal
     int resolved;
     int value;
     int _saved_value; //to ensure not writing too many times during loop
+    int debug_level;
 };
 
 #define SIGNAL(NAME, default_msg, visibility, presist_behavior, default_value) struct signal SIG_##NAME = {#NAME, default_msg, visibility, presist_behavior, 0, default_value};
@@ -109,9 +112,10 @@ SIGNAL(CONFIG_CHANGED, "Config Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUT
 SIGNAL(NO_SLEEP, "When this is on, the system cannot goto sleep (during update or network activity)", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(NEXT_WAKE, "Signal for saving next wake", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 5 * 1000) //min wake time 5000ms
-SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 10) //min sleep right after 10ms
+SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 10)   //min sleep right after 10ms
 SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TIME_VALID, "time valid from powerloss", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
+SIGNAL(FAC_RESET, "wipe everything", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
 
 std::list<struct signal *> signals;
 
@@ -154,7 +158,7 @@ struct signal *signal_raise(struct signal *sig, int v, const char *fallback_msg 
         {
             sig->fallback_msg = fallback_msg;
         }
-        DEBUG("SIGNAL", (String("Raised ") + sig->name + " = " + sig->value).c_str());
+        DEBUG("SIGNAL", (String("Raised ") + sig->name + " = " + sig->value).c_str(), sig->debug_level);
     }
 }
 
@@ -165,7 +169,7 @@ void signal_resolve(struct signal *sig, int v)
         sig->resolved = SIGNAL_RESOLVED;
         sig->value = v;
         sig->fallback_msg = NULL; //release? still don't quite understand NULL though.
-        DEBUG("SIGNAL", (String("Resolve ") + sig->name).c_str());
+        DEBUG("SIGNAL", (String("Resolve ") + sig->name).c_str(), sig->debug_level);
     }
 }
 
@@ -309,10 +313,13 @@ void config_presist_init()
     for (auto i : configs)
     {
         _config_store.begin("config_store", false);
-        i->value64 = _config_store.getInt((String(i->name) + "_64").c_str(), i->value64);
-        i->valueString = _config_store.getString((String(i->name) + "_str").c_str(), i->valueString);
-        i->old_value64 = _config_store.getInt((String(i->name) + "_64").c_str());
-        i->old_valueString = _config_store.getString((String(i->name) + "_str").c_str());
+        if (SIG_FLUSH_CONFIG.value <= 0)
+        {
+            i->value64 = _config_store.getInt((String(i->name) + "_64").c_str(), i->value64);
+            i->valueString = _config_store.getString((String(i->name) + "_str").c_str(), i->valueString);
+            i->old_value64 = _config_store.getInt((String(i->name) + "_64").c_str());
+            i->old_valueString = _config_store.getString((String(i->name) + "_str").c_str());
+        }
         i->changed = 1;
 
         DEBUG("CONFIG", (String("Load ") + i->name + " V64 = " + i->value64).c_str());
@@ -367,6 +374,7 @@ void config_presist_update()
 
 void base_subsys_init()
 {
+    signal_register(&SIG_FAC_RESET);
     signal_register(&SIG_NO_SLEEP);
     signal_register(&SIG_WAKE_REASON);
     signal_register(&SIG_NEXT_WAKE);
@@ -383,6 +391,13 @@ void base_subsys_loop()
 {
     signal_presist_update(SIG_BEFORE_SLEEP.value > 0);
     config_presist_update();
+}
+
+//note, this will write stuff into nvs & resolve stuff
+void base_force_tick() {
+    signal_presist_update(true);
+    config_presist_update();
+    DEBUG("BASE", "Force tick once");
 }
 
 #endif

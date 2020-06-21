@@ -22,9 +22,11 @@ void hal_fs_setup()
 {
     if (SIG_FORMAT_FS.value > 0)
     {
+        DEBUG("FS", "Formating Disk");
         USE_FS.format();
         signal_raise(&SIG_FORMAT_FS, 0);
         signal_raise(&SIG_FS_MSG, FS_MSG_NEW_DISK);
+        DEBUG("FS", "Disk Formatted");
     }
     if (!USE_FS.begin())
     {

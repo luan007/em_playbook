@@ -251,7 +251,6 @@ void Tar<T>::extract()
 #endif
 	for (;;)
 	{
-		taskYIELD();
 		if (bytes_read > 0)
 		{
 			bytes_read += source->readBytes(buff, 512 - bytes_read);
@@ -369,7 +368,6 @@ void Tar<T>::extract()
 		}
 		while (filesize > 0)
 		{
-			taskYIELD();
 #ifndef TAR_SILENT
 			Serial.print(".");
 #endif

@@ -10,12 +10,14 @@ SIGNAL(SW_DOWN, "Timestamp of Encoder Button Pressed", SIGNAL_VIZ_ALL, SIGNAL_PR
 SIGNAL(SW_UP, "Timestamp Encoder Button Released", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)     //records button down
 SIGNAL(SW_CLICK, "Clicked", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)                     //records button down
 SIGNAL(SW_HOLD, "Long Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)           //records button down
+SIGNAL(SW_SHOLD, "SUPER LONG Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)    //records button down
 SIGNAL(TOUCH_DOWN, "Touched", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TOUCH_CLICK, "Touch Click", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
 SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 
 CONFIG(SW_DEBOUNCE, "Switch Debounce Time (ms)", 20, "")
 CONFIG(SW_HOLD_T, "Switch Hold Duration (ms)", 3000, "")
+CONFIG(SW_SHOLD_T, "Super Long Switch Hold Duration (ms)", 8000, "")
 CONFIG(UX_AWAKE_TIME, "Controls wake time triggered by UX", 3000, "")
 
 void io_user_interaction()
@@ -100,6 +102,7 @@ void io_touch_update()
 }
 
 int _hold_flag = 0;
+int _shold_flag = 0;
 void io_sw_update()
 {
     int sw_state = digitalRead(SW);
@@ -117,15 +120,21 @@ void io_sw_update()
         {
             signal_raise(&SIG_SW_CLICK, 1);
         }
-        _hold_flag = 0; //reset hold detection
+        _hold_flag = 0;  //reset hold detection
+        _shold_flag = 0; //reset hold detection
     }
 
-    if (sw_state == 0 && _hold_flag == 0)
+    if (sw_state == 0)
     {
-        if ((millis() - SIG_SW_DOWN.value) > CFG_SW_HOLD_T.value64)
+        if (_hold_flag == 0 && (millis() - SIG_SW_DOWN.value) > CFG_SW_HOLD_T.value64)
         {
             _hold_flag = 1;
             signal_raise(&SIG_SW_HOLD, 1);
+        }
+        if (_shold_flag == 0 && (millis() - SIG_SW_DOWN.value) > CFG_SW_SHOLD_T.value64)
+        {
+            _shold_flag = 1;
+            signal_raise(&SIG_SW_SHOLD, 1);
         }
     }
     if (sw_state == 0)
@@ -148,6 +157,7 @@ void hal_io_sig_register()
     config_register(&CFG_UX_AWAKE_TIME);
     config_register(&CFG_SW_DEBOUNCE);
     config_register(&CFG_SW_HOLD_T);
+    config_register(&CFG_SW_SHOLD_T);
 }
 
 void hal_io_setup()

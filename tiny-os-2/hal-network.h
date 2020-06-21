@@ -7,7 +7,7 @@
 #include "defs.h"
 #include "hal-io.h"
 #include "hal-fs.h"
-#include "untar.h"
+#include "libs/untar.h"
 
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
@@ -20,8 +20,9 @@ const int daylightOffset_sec = 3600;
 #define WIFI_STATE_CONNECTED 1
 #define WIFI_STATE_CONNECTING -1
 #define WIFI_REQ_AP_CONFIG -999
+#define WIFI_PORTAL_TIMEOUT -1
 
-SIGNAL(WIFI_REQ, "request wifi access", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(WIFI_REQ, "request wifi access", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, -1)
 SIGNAL(WIFI_WIPE, "wipe settings", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(PORTAL_STATE, "portal status", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0) //0 = shutdown, 1 = alive
 SIGNAL(WIFI_STATE, "wifi status", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
@@ -31,6 +32,7 @@ CONFIG(UPDATE_INTERVAL, "update interval", 30, "")
 CONFIG(SERVER_ROOT, "server root", 0, "http://192.168.9.104:9898/")
 CONFIG(MAX_CON_DUE, "singular con try", 5000, "") //give 5 seconds and die
 CONFIG(MAX_CON_TRY, "max net retries", 5, "")
+CONFIG(MAX_AP_TIME, "max app runtime", 1000 * 120, "") //120sec
 
 #define ESP_getChipId() ((uint32_t)ESP.getEfuseMac())
 
@@ -192,27 +194,9 @@ int ensure_time()
     signal_raise(&SIG_TIME_VALID, 1);
 }
 
-int ensure_network()
-{
-    wm.getWiFiIsSaved();
+bool wifi_blocking_sleep = false;
 
-    if (WiFi.status() == WL_CONNECTED)
-        return 1;
-
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-    wm.setcallback(configModeCallback);
-    wm.setConnectTimeout(30);                  // how long to try to connect for before continuing
-    wm.setConfigPortalTimeout(0);              // auto close configportal after n seconds
-    bool res = wm.autoConnect("🔧EMPaper_CFG"); // password protected ap
-    if (!res)
-    {
-        return -1;
-    }
-    ensure_time();
-    return 1;
-}
-
-void hal_network_loop()
+void _internal_network_loop()
 {
     if (SIG_WIFI_WIPE.value == 1)
     {
@@ -224,28 +208,35 @@ void hal_network_loop()
 
     if (WiFi.status() == WL_CONNECTED)
     {
+        if (SIG_WIFI_STATE.value != WIFI_STATE_CONNECTED)
+        {
+            //upon connection
+            ensure_time();
+        }
         signal_raise(&SIG_WIFI_STATE, WIFI_STATE_CONNECTED);
         signal_raise(&SIG_WIFI_RETRY, 0);
         return; //seems nothing to do
     }
 
-    if (!wm.getWiFiIsSaved())
-    {
-        //empty
-        signal_raise(&SIG_WIFI_RETRY, 0);
-        signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_CONFIG);
-        return;
-    }
-
-    if (SIG_WIFI_RETRY.value >= CFG_MAX_CON_TRY.value64)
+    if (SIG_WIFI_RETRY.value > CFG_MAX_CON_TRY.value64)
     {
         //give up!
         signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_MORE_TRY);
         return;
     }
 
+    if (!wm.getWiFiIsSaved() && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
+    {
+        //empty
+        signal_raise(&SIG_WIFI_RETRY, 0);
+        signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_CONFIG);
+        wifi_blocking_sleep = false;
+        return;
+    }
+
     if (SIG_WIFI_REQ.value > 0) // measure time
     {
+        wifi_blocking_sleep = true;
         if (millis() - SIG_WIFI_REQ.value < 10000)
         {
             signal_raise(&SIG_WIFI_STATE, WIFI_STATE_CONNECTING);
@@ -267,26 +258,66 @@ void hal_network_loop()
     else if (SIG_WIFI_REQ.value == 0)
     {
         //eject
-        wm.stopConfigPortal();
-        WiFi.disconnect();
-        signal_raise(&SIG_PORTAL_STATE, 0);
+        if (SIG_PORTAL_STATE.value > 0)
+        {
+            wm.stopConfigPortal();
+            signal_raise(&SIG_PORTAL_STATE, 0);
+        }
+        else
+        {
+            WiFi.disconnect();
+            signal_raise(&SIG_WIFI_STATE, WIFI_STATE_IDLE);
+        }
         //network abundoned
+        wifi_blocking_sleep = false;
         return;
     }
     else if (SIG_WIFI_REQ.value == WIFI_REQ_AP_CONFIG)
     {
+        wifi_blocking_sleep = true;
         //start auto configurator
         if (SIG_PORTAL_STATE.value == 0)
         {
             wm.setConfigPortalBlocking(false);
-            wm.startConfigPortal("🔧EMPaper_CFG");
+            wm.startConfigPortal("[ EMPaper_CFG ]");
+            signal_raise(&SIG_WIFI_RETRY, 0);
             signal_raise(&SIG_PORTAL_STATE, millis()); //sometime later, I'd kill myself
         }
-        else {
+        else if (SIG_PORTAL_STATE.value > 0)
+        {
             //maintain
             wm.process();
+            if (millis() - SIG_PORTAL_STATE.value > CFG_MAX_AP_TIME.value64)
+            {
+                wm.stopConfigPortal();
+                // WiFi.disconnect();
+                signal_raise(&SIG_PORTAL_STATE, WIFI_PORTAL_TIMEOUT);
+                //I'll sleep
+            }
+        }
+        else
+        {
+            wifi_blocking_sleep = false;
+            //do nothing, wait other peer to give up (like renderer)
         }
     }
+}
+
+#define SLEEP_BITMASK_WIFI 1
+void hal_network_loop()
+{
+    wifi_blocking_sleep = false;
+    _internal_network_loop();
+    int sleep_flag = SIG_NO_SLEEP.value;
+    if (wifi_blocking_sleep)
+    {
+        bitSet(sleep_flag, SLEEP_BITMASK_WIFI);
+    }
+    else
+    {
+        bitClear(sleep_flag, SLEEP_BITMASK_WIFI);
+    }
+    signal_raise(&SIG_NO_SLEEP, sleep_flag);
 }
 
 void hal_network_sig_register()
@@ -302,6 +333,7 @@ void hal_network_sig_register()
     config_register(&CFG_UPDATE_INTERVAL);
     config_register(&CFG_MAX_CON_TRY);
     config_register(&CFG_MAX_CON_DUE);
+    config_register(&CFG_MAX_AP_TIME);
 }
 
 #endif

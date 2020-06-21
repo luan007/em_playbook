@@ -47,6 +47,7 @@ void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
 
 void nap_loop()
 {
+    
     if (SIG_BEFORE_SLEEP.value > 0)
     {
         //ready to sleep
