@@ -1,0 +1,89 @@
+
+boot_network() {
+    int network_status = check_net();
+    int net_result = 0;
+    switch(network_status) {
+        case NO_CONFIG:
+            flag_for_config(ERROR);
+            net_result = FAIL;
+            break;
+        case NET_ERR:
+            retry_count++;
+            net_result = FAIL;
+            break;
+        case NET_TOO_MANY_RETRIES:
+            flag_for_config(WARN);
+            net_result = FAIL;
+            break;
+        case NET_READY:
+            net_result = OK;
+            break
+    }
+    return net_result;
+}
+
+
+class_or_list SCHEDULERS
+class_or_list SIGNALS -> {
+    SIGNAL: EXPLAINATION AS STRING
+}
+
+SCHEDULE_SLEEP(){
+    //PUT TO SLEEP
+    int NEXT_WAKE = +INF
+    FOREACH(SCHEDULER : SCHEDULERS) {
+        NEXT_WAKE = MIN(SCHEDULER.COMPUTE() -> Preferences -> K:V ("Schedule_xxxx", "TIME"), NEXT_WAKE)
+    }
+    RE_SCHEDULE_NEXT_SLEEP (NEXT_WAKE)
+}
+
+WAKE() {
+    HW_REASON = GET_HW_REASON //TIMER, INPUT
+    HAS_INPUT = GET_INPUT();
+
+    if(HAS_INPUT || HW_REASON == INPUT) {
+        LOAD_INPUT_FROM_INTERRUPT();
+    }
+
+    FOREACH(SCHEDULER : SCHEDULERS) {
+        SCHEDULER.RUN(HAS_USER_INTERACTION, TIME) <- Preferences -> K:V ("Schedule_xxxx", "TIME")
+    }
+
+    LOOP {
+        UPDATE_INPUT(); -> DELAY_SLEEP_IF_NEEDED();
+        if(SYS_SIGNAL) {
+            FOREACH(SIG IN SYS_SIGNAL) {
+                if(SIG_IS_HANDLED) continue;
+                APP_NOTIFY_SIGNALS();
+            }
+        }
+        if(APP_REQ_FULL_RENDER) {
+            APP_FULL_RENDER();
+        }
+        if(SLEEP_POSSIBLE()) {
+            break;
+        }
+    }
+    FALLBACK_RENDER_SYS_SIGNALS();
+    SCHEDULE_SLEEP();
+}
+
+
+wake_version_update() {
+    if(!boot_network()) {
+        //error do nothing
+        return -1;
+    }
+    if(!download_versions()){
+        return -2;
+    }
+    int error = 0;
+    foreach(app) {
+        if(app_needs_install()) {
+            error += app_install();
+        }
+    }
+
+}
+
+

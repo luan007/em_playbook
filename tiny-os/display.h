@@ -38,7 +38,7 @@ void power_eink(int ON_OFF)
     {
         pinMode(IT8951_RESET, OUTPUT);
         digitalWrite(IT8951_RESET, LOW);
-        delay(100);
+        delay(70); //100+ , 70 is risky as f
         digitalWrite(IT8951_RESET, HIGH);
         setup_eink();
     }

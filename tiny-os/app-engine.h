@@ -6,17 +6,24 @@
 #include "display.h"
 #include "luasys.h"
 #include "presist.h"
-#define APP_ROOT "http://192.168.40.68:9898/"
+#include "nap.h"
 
-#define UPDATE_VERSION_INTERVAL 30000
-long _last_update = 0;
+String APP_ROOT = "http://192.168.40.68:9898/";
+//config
+
+#define P_APP_SUCCESS_LOAD_TIME "P_APP_SUCCESS_LOAD_TIME"
+#define P_APP_UPDATE_BOOKED_EPOCH "P_APP_UPDATE_BOOKED_EPOCH"
+int UPDATE_VERSION_INTERVAL = 20;
+int APP_UPDATOR_ON_DEMAND = 0;
+
+//so crude though
 
 DynamicJsonDocument app_data(2048); //good chunk of memory
 
 //download one app & inflate
 int app_mgr_fetch_app(String app)
 {
-    download_inflate(app, String(APP_ROOT) + "app/" + app);
+    return download_inflate(app, String(APP_ROOT) + "app/" + app);
 }
 
 bool __exists(const String &path)
@@ -84,6 +91,7 @@ int app_mgr_load_versions()
     DeserializationError error = deserializeJson(app_data, json);
     f.close();
     JsonObject root = app_data.as<JsonObject>();
+    int result = 1;
     if (!error)
     {
         for (auto p : root)
@@ -91,15 +99,17 @@ int app_mgr_load_versions()
             const char *key = p.key().c_str();
             if (app_mgr_is_update_needed(key, p.value().as<JsonObject>()) > 0)
             {
-                app_mgr_fetch_app(key);
+                result = app_mgr_fetch_app(key) > 0 ? result : -1;
             }
         }
+        return result;
     }
     else
     {
         Serial.println("malformed version");
         return -2;
     }
+    return 1;
 }
 
 int app_mgr_run_file(String app, String procedure)
@@ -165,11 +175,17 @@ int app_mgr_loop_procedures(String key)
     }
 }
 
-
 int app_version_updator()
 {
-    _last_update = millis();
-    app_mgr_load_versions();
+    if (!ensure_network())
+    {
+        return -1;
+    }
+    if (app_mgr_load_versions() == 1)
+    {
+        putLongInt(P_APP_SUCCESS_LOAD_TIME, time_epoch());
+        return 1;
+    }
     return 0;
 }
 
@@ -193,5 +209,36 @@ int app_full_refresh()
 int app_signal()
 {
     app_mgr_loop_procedures("signal");
+}
+
+int app_updator_demand_once()
+{
+    APP_UPDATOR_ON_DEMAND++;
+}
+
+int app_max_tries = 0;
+int MAX_APP_DOWNLOADER_PER_SESSION = 3;
+
+int app_lifecycle_loop()
+{
+    uint64_t now = time_epoch();
+    //do we need to update?
+    uint64_t next = getLongInt(P_APP_SUCCESS_LOAD_TIME) + UPDATE_VERSION_INTERVAL - 10; //bleeding
+
+    if (next > now || APP_UPDATOR_ON_DEMAND == 1)
+    {
+        //should try update
+        APP_UPDATOR_ON_DEMAND = 2; //skip
+
+        if (app_max_tries < MAX_APP_DOWNLOADER_PER_SESSION && !app_version_updator())
+        {
+            app_max_tries++;
+        }
+        if (app_max_tries == MAX_APP_DOWNLOADER_PER_SESSION)
+        {
+            Serial.println("sorry, download failed, wait for next retry");
+        }
+        nap_purpose_sleep_duration(UPDATE_VERSION_INTERVAL * 1000); //at least..
+    }
 }
 #endif

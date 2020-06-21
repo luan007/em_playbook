@@ -1,10 +1,8 @@
-#ifndef _GUARD_NAP
-#define _GUARD_NAP
+#ifndef _GUARD_H_NAP
+#define _GUARD_H_NAP
 
 #include "esp32/ulp.h"
-// include ulp header you will create
 #include "ulp_main.h"
-// must include ulptool helper functions also
 #include "ulptool.h"
 #include "driver/rtc_io.h"
 #include "driver/gpio.h"

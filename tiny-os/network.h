@@ -158,17 +158,26 @@ int download_inflate(String pack_name, String url)
         dbg_print("CLEAN_UP " + temp_pack);
         USE_FS.remove(temp_pack.c_str());
         Serial.println(dest);
+        return 1; //TODO tar error not processed
     }
     else
     {
         Serial.println("Error open .tar file");
+        return -1;
     }
     _dbg_ls_dir("/", 10);
+    return 1;
 }
 
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
+
+//note, this time is NOT retained across resets
+uint64_t time_epoch()
+{
+    return static_cast<uint64_t>(time(NULL));
+}
 
 int ensure_time()
 {

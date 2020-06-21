@@ -13,23 +13,24 @@ void setup()
   setup_fs();
   setup_io();
   nap_wake();
-  dbg_print("WAKE");
 }
 
 void loop()
 {
-  if (SIG_ENCODER_DELTA != 0)
-  {
-    dbg_print(String(SIG_ENCODER_DELTA) + " - ENCODER - " + String(millis()));
-  }
-  if (SIG_TOUCH_CLICK != 0)
-  {
-    dbg_print(String(SIG_TOUCH_CLICK) + " - TOUCH - " + String(millis()));
-  }
-  if (SIG_GOING_SLEEP)
-  {
-    dbg_print("> SLEEP");
-  }
+  // if (SIG_ENCODER_DELTA != 0)
+  // {
+  //   dbg_print(String(SIG_ENCODER_DELTA) + " - ENCODER - " + String(millis()));
+  // }
+  // if (SIG_TOUCH_CLICK != 0)
+  // {
+  //   dbg_print(String(SIG_TOUCH_CLICK) + " - TOUCH - " + String(millis()));
+  // }
+  // if (SIG_GOING_SLEEP)
+  // {
+  //   dbg_print("> SLEEP");
+  // }
+  
+  app_lifecycle_loop();
   io_loop();
   nap_loop();
 
@@ -54,7 +55,7 @@ void loop()
       break;
     case 'U':
       if (ensure_network() == 1)
-      { 
+      {
         app_version_updator();
       }
       break;
