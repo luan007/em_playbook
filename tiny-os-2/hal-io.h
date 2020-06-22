@@ -13,12 +13,12 @@ SIGNAL(SW_HOLD, "Long Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_Z
 SIGNAL(SW_SHOLD, "SUPER LONG Hold Detected", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)    //records button down
 SIGNAL(TOUCH_DOWN, "Touched", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TOUCH_CLICK, "Touch Click", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
-SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 0)
 
 CONFIG(SW_DEBOUNCE, "Switch Debounce Time (ms)", 20, "")
 CONFIG(SW_HOLD_T, "Switch Hold Duration (ms)", 3000, "")
-CONFIG(SW_SHOLD_T, "Super Long Switch Hold Duration (ms)", 8000, "")
-CONFIG(UX_AWAKE_TIME, "Controls wake time triggered by UX", 15000, "")
+CONFIG(SW_SHOLD_T, "Super Long Switch Hold Duration (ms)", 10000, "")
+CONFIG(UX_AWAKE_TIME, "Controls wake time triggered by UX", 20000, "")
 
 void io_user_interaction()
 {

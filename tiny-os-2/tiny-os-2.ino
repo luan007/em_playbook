@@ -19,7 +19,6 @@ void HAL_NET_IO_LOOP(void *pvParameters)
   (void)pvParameters;
   while (1)
   {
-    hal_network_loop();
     //ensures we get signal
     vTaskDelay(1); //not too frequent - low prio
   }
@@ -37,6 +36,7 @@ void setup()
   hal_io_sig_register();
   hal_fs_sig_register();
   hal_network_sig_register();
+  display_sig_register();
   app_sig_register();
   base_subsys_init();
 
@@ -57,12 +57,15 @@ void setup()
   SIG_USER_ACTION.debug_level = -1;
   SIG_NEXT_SLEEP.debug_level = -1;
 
+  hal_network_loop();
+
   //let us multi task
   xTaskCreatePinnedToCore(
       HAL_NET_IO_LOOP, "HAL_NET_IO_LOOP",
       10240, NULL, 2, NULL, CPU);
 
-  if (SIG_SYS_BROKE.value > 0)
+  DEBUG("APP GOOD DELTA", String(r_secs() - SIG_APP_GOOD.value).c_str());
+  if (SIG_SYS_BROKE.value > 0 || (SIG_WAKE_REASON.value == WAKE_REASON_TIMER && (SIG_APP_GOOD.value <= 0 || (r_secs() - SIG_APP_GOOD.value < -1000000) || (r_secs() - SIG_APP_GOOD.value > CFG_APP_DUE.value64)))) //timer wake up check for app update
   {
     signal_raise(&SIG_APP_UPDATOR_REQUEST, 1);
   }
@@ -94,22 +97,33 @@ void ux_loop()
   }
   if (SIG_FAC_RESET.value > 0)
   {
-    // factory_reset();
+    factory_reset();
   }
-  if (SIG_ENC_DELTA.value != 0)
+  if (SIG_TOUCH_CLICK.value == 3)
   {
+    signal_raise(&SIG_APP_UPDATOR_REQUEST, 1);
     // _graphics_commit += 1;
     // Serial.println("COMMIT DRAW");
   }
+
+
 }
 
 void loop()
 {
   hal_io_loop();
   ux_loop();
-
   //backup render
   app_updator_loop();
+  hal_network_loop();
+
+  if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_SUCC)
+  {
+    app_full_refresh();
+    signal_resolve(&SIG_APP_UPT_STATE);
+  }
+
+  app_inject_signals();
   metal_render_handler();
   display_render_loop();
   base_subsys_loop();

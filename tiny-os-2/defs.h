@@ -102,6 +102,7 @@ typedef struct signal
     int value;
     int _saved_value; //to ensure not writing too many times during loop
     int debug_level;
+    int reported_value;
 };
 
 #define SIGNAL(NAME, default_msg, visibility, presist_behavior, default_value) struct signal SIG_##NAME = {#NAME, default_msg, visibility, presist_behavior, 0, default_value};
@@ -113,8 +114,8 @@ SIGNAL(FLUSH_CONFIG, "Flush Config", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0
 SIGNAL(CONFIG_CHANGED, "Config Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
 SIGNAL(NO_SLEEP, "When this is on, the system cannot goto sleep (during update or network activity)", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
-SIGNAL(NEXT_WAKE, "Signal for saving next wake", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 40 * 1000) //min wake time 5000ms
-SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 10)   //min sleep right after 10ms
+SIGNAL(NEXT_WAKE, "Signal for saving next wake", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 40 * 1000) //min wake time 5000ms
+SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 10)   //min sleep right after 10ms
 SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TIME_VALID, "time valid from powerloss", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(FAC_RESET, "wipe everything", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
@@ -138,12 +139,6 @@ struct signal *signal_get(const char *name)
     return NULL;
 }
 
-//this is NOT recommended, as it loops through all sigs
-struct signal *signal_raise(const char *name, int v, const char *fallback_msg = NULL)
-{
-    auto sig = signal_get(name);
-    return sig;
-}
 
 //call this when possible!
 struct signal *signal_raise(struct signal *sig, int v, const char *fallback_msg = NULL)
@@ -163,6 +158,14 @@ struct signal *signal_raise(struct signal *sig, int v, const char *fallback_msg 
         DEBUG("SIGNAL", (String("Raised ") + sig->name + " = " + sig->value).c_str(), sig->debug_level);
     }
 }
+
+//this is NOT recommended, as it loops through all sigs
+struct signal *signal_raise(const char *name, int v, const char *fallback_msg = NULL)
+{
+    auto sig = signal_get(name);
+    return signal_raise(sig, v, fallback_msg);
+}
+
 
 void signal_resolve(struct signal *sig, int v)
 {

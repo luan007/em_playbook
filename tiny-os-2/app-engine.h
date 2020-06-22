@@ -9,14 +9,16 @@
 //so crude though
 #define SLEEP_BITMASK_APP 5
 
-#define APP_UPT_STATE_SUCC 1
+#define APP_UPT_STATE_SUCC 2
 #define APP_UPT_STATE_IDLE 0
 #define APP_UPT_STATE_WORKING 1
 #define APP_UPT_STATE_FAILED -1
 
+SIGNAL(APP_SAFE_RENDER, "as is", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(APP_GOOD, "good through timestamp", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, -1)
 SIGNAL(APP_UPT_STATE, "updator state", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(APP_UPDATOR_REQUEST, "updator REQUEST", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+CONFIG(APP_DUE, "good duration", 15, "");
 DynamicJsonDocument app_data(2048); //good chunk of memory
 
 //download one app & inflate
@@ -166,6 +168,15 @@ int app_mgr_run_procedure(String app, String key)
 
 int app_mgr_loop_procedures(String key)
 {
+    app_data.clear();
+    File f = USE_FS.open("/versions");
+    String json = f.readString();
+    DeserializationError error = deserializeJson(app_data, json);
+    f.close();
+    if (error)
+    {
+        return -1;
+    }
     JsonObject root = app_data.as<JsonObject>();
     for (auto p : root)
     {
@@ -175,12 +186,15 @@ int app_mgr_loop_procedures(String key)
 
 void app_sig_register()
 {
+    config_register(&CFG_APP_DUE);
     signal_register(&SIG_APP_UPT_STATE);
     signal_register(&SIG_APP_GOOD);
+    signal_register(&SIG_APP_SAFE_RENDER);
     signal_register(&SIG_APP_UPDATOR_REQUEST);
 }
 
 //pseudo OS loop
+int _app_full_refresh_gui_ready = 0;
 int app_full_refresh()
 {
     String current_app = getString("APP");
@@ -194,21 +208,51 @@ int app_full_refresh()
     }
     app_mgr_loop_procedures("os");
     app_mgr_loop_procedures("overlay");
+    _app_full_refresh_gui_ready = 1;
     return 0;
 }
 
+int app_safe_refresh()
+{
+    // DEBUG("APP", "SAFE REFRESH");
+    if (!_app_full_refresh_gui_ready)
+    {
+        app_full_refresh();
+    }
+}
+
+int app_inject_signals()
+{
+    //check for signals with app visibility & unreset
+    int trigger = false;
+    for (auto i : signals)
+    {
+        if (i->resolved && (i->visibility & SIGNAL_VIZ_APP) && (i->reported_value != i->value))
+        {
+            trigger = true;
+            i->reported_value = i->value; //no crazy refresh pls
+        }
+    }
+    if (trigger)
+    {
+        DEBUG("APP", "TRIGGER SIGNAL");
+        app_mgr_loop_procedures("signal");
+    }
+}
 
 void app_updator_loop()
 {
+    if (SIG_APP_SAFE_RENDER.value > 0)
+    {
+        app_safe_refresh();
+        SIG_APP_SAFE_RENDER.value = 2;
+    }
     if (SIG_APP_UPDATOR_REQUEST.value > 0)
     {
-        if (SIG_WIFI_REQ.value <= 0)
-        {
-            signal_raise(&SIG_WIFI_REQ, millis());
-        }
         if (SIG_WIFI_STATE.value == WIFI_STATE_CONNECTED)
         {
             //lock
+            DEBUG("APP ENGINE", "LOADING START");
             int sleep_flag = SIG_NO_SLEEP.value;
             bitSet(sleep_flag, SLEEP_BITMASK_APP);
             signal_raise(&SIG_NO_SLEEP, sleep_flag);
@@ -218,9 +262,8 @@ void app_updator_loop()
             if (result == 1)
             {
                 signal_raise(&SIG_APP_UPT_STATE, APP_UPT_STATE_SUCC);
-                signal_raise(&SIG_APP_GOOD, r_millis()); //get epochs
+                signal_raise(&SIG_APP_GOOD, r_secs()); //get epochs
                 signal_raise(&SIG_SYS_BROKE, 0);
-                app_full_refresh();
             }
             else
             {
@@ -233,6 +276,14 @@ void app_updator_loop()
         else if (SIG_WIFI_STATE.value == WIFI_STATE_FAILED || SIG_WIFI_STATE.value == WIFI_STATE_NO_CONFIG || SIG_WIFI_STATE.value == WIFI_STATE_NO_MORE_TRY)
         {
             signal_raise(&SIG_APP_GOOD, -1); //need refresh now, wi-fi sucked
+        }
+        else
+        {
+            if (SIG_WIFI_REQ.value == 0)
+            {
+                Serial.println("REQUESTING WI-FI");
+                signal_raise(&SIG_WIFI_REQ, millis());
+            }
         }
     }
 }

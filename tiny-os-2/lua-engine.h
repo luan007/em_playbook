@@ -11,6 +11,9 @@
 #define LUA_USE_C89
 #include "src/lua/lua/lua.hpp"
 
+extern int app_full_refresh();
+extern int app_safe_refresh();
+
 Preferences preferences;
 extern "C"
 {
@@ -65,6 +68,53 @@ extern "C"
         int val = preferences.getInt(key, val);
         preferences.end();
         lua_pushnumber(lua, (lua_Number)val);
+        return 1;
+    }
+
+    static int expose_set_signal_value(lua_State *lua)
+    {
+        String ns = String(luaL_checkstring(lua, 1));
+        int val = (luaL_checkinteger(lua, 2));
+        signal_raise(ns.c_str(), val);
+        return 1;
+    }
+
+    static int expose_resolve_signal_with_param(lua_State *lua)
+    {
+        String ns = String(luaL_checkstring(lua, 1));
+        auto sig = signal_get(ns.c_str());
+        if (sig != NULL)
+        {
+            int val = (luaL_checkinteger(lua, 2));
+            signal_resolve(sig, val);
+        }
+        return 1;
+    }
+
+    static int expose_resolve_signal(lua_State *lua)
+    {
+        String ns = String(luaL_checkstring(lua, 1));
+        auto sig = signal_get(ns.c_str());
+        if (sig != NULL)
+        {
+            signal_resolve(sig);
+        }
+        return 1;
+    }
+
+    static int expose_is_signal_raised(lua_State *lua)
+    {
+        String ns = String(luaL_checkstring(lua, 1));
+        auto sig = signal_get(ns.c_str());
+        lua_pushnumber(lua, sig->resolved);
+        return 1;
+    }
+
+    static int expose_get_signal_value(lua_State *lua)
+    {
+        String ns = String(luaL_checkstring(lua, 1));
+        auto sig = signal_get(ns.c_str());
+        lua_pushnumber(lua, sig->value);
         return 1;
     }
 
@@ -192,14 +242,14 @@ extern "C"
         int16_t flush_count = (luaL_checkinteger(lua, 10));
         display_power(1);
         display_bin_smart_draw(asset.c_str(),
-                       _w, _h,
-                       srcminx,
-                       srcminy,
-                       srcmaxx,
-                       srcmaxy,
-                       dstx,
-                       dsty,
-                       flush_count);
+                               _w, _h,
+                               srcminx,
+                               srcminy,
+                               srcmaxx,
+                               srcmaxy,
+                               dstx,
+                               dsty,
+                               flush_count);
     }
 
     static int expose_flush_screen(lua_State *lua)
@@ -211,6 +261,12 @@ extern "C"
         bool partial = (luaL_checkinteger(lua, 5)) > 0 ? true : false;
         display_power(1);
         display_bin_flush_screen(x, y, w, h, partial);
+    }
+
+    static int expose_require_base_render(lua_State *lua)
+    {
+        app_safe_refresh();
+        return 1;
     }
 }
 
@@ -270,6 +326,14 @@ void lua_shell_prep()
     lua_shell_inject_function("save_string", (const lua_CFunction)&expose_save_string);
 
     lua_shell_inject_function("file_string", (const lua_CFunction)&expose_file_as_string);
+
+
+    lua_shell_inject_function("sig_raised", (const lua_CFunction)&expose_is_signal_raised);
+    lua_shell_inject_function("sig_get", (const lua_CFunction)&expose_get_signal_value);
+    lua_shell_inject_function("sig_set", (const lua_CFunction)&expose_set_signal_value);
+    lua_shell_inject_function("sig_resolve", (const lua_CFunction)&expose_resolve_signal);
+    lua_shell_inject_function("sig_resolve_p", (const lua_CFunction)&expose_resolve_signal_with_param);
+    // lua_shell_inject_function("base_draw", (const lua_CFunction)&expose_require_base_render);
 
     //inject libs
     File shared_root = USE_FS.open("/shared");

@@ -30,7 +30,7 @@ SIGNAL(WIFI_RETRY, "wifi reconnect attempts", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POW
 SIGNAL(LAST_UPDATE, "last update time in real seconds", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 CONFIG(UPDATE_INTERVAL, "update interval", 30, "")
 CONFIG(SERVER_ROOT, "server root", 0, "http://192.168.9.104:9898/")
-CONFIG(MAX_CON_DUE, "singular con try", 5000, "") //give 5 seconds and die
+CONFIG(MAX_CON_DUE, "singular con try", 3, "") //give 1 seconds and die
 CONFIG(MAX_CON_TRY, "max net retries", 5, "")
 CONFIG(MAX_AP_TIME, "max app runtime", 1000 * 120, "") //120sec
 
@@ -165,7 +165,8 @@ int net_download_then_inflate(String pack_name, String url)
 {
     //possible streaming option https://github.com/emelianov/untarArduino/blob/master/examples/WebUpdate/WebUpdate.ino
     String temp_pack = String("/") + pack_name + "_tmp";
-    if(!net_download_from_server(temp_pack, url)) {
+    if (!net_download_from_server(temp_pack, url))
+    {
         Serial.println("Network Error");
         return -1;
     }
@@ -202,8 +203,16 @@ bool wifi_blocking_sleep = false;
 
 void _internal_network_loop()
 {
+
+    if (SIG_WIFI_REQ.value == WIFI_REQ_AP_CONFIG && WiFi.status() == WL_CONNECTED)
+    {
+        DEBUG("WIFI", "AP MODE, DISCONNECTING");
+        WiFi.disconnect();
+    }
+
     if (SIG_WIFI_WIPE.value == 1)
     {
+        DEBUG("WIFI", "WIPING SETTINGS");
         wm.resetSettings();
         WiFi.disconnect();
         signal_raise(&SIG_WIFI_RETRY, 0);
@@ -215,6 +224,7 @@ void _internal_network_loop()
         if (SIG_WIFI_STATE.value != WIFI_STATE_CONNECTED)
         {
             //upon connection
+            DEBUG("WIFI", "UPON CONNECTION");
             ensure_time();
         }
         signal_raise(&SIG_WIFI_STATE, WIFI_STATE_CONNECTED);
@@ -222,24 +232,30 @@ void _internal_network_loop()
         return; //seems nothing to do
     }
 
-    if (SIG_WIFI_RETRY.value > CFG_MAX_CON_TRY.value64)
+    if (SIG_WIFI_RETRY.value > CFG_MAX_CON_TRY.value64 && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
     {
         //give up!
+        DEBUG("WIFI", "RETRY PASSED");
         signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_MORE_TRY);
         return;
     }
-    if ((wm.getWiFiSSID(true).length() == 0) && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
-    {
-        //empty
-        signal_raise(&SIG_WIFI_RETRY, 0);
-        signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_CONFIG);
-        wifi_blocking_sleep = false;
-        return;
-    }
+    // if ((wm.getWiFiSSID(true).length() == 0) && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
+    // {
+    //     //empty
+    //     DEBUG("WIFI", "NO SSID");
+    //     signal_raise(&SIG_WIFI_RETRY, 0);
+    //     signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_CONFIG);
+    //     wifi_blocking_sleep = false;
+    //     return;
+    // }
 
     if (SIG_WIFI_REQ.value > 0) // measure time
     {
+        DEBUG("WIFI", "REQUEST START");
+
         wifi_blocking_sleep = true;
+        DEBUG("WIFI", (String("WIFI_REQ") + SIG_WIFI_REQ.value).c_str());
+        DEBUG("WIFI", (String("MILLIS") + millis()).c_str());
         if (millis() - SIG_WIFI_REQ.value < 10000)
         {
             signal_raise(&SIG_WIFI_STATE, WIFI_STATE_CONNECTING);
@@ -260,6 +276,7 @@ void _internal_network_loop()
     }
     else if (SIG_WIFI_REQ.value == 0)
     {
+        DEBUG("WIFI", "REQ = 0");
         //eject
         if (SIG_PORTAL_STATE.value > 0)
         {
@@ -278,6 +295,7 @@ void _internal_network_loop()
     else if (SIG_WIFI_REQ.value == WIFI_REQ_AP_CONFIG)
     {
         wifi_blocking_sleep = true;
+        DEBUG("WIFI", "REQ = AP");
         //start auto configurator
         if (SIG_PORTAL_STATE.value == 0)
         {

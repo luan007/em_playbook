@@ -67,6 +67,7 @@ void metal_render_handler()
         message += "  Wi-Fi Configurator canceled.\n\n  System shutting down soon.\n\n";
         signal_resolve(&SIG_PORTAL_STATE);
     }
+    
     if (SIG_WAKE_REASON.resolved)
     {
         signal_resolve(&SIG_WAKE_REASON);

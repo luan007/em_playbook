@@ -14,6 +14,8 @@
 //
 GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ 5, /*DC=*/0, /*RST=*/-1, /*BUSY=*/4));
 
+SIGNAL(EINK_DRAW, "last draw time", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 0)
+
 int e_ink_state = -1;
 void display_power(int ON_OFF)
 {
@@ -39,6 +41,7 @@ void display_power(int ON_OFF)
         display.hibernate();
     }
     display.epd2.PROTECTED = 0;
+    signal_raise(&SIG_EINK_DRAW, millis());
     //DO NOT INTERRUPT POWER SEQUENCE
 }
 
@@ -99,6 +102,7 @@ void display_dbg_print(String str)
         display.println(final);
     } while (display.nextPage());
     text_cycle++;
+    signal_raise(&SIG_EINK_DRAW, millis());
 }
 
 void display_dbg_print_no_fullscreen(String str)
@@ -115,8 +119,9 @@ void display_dbg_print_no_fullscreen(String str)
         display.setCursor(10, 10);
         display.fillScreen(GxEPD_WHITE);
         display.println(final);
-        taskYIELD();
+        // taskYIELD();
     } while (display.nextPage());
+    signal_raise(&SIG_EINK_DRAW, millis());
 }
 
 //draw bin
@@ -124,6 +129,7 @@ void display_dbg_print_no_fullscreen(String str)
 int display_bin_flush_screen(int16_t x, int16_t y, int16_t w, int16_t h, bool partial_mode)
 {
     display.epd2.refresh(x, y, w, h, partial_mode);
+    signal_raise(&SIG_EINK_DRAW, millis());
 }
 
 int display_bin_smart_draw(const char *name,
@@ -218,6 +224,7 @@ int display_bin_smart_draw(const char *name,
     {
         display.epd2.refresh(DSTX, DSTY, clamp_w, clamp_h, false);
     }
+    signal_raise(&SIG_EINK_DRAW, millis());
 }
 
 int _graphics_commit = 0;
@@ -240,6 +247,7 @@ void HAL_DRAW_IMG(void *pvParameters)
 //this is something that can be killed even if it is not complete (hopefully not destroying the display)
 int display_render_loop()
 {
+    /*
     if (_graphics_prev_commit != _graphics_commit)
     {
         if (e_ink_state != 1)
@@ -267,8 +275,9 @@ int display_render_loop()
             _graphics_prev_commit = _graphics_commit;
         }
     }
+    */
     int sleep_flag = SIG_NO_SLEEP.value;
-    if (render_running)
+    if (millis() - SIG_EINK_DRAW.value < 1000)
     {
         bitSet(sleep_flag, SLEEP_BITMASK_DISPLAY);
     }
@@ -277,6 +286,11 @@ int display_render_loop()
         bitClear(sleep_flag, SLEEP_BITMASK_DISPLAY);
     }
     signal_raise(&SIG_NO_SLEEP, sleep_flag);
+}
+
+int display_sig_register()
+{
+    signal_register(&SIG_EINK_DRAW);
 }
 
 #endif
