@@ -216,8 +216,40 @@ int net_download_then_inflate(String pack_name, String url)
 
 int ensure_time()
 {
-    configTzTime("GMT-8", ntpServer);
-    signal_raise(&SIG_TIME_VALID, 1);
+    //GMT +8
+    // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    if (sntp_enabled())
+    {
+        sntp_stop();
+    }
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "0.pool.ntp.org");
+    sntp_setservername(1, "1.pool.ntp.org");
+    sntp_setservername(2, "2.pool.ntp.org");
+    sntp_init();
+    setTimeZone(-gmtOffset_sec, daylightOffset_sec);
+    time_t this_second = 0;
+    Serial.print("TIME FETCH\n");
+    int timeout = millis() + 5000;
+    while (!this_second && (millis() < timeout))
+    {
+        time(&this_second);
+        Serial.print(".");
+        delay(15);
+    }
+
+    if (this_second)
+    {
+        DEBUG("TIME", "CONFIG DONE");
+        signal_raise(&SIG_TIME_VALID, 1);
+    }
+    else
+    {
+        DEBUG("TIME", "CONFIG FAILED");
+        signal_raise(&SIG_TIME_VALID, -1);
+    }
+    DEBUG("TIME_RSEC", String(r_secs()).c_str());
+    DEBUG("TIME_RMIL", String((long)r_millis()).c_str());
 }
 
 bool wifi_blocking_sleep = false;
@@ -392,6 +424,7 @@ void hal_network_sig_register()
     signal_register(&SIG_WIFI_STATE);
     signal_register(&SIG_WIFI_RETRY);
     signal_register(&SIG_LAST_UPDATE);
+    signal_register(&SIG_TIME_VALID);
     config_register(&CFG_SERVER_ROOT);
     config_register(&CFG_UPDATE_INTERVAL);
     config_register(&CFG_MAX_CON_TRY);
