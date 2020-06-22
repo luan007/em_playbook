@@ -29,15 +29,36 @@ SIGNAL(WIFI_STATE, "wifi status", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(WIFI_RETRY, "wifi reconnect attempts", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(LAST_UPDATE, "last update time in real seconds", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 CONFIG(UPDATE_INTERVAL, "update interval", 30, "")
-CONFIG(SERVER_ROOT, "server root", 0, "http://192.168.9.104:9898/")
+CONFIG(SERVER_ROOT, "server root", 0, "http://192.168.1.183:9898/")
 CONFIG(MAX_CON_DUE, "singular con try", 3, "") //give 1 seconds and die
 CONFIG(MAX_CON_TRY, "max net retries", 5, "")
 CONFIG(MAX_AP_TIME, "max app runtime", 1000 * 120, "") //120sec
 
 #define ESP_getChipId() ((uint32_t)ESP.getEfuseMac())
-
+WiFiManagerParameter server_addr_param("server", "application server", "", 40);
 WiFiManager wm; // global wm instance
 // //gets called when WiFiManager enters configuration mode
+String getParam(String name)
+{
+    //read parameter from server
+    String value;
+    if (wm.server->hasArg(name))
+    {
+        value = wm.server->arg(name);
+    }
+    return value;
+}
+void saveParamCallback()
+{
+    Serial.println("[CALLBACK] saveParamCallback fired");
+    Serial.println("PARAM customfieldid = " + getParam("server"));
+}
+void saveConfigCallback()
+{
+    DEBUG("WIFI-CONFIG", server_addr_param.getValue());
+    CFG_SERVER_ROOT.valueString = String(server_addr_param.getValue());
+}
+
 void configModeCallback(WiFiManager *myWiFiManager)
 {
     auto SSID = myWiFiManager->getConfigPortalSSID();
@@ -46,7 +67,7 @@ void configModeCallback(WiFiManager *myWiFiManager)
 int net_download_from_server(String fileName, String url)
 {
     HTTPClient http;
-    // dbg_print("HTTP REQ\n" + fileName + "\n" + url);
+    DEBUG("HTTP", (String("REQ\n") + fileName + "\n" + url).c_str());
     // Serial.println("[HTTP] begin...\n");
     // Serial.println(fileName);
     // Serial.println(url);
@@ -56,6 +77,7 @@ int net_download_from_server(String fileName, String url)
     int httpCode = http.GET();
     int totalSize = 0;
 
+    DEBUG("HTTP", String(httpCode).c_str());
     if (httpCode > 0)
     {
         // HTTP header has been send and Server response header has been handled
@@ -95,7 +117,6 @@ int net_download_from_server(String fileName, String url)
                         len -= c;
                     }
                 }
-                vPortYield();
                 // yield();
             }
             // Serial.println();
@@ -201,6 +222,17 @@ int ensure_time()
 
 bool wifi_blocking_sleep = false;
 
+int hal_network_config_done = 0;
+void hal_network_config()
+{
+    if (hal_network_config_done == 1)
+        return;
+    wm.addParameter(&server_addr_param);
+    wm.setSaveParamsCallback(saveParamCallback);
+    wm.setSaveConfigCallback(saveConfigCallback);
+    hal_network_config_done = 1;
+}
+
 void _internal_network_loop()
 {
 
@@ -232,13 +264,6 @@ void _internal_network_loop()
         return; //seems nothing to do
     }
 
-    if (SIG_WIFI_RETRY.value > CFG_MAX_CON_TRY.value64 && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
-    {
-        //give up!
-        DEBUG("WIFI", "RETRY PASSED");
-        signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_MORE_TRY);
-        return;
-    }
     // if ((wm.getWiFiSSID(true).length() == 0) && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
     // {
     //     //empty
@@ -251,9 +276,23 @@ void _internal_network_loop()
 
     if (SIG_WIFI_REQ.value > 0) // measure time
     {
+
+        if (SIG_WIFI_STATE.value == WIFI_STATE_NO_MORE_TRY)
+        {
+            return;
+        }
+        else if (SIG_WIFI_RETRY.value > CFG_MAX_CON_TRY.value64 && SIG_WIFI_REQ.value != WIFI_REQ_AP_CONFIG)
+        {
+            //give up!
+            // DEBUG("WIFI", "RETRY PASSED");
+            signal_raise(&SIG_WIFI_STATE, WIFI_STATE_NO_MORE_TRY);
+            return;
+        }
+
         DEBUG("WIFI", "REQUEST START");
 
         wifi_blocking_sleep = true;
+        WiFi.mode(WIFI_STA);
         DEBUG("WIFI", (String("WIFI_REQ") + SIG_WIFI_REQ.value).c_str());
         DEBUG("WIFI", (String("MILLIS") + millis()).c_str());
         if (millis() - SIG_WIFI_REQ.value < 10000)
@@ -261,8 +300,10 @@ void _internal_network_loop()
             signal_raise(&SIG_WIFI_STATE, WIFI_STATE_CONNECTING);
             //connection trial
             wm.setConnectTimeout(CFG_MAX_CON_DUE.value64); //burst connect
+            wm.setConnectTimeout(5);                       //burst connect
             wm.setEnableConfigPortal(false);
             wm.autoConnect();
+            return;
         }
         else
         {
@@ -276,7 +317,7 @@ void _internal_network_loop()
     }
     else if (SIG_WIFI_REQ.value == 0)
     {
-        DEBUG("WIFI", "REQ = 0");
+        // DEBUG("WIFI", "REQ = 0");
         //eject
         if (SIG_PORTAL_STATE.value > 0)
         {
@@ -295,10 +336,11 @@ void _internal_network_loop()
     else if (SIG_WIFI_REQ.value == WIFI_REQ_AP_CONFIG)
     {
         wifi_blocking_sleep = true;
-        DEBUG("WIFI", "REQ = AP");
+        // DEBUG("WIFI", "REQ = AP");
         //start auto configurator
         if (SIG_PORTAL_STATE.value == 0)
         {
+            hal_network_config();
             wm.setConfigPortalBlocking(false);
             wm.startConfigPortal("[ EMPaper_CFG ]");
             signal_raise(&SIG_WIFI_RETRY, 0);

@@ -17,7 +17,9 @@
 SIGNAL(APP_SAFE_RENDER, "as is", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(APP_GOOD, "good through timestamp", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, -1)
 SIGNAL(APP_UPT_STATE, "updator state", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(APP_VERSION_CHANGE, "version_change", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(APP_UPDATOR_REQUEST, "updator REQUEST", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(APP_REFRESH_REQUEST, "refresh REQUEST", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 CONFIG(APP_DUE, "good duration", 15, "");
 DynamicJsonDocument app_data(2048); //good chunk of memory
 
@@ -189,14 +191,18 @@ void app_sig_register()
     config_register(&CFG_APP_DUE);
     signal_register(&SIG_APP_UPT_STATE);
     signal_register(&SIG_APP_GOOD);
+    signal_register(&SIG_APP_VERSION_CHANGE);
+    signal_register(&SIG_APP_REFRESH_REQUEST);
     signal_register(&SIG_APP_SAFE_RENDER);
     signal_register(&SIG_APP_UPDATOR_REQUEST);
+    putInt("TAINT", 0); // save taint value
 }
 
 //pseudo OS loop
 int _app_full_refresh_gui_ready = 0;
 int app_full_refresh()
 {
+    putInt("TAINT", 0); // save taint value
     String current_app = getString("APP");
     if (current_app != "")
     {
@@ -240,6 +246,54 @@ int app_inject_signals()
     }
 }
 
+#define SLEEP_BITMASK_RENDERER 4
+void app_render_loop()
+{
+    int bypass = 0;
+    if (SIG_BEFORE_SLEEP.value == 1)
+    {
+        DEBUG("APP", "BEFORE SLEEP");
+        //READY TO SLEEP
+        if (getInt("TAINT") != 0)
+        {
+            //immediate
+            app_full_refresh();
+            bypass = 1;
+        }
+    }
+    if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_SUCC)
+    {
+        //only if change has been detected..
+        //or specifically requested by app?
+        //load stuff when updator done
+        //defer refresh
+        DEBUG("APP", "UPDATOR DONE");
+        signal_raise(&SIG_APP_REFRESH_REQUEST, millis() + 300); //after sometime
+        signal_resolve(&SIG_APP_UPT_STATE);
+    }
+    if (SIG_APP_REFRESH_REQUEST.value > 0 && millis() > SIG_APP_REFRESH_REQUEST.value)
+    {
+        //due!
+        if (!bypass)
+        {
+            app_full_refresh();
+        }
+        signal_resolve(&SIG_APP_REFRESH_REQUEST, 0); //ok baby
+    }
+    app_inject_signals(); //DO WE HAVE ANY NEWS?
+
+    int sleep_flag = SIG_NO_SLEEP.value;
+    if (SIG_APP_REFRESH_REQUEST.value > 0)
+    {
+        bitSet(sleep_flag, SLEEP_BITMASK_RENDERER);
+    }
+    else
+    {
+        bitClear(sleep_flag, SLEEP_BITMASK_RENDERER);
+    }
+    signal_raise(&SIG_NO_SLEEP, sleep_flag);
+}
+
 void app_updator_loop()
 {
     if (SIG_APP_SAFE_RENDER.value > 0)
@@ -247,6 +301,7 @@ void app_updator_loop()
         app_safe_refresh();
         SIG_APP_SAFE_RENDER.value = 2;
     }
+
     if (SIG_APP_UPDATOR_REQUEST.value > 0)
     {
         if (SIG_WIFI_STATE.value == WIFI_STATE_CONNECTED)
@@ -279,10 +334,10 @@ void app_updator_loop()
         }
         else
         {
-            if (SIG_WIFI_REQ.value == 0)
+            if (SIG_WIFI_REQ.value == -1)
             {
                 Serial.println("REQUESTING WI-FI");
-                signal_raise(&SIG_WIFI_REQ, millis());
+                signal_raise(&SIG_WIFI_REQ, millis() + 10);
             }
         }
     }

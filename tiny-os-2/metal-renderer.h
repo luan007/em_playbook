@@ -67,7 +67,7 @@ void metal_render_handler()
         message += "  Wi-Fi Configurator canceled.\n\n  System shutting down soon.\n\n";
         signal_resolve(&SIG_PORTAL_STATE);
     }
-    
+
     if (SIG_WAKE_REASON.resolved)
     {
         signal_resolve(&SIG_WAKE_REASON);
@@ -82,6 +82,12 @@ void metal_render_handler()
         message.clear();
         message += "  System Missing.\n\n  Ready to sleep\n\n  Touch or spin to wake up.\n\n  Hold down the knob for 6 seconds to configure Wi-Fi.";
     }
+    else
+    {
+        //NOTE, IF SIG_BEFORE_SLEEP IS NOT PROCESSED
+        //THE OS IS CONSIDERED BROKEN!!
+        signal_raise(&SIG_SYS_BROKE, 1); //this should trigger full download next time.
+    }
     if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_FAILED)
     {
         signal_resolve(&SIG_APP_UPT_STATE);
@@ -90,7 +96,6 @@ void metal_render_handler()
     }
     if (changed)
     {
-        signal_raise(&SIG_SYS_BROKE, 1); //this should trigger full download next time.
         display_dbg_print(message);
     }
 }

@@ -42,8 +42,8 @@ void setup()
 
 #ifdef DEV_MODE
   //DEV MODE
-  signal_raise(&SIG_FLUSH_CONFIG, 1);
-  signal_raise(&SIG_FLUSH_SIGS, 1);
+  // signal_raise(&SIG_FLUSH_CONFIG, 1);
+  // signal_raise(&SIG_FLUSH_SIGS, 1);
 #endif
 
   hal_io_setup();
@@ -69,7 +69,6 @@ void setup()
   {
     signal_raise(&SIG_APP_UPDATOR_REQUEST, 1);
   }
-
   // _graphics_commit += 1;
 }
 
@@ -84,16 +83,18 @@ void factory_reset()
   ESP.restart();
 }
 
+int sw_hold_debounce = 0;
 void ux_loop()
 {
-  if (SIG_SW_HOLD.value > 0)
+  if (SIG_SW_HOLD.value > 0 && (millis() - sw_hold_debounce > 500))
   {
+    sw_hold_debounce = millis();
     //hold to toggle network config mode
     signal_raise(&SIG_WIFI_REQ, (SIG_WIFI_REQ.value == WIFI_REQ_AP_CONFIG) ? 0 : WIFI_REQ_AP_CONFIG);
   }
   if (SIG_SW_SHOLD.value > 0)
   {
-    // signal_raise(&SIG_FAC_RESET, 1);
+    signal_raise(&SIG_FAC_RESET, 1);
   }
   if (SIG_FAC_RESET.value > 0)
   {
@@ -105,8 +106,6 @@ void ux_loop()
     // _graphics_commit += 1;
     // Serial.println("COMMIT DRAW");
   }
-
-
 }
 
 void loop()
@@ -117,19 +116,9 @@ void loop()
   app_updator_loop();
   hal_network_loop();
 
-  if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_SUCC)
-  {
-    app_full_refresh();
-    signal_resolve(&SIG_APP_UPT_STATE);
-  }
-
-  app_inject_signals();
-  metal_render_handler();
+  app_render_loop();
   display_render_loop();
+  metal_render_handler();
   base_subsys_loop();
   nap_loop();
-
-  // taskYIELD();
-  //ready to sleep
-  // Serial.println("Test from Loop");
 }
