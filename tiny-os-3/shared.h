@@ -1,10 +1,10 @@
 #ifndef _GUARD_H_DEF
 #define _GUARD_H_DEF
 //TODO: note, wear levelling should be considered
-#include "time.h"
-#include <sys/time.h>
 #include <list>
 #include <Preferences.h>
+
+extern void sig_external_event(); //this should be defined somewhere
 
 //////////////DEBUG
 
@@ -31,18 +31,18 @@ uint32_t schedule_compute_millis()
     return next_wake_in_millis;
 }
 
-
 //////////////SIGNAL
 
 //this will trigger update immediately
-#define SIGNAL_IMMEDIATE (1 << 7)
+#define SIG_IMMEDIATE (1 << 7)
 //this will popup to app
-#define SIGNAL_APP (1 << 2)
+#define SIG_APP (1 << 2)
 //this will popup to os-level app (not used)
-#define SIGNAL_OS (1 << 1)
-#define SIGNAL_NONE 0
-#define SIGNAL_ALL 0xFFFF
+#define SIG_OS (1 << 1)
+#define SIG_NONE 0
+#define SIG_ALL 0xFFFF
 
+#define SIG_ONCE_ZERO 1
 #define SIG_ONCE 1
 #define SIG_RUNTIME 0
 #define SIG_POWERLOSS 2
@@ -69,6 +69,26 @@ void sig_reg(struct signal *sig)
     signals.push_back(sig);
 }
 
+void sig_external_trigger()
+{
+    bool emit = false;
+    for (auto sig : signals)
+    {
+        if ((sig->visibility & SIG_APP ||
+             sig->visibility & SIG_IMMEDIATE) &&
+            sig->triggered &&
+            sig->_notified_value != sig->value)
+        {
+            sig->_notified_value = sig->value;
+            emit = true;
+        }
+    }
+    if (emit)
+    {
+        sig_external_event();
+    }
+}
+
 struct signal *sig_find(const char *name)
 {
     for (auto i : signals)
@@ -92,6 +112,10 @@ struct signal *sig_set(struct signal *sig, int v)
         sig->triggered = 1;
         sig->value = v;
         DEBUG("SIG", (String(sig->name) + " = " + sig->value).c_str(), sig->debug_level);
+        if (sig->visibility & SIG_IMMEDIATE)
+        {
+            sig_external_trigger();
+        }
     }
 }
 
@@ -109,7 +133,7 @@ void sig_clear(struct signal *sig, int v)
     {
         sig->triggered = 0;
         sig->value = v;
-        DEBUG("SIGNAL", (String("Clear ") + sig->name).c_str(), sig->debug_level);
+        DEBUG("SIG", (String("Clear ") + sig->name).c_str(), sig->debug_level);
     }
 }
 
@@ -134,7 +158,7 @@ void sig_flush_store()
 {
     _signal_store.begin("signal_store", false);
     _signal_store.clear();
-    DEBUG("SIGNAL", "Store Flushed");
+    DEBUG("SIG", "Store Flushed");
     _signal_store.end();
     for (auto i : signals)
     {
@@ -156,7 +180,7 @@ void sig_init()
             i->triggered = _signal_store.getInt((String("t") + i->name).c_str(), 0);
             i->_saved_value = i->value;
             i->_notified_value = i->value;
-            DEBUG("SIGNAL", (String("Load ") + i->name + " = " + i->value).c_str());
+            DEBUG("SIG", (String("Load ") + i->name + " = " + i->value).c_str());
         }
     }
     _signal_store.end();
@@ -182,7 +206,7 @@ void sig_save(bool LAST_CYCLE = false)
             _signal_store.putInt(i->name, i->value);
             _signal_store.putInt((String("t") + i->name).c_str(), i->triggered);
             i->_saved_value = i->value;
-            DEBUG("SIGNAL", (String("Save ") + i->name + " = " + i->value).c_str());
+            DEBUG("SIG", (String("Save ") + i->name + " = " + i->value).c_str());
         }
     }
     if (has_saved)
@@ -196,24 +220,18 @@ void sig_tick()
 {
     for (auto sig : signals)
     {
-        if (sig->visibility & SIG_ONCE)
+        if (sig->visibility == SIG_ONCE_ZERO && sig->_notified_value == sig->value)
+        {
+            sig->triggered = 0;
+            sig->value = 0;
+        }
+        else if (sig->visibility == SIG_ONCE && sig->_notified_value == sig->value)
         {
             sig->triggered = 0;
         }
     }
     sig_save();
-}
-
-//////////////SYS
-
-void sys_init()
-{
-    sig_init();
-}
-
-void sys_tick()
-{
-    sig_tick();
+    sig_external_trigger();
 }
 
 #endif
