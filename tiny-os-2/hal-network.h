@@ -7,9 +7,12 @@
 #include "defs.h"
 #include "hal-io.h"
 #include "hal-fs.h"
+#include "time.h"
 #include "src/untar.h"
+#include <Int64String.h>
+#define SLEEP_BITMASK_WIFI 1
 
-const char *ntpServer = "pool.ntp.org";
+const char *ntpServer = "2.pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
 
@@ -26,7 +29,7 @@ SIGNAL(WIFI_REQ, "request wifi access", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 
 SIGNAL(WIFI_WIPE, "wipe settings", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(PORTAL_STATE, "portal status", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0) //0 = shutdown, 1 = alive
 SIGNAL(WIFI_STATE, "wifi status", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
-SIGNAL(WIFI_RETRY, "wifi reconnect attempts", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
+SIGNAL(WIFI_RETRY, "wifi reconnect attempts", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(LAST_UPDATE, "last update time in real seconds", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 CONFIG(UPDATE_INTERVAL, "update interval", 30, "")
 CONFIG(SERVER_ROOT, "server root", 0, "http://192.168.1.183:9898/")
@@ -71,6 +74,8 @@ int net_download_from_server(String fileName, String url)
     // Serial.println("[HTTP] begin...\n");
     // Serial.println(fileName);
     // Serial.println(url);
+    http.setConnectTimeout(500); //1sec
+    http.setTimeout(500);        //1sec
     http.begin(url);
     // Serial.printf("[HTTP] GET...\n", url.c_str());
     // start connection and send HTTP header
@@ -217,42 +222,51 @@ int net_download_then_inflate(String pack_name, String url)
 int ensure_time()
 {
     //GMT +8
-    // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    if (sntp_enabled())
+    configTime(gmtOffset_sec, daylightOffset_sec, "cn.ntp.org.cn");
+    struct tm timeinfo;
+    long timeout = millis() + 5000;
+    bool result = true;
+    while (!getLocalTime(&timeinfo))
     {
-        sntp_stop();
-    }
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "0.pool.ntp.org");
-    sntp_setservername(1, "1.pool.ntp.org");
-    sntp_setservername(2, "2.pool.ntp.org");
-    sntp_init();
-    setTimeZone(-gmtOffset_sec, daylightOffset_sec);
-    time_t this_second = 0;
-    Serial.print("TIME FETCH\n");
-    int timeout = millis() + 5000;
-    while (!this_second && (millis() < timeout))
-    {
-        time(&this_second);
         Serial.print(".");
-        delay(15);
+        if (millis() > timeout)
+        {
+            result = false;
+            break;
+        }
     }
-
-    if (this_second)
+    if (result)
     {
-        DEBUG("TIME", "CONFIG DONE");
+        Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
         signal_raise(&SIG_TIME_VALID, 1);
+        _rtc_mil_offset = (uint64_t)r_secs() * 1000LL - (uint64_t)millis(); //this ..
+        DEBUG("MILLIS", String(millis()).c_str());
+        DEBUG("TIME_RSEC", String(r_secs()).c_str());
+        DEBUG("TIME_RMIL", int64String(r_millis()).c_str());
     }
     else
     {
-        DEBUG("TIME", "CONFIG FAILED");
+        DEBUG("TIME", "Configuration Failed");
         signal_raise(&SIG_TIME_VALID, -1);
     }
-    DEBUG("TIME_RSEC", String(r_secs()).c_str());
-    DEBUG("TIME_RMIL", String((long)r_millis()).c_str());
 }
 
 bool wifi_blocking_sleep = false;
+
+void apply_wifi_block(bool block = false)
+{
+    wifi_blocking_sleep = block;
+    int sleep_flag = SIG_NO_SLEEP.value;
+    if (wifi_blocking_sleep)
+    {
+        bitSet(sleep_flag, SLEEP_BITMASK_WIFI);
+    }
+    else
+    {
+        bitClear(sleep_flag, SLEEP_BITMASK_WIFI);
+    }
+    signal_raise(&SIG_NO_SLEEP, sleep_flag);
+}
 
 int hal_network_config_done = 0;
 void hal_network_config()
@@ -278,6 +292,7 @@ void _internal_network_loop()
     {
         DEBUG("WIFI", "WIPING SETTINGS");
         wm.resetSettings();
+        wm.erase(true);
         WiFi.disconnect();
         signal_raise(&SIG_WIFI_RETRY, 0);
         signal_raise(&SIG_WIFI_WIPE, 0); //this should be resolve
@@ -324,6 +339,7 @@ void _internal_network_loop()
         DEBUG("WIFI", "REQUEST START");
 
         wifi_blocking_sleep = true;
+        apply_wifi_block(wifi_blocking_sleep);
         WiFi.mode(WIFI_STA);
         DEBUG("WIFI", (String("WIFI_REQ") + SIG_WIFI_REQ.value).c_str());
         DEBUG("WIFI", (String("MILLIS") + millis()).c_str());
@@ -334,6 +350,7 @@ void _internal_network_loop()
             wm.setConnectTimeout(CFG_MAX_CON_DUE.value64); //burst connect
             wm.setConnectTimeout(5);                       //burst connect
             wm.setEnableConfigPortal(false);
+            wm.setCleanConnect(true);
             wm.autoConnect();
             return;
         }
@@ -368,6 +385,7 @@ void _internal_network_loop()
     else if (SIG_WIFI_REQ.value == WIFI_REQ_AP_CONFIG)
     {
         wifi_blocking_sleep = true;
+        apply_wifi_block(wifi_blocking_sleep);
         // DEBUG("WIFI", "REQ = AP");
         //start auto configurator
         if (SIG_PORTAL_STATE.value == 0)
@@ -381,7 +399,13 @@ void _internal_network_loop()
         else if (SIG_PORTAL_STATE.value > 0)
         {
             //maintain
-            wm.process();
+            if (wm.process())
+            {
+                // wm.stopConfigPortal();
+                signal_raise(&SIG_PORTAL_STATE, WIFI_PORTAL_TIMEOUT);
+                wifi_blocking_sleep = false;
+                apply_wifi_block(wifi_blocking_sleep);
+            }
             if (millis() - SIG_PORTAL_STATE.value > CFG_MAX_AP_TIME.value64)
             {
                 wm.stopConfigPortal();
@@ -398,21 +422,11 @@ void _internal_network_loop()
     }
 }
 
-#define SLEEP_BITMASK_WIFI 1
 void hal_network_loop()
 {
     wifi_blocking_sleep = false;
     _internal_network_loop();
-    int sleep_flag = SIG_NO_SLEEP.value;
-    if (wifi_blocking_sleep)
-    {
-        bitSet(sleep_flag, SLEEP_BITMASK_WIFI);
-    }
-    else
-    {
-        bitClear(sleep_flag, SLEEP_BITMASK_WIFI);
-    }
-    signal_raise(&SIG_NO_SLEEP, sleep_flag);
+    apply_wifi_block(wifi_blocking_sleep);
 }
 
 void hal_network_sig_register()

@@ -18,12 +18,12 @@ SIGNAL(USER_ACTION, "Last User Interaction", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUN
 CONFIG(SW_DEBOUNCE, "Switch Debounce Time (ms)", 20, "")
 CONFIG(SW_HOLD_T, "Switch Hold Duration (ms)", 3000, "")
 CONFIG(SW_SHOLD_T, "Super Long Switch Hold Duration (ms)", 10000, "")
-CONFIG(UX_AWAKE_TIME, "Controls wake time triggered by UX", 20000, "")
+CONFIG(UX_AWAKE_T, "Controls wake time triggered by UX", 20000, "")
 
 void io_user_interaction()
 {
     signal_raise(&SIG_USER_ACTION, millis(), "User Action Recorded");
-    long target_sleep = millis() + (CFG_UX_AWAKE_TIME.value64);
+    long target_sleep = millis() + (CFG_UX_AWAKE_T.value64);
     if (SIG_NEXT_SLEEP.value < target_sleep)
     {
         signal_raise(&SIG_NEXT_SLEEP, target_sleep, "Prolonged sleep time");
@@ -154,7 +154,7 @@ void hal_io_sig_register()
     signal_register(&SIG_TOUCH_DOWN);
     signal_register(&SIG_TOUCH_CLICK);
     signal_register(&SIG_USER_ACTION);
-    config_register(&CFG_UX_AWAKE_TIME);
+    config_register(&CFG_UX_AWAKE_T);
     config_register(&CFG_SW_DEBOUNCE);
     config_register(&CFG_SW_HOLD_T);
     config_register(&CFG_SW_SHOLD_T);

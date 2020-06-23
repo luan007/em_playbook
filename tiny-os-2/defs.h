@@ -16,11 +16,12 @@ void DEBUG(const char *module, const char *stuff, int LEVEL = DBG_LEVEL_LOG)
     Serial.println(msg.c_str());
 }
 
+int64_t _rtc_mil_offset = 0;
+
 int64_t epochs()
 {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    int64_t milliseconds = tv.tv_sec * 1000LL + tv.tv_usec / 1000LL;
+    int64_t milliseconds = _rtc_mil_offset + (int64_t)millis();
+    return milliseconds;
 }
 
 #define r_millis epochs
@@ -115,7 +116,7 @@ SIGNAL(CONFIG_CHANGED, "Config Changed", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUT
 SIGNAL(NO_SLEEP, "When this is on, the system cannot goto sleep (during update or network activity)", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(BEFORE_SLEEP, "This will fire before sleep", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(NEXT_WAKE, "Signal for saving next wake", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 40 * 1000) //min wake time 5000ms
-SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 10)   //min sleep right after 10ms
+SIGNAL(NEXT_SLEEP, "Compute nearest sleep timeslot", SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 10)    //min sleep right after 10ms
 SIGNAL(WAKE_REASON, "Wake reason", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_RUNTIME, 0)
 SIGNAL(TIME_VALID, "time valid from powerloss", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_POWERLOSS, 0)
 SIGNAL(FAC_RESET, "wipe everything", SIGNAL_VIZ_ALL, SIGNAL_PRESIST_ONCE_AUTO_ZERO, 0)
@@ -138,7 +139,6 @@ struct signal *signal_get(const char *name)
     }
     return NULL;
 }
-
 
 //call this when possible!
 struct signal *signal_raise(struct signal *sig, int v, const char *fallback_msg = NULL)
@@ -165,7 +165,6 @@ struct signal *signal_raise(const char *name, int v, const char *fallback_msg = 
     auto sig = signal_get(name);
     return signal_raise(sig, v, fallback_msg);
 }
-
 
 void signal_resolve(struct signal *sig, int v)
 {
@@ -320,10 +319,10 @@ void config_presist_init()
         _config_store.begin("config_store", false);
         if (SIG_FLUSH_CONFIG.value <= 0)
         {
-            i->value64 = _config_store.getInt((String(i->name) + "_64").c_str(), i->value64);
-            i->valueString = _config_store.getString((String(i->name) + "_str").c_str(), i->valueString);
-            i->old_value64 = _config_store.getInt((String(i->name) + "_64").c_str());
-            i->old_valueString = _config_store.getString((String(i->name) + "_str").c_str());
+            i->value64 = _config_store.getInt((String(i->name) + "i").c_str(), i->value64);
+            i->valueString = _config_store.getString((String(i->name) + "s").c_str(), i->valueString);
+            i->old_value64 = _config_store.getInt((String(i->name) + "i").c_str());
+            i->old_valueString = _config_store.getString((String(i->name) + "s").c_str());
         }
         i->changed = 1;
 
@@ -355,8 +354,8 @@ void config_presist_update()
         {
             //changed
             _config_store.begin("config_store", false); //preferences.h already checks _started for us
-            _config_store.putInt((String(i->name) + "_64").c_str(), i->value64);
-            _config_store.putString((String(i->name) + "_str").c_str(), i->valueString);
+            _config_store.putInt((String(i->name) + "i").c_str(), i->value64);
+            _config_store.putString((String(i->name) + "s").c_str(), i->valueString);
             i->old_value64 = i->value64;
             i->old_valueString = String(i->valueString);
             i->changed = 1;
@@ -400,7 +399,8 @@ void base_subsys_loop()
 }
 
 //note, this will write stuff into nvs & resolve stuff
-void base_force_tick() {
+void base_force_tick()
+{
     signal_presist_update(true);
     config_presist_update();
     DEBUG("BASE", "Force tick once");

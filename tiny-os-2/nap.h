@@ -9,7 +9,6 @@
 #include "defs.h"
 #include "hal-io.h"
 
-
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[] asm("_binary_ulp_main_bin_end");
 
@@ -45,6 +44,16 @@ void nap_enter_sleep(uint32_t WAKE_DUR_SECONDS)
     esp_deep_sleep_start();
 }
 
+void nap_keep_alive(int min_interval)
+{
+    long target = SIG_NEXT_SLEEP.value;
+    long new_target = min_interval + millis();
+    if (new_target > target)
+    {
+        signal_raise(&SIG_NEXT_SLEEP, new_target);
+    }
+}
+
 void nap_loop()
 {
     if (SIG_BEFORE_SLEEP.value > 0)
@@ -52,6 +61,10 @@ void nap_loop()
         //ready to sleep
         nap_enter_sleep(SIG_NEXT_WAKE.value); //TODO: THIS IS STILL WRONG
         //YOU SHOULD NEVER GET HERE (HALT)
+    }
+    if (SIG_NO_SLEEP.value > 0)
+    {
+        nap_keep_alive(50); //50ms for safety
     }
     if (millis() > SIG_NEXT_SLEEP.value && SIG_NO_SLEEP.value == 0)
     {

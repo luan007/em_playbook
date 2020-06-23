@@ -19,6 +19,7 @@ void HAL_NET_IO_LOOP(void *pvParameters)
   (void)pvParameters;
   while (1)
   {
+    hal_network_loop();
     //ensures we get signal
     vTaskDelay(1); //not too frequent - low prio
   }
@@ -59,6 +60,11 @@ void setup()
 
   hal_network_loop();
 
+  if (SIG_SYS_BROKE.value > 0 || (SIG_WAKE_REASON.value == WAKE_REASON_NONE))
+  {
+    signal_raise(&SIG_TIME_VALID, -1); //bad time due to power loss
+  }
+
   //let us multi task
   xTaskCreatePinnedToCore(
       HAL_NET_IO_LOOP, "HAL_NET_IO_LOOP",
@@ -86,6 +92,10 @@ void factory_reset()
 int sw_hold_debounce = 0;
 void ux_loop()
 {
+  if (SIG_SW_CLICK.value > 0)
+  {
+    signal_resolve(&SIG_WIFI_RETRY, 0);
+  }
   if (SIG_SW_HOLD.value > 0 && (millis() - sw_hold_debounce > 500))
   {
     sw_hold_debounce = millis();
@@ -114,7 +124,6 @@ void loop()
   ux_loop();
   //backup render
   app_updator_loop();
-  hal_network_loop();
 
   app_render_loop();
   display_render_loop();

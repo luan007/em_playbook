@@ -55,6 +55,7 @@
         "new": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "sntp.h": "c"
     }
 }

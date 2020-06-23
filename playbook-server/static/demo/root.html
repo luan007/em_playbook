@@ -97,12 +97,43 @@
             transform-origin: 0 0;
             transform: scale(2);
         }
+
+        .text {
+            white-space: normal;
+            word-break: break-all;
+            color: white;
+            position: absolute;
+            width: 500px;
+            top: 0;
+            left: 0;
+            max-height: 213px;
+            transform: translate(-50%, 0);
+            left: 50%;
+            top: 100px;
+            background: #333;
+            font-size: 18px;
+            text-align: left;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+        .text span {
+            display: block;
+            text-overflow: ellipsis;
+            height: 100%;
+            margin: 20px;
+        }
+
+        .title {
+            margin: 20px;
+            margin-bottom: 5px;
+            font-size: 25px;
+            padding-left: 120px;
+        }
     </style>
     <script src="./vue.js"></script>
     <div id="main">
-        <div style='display: block; position: absolute; top:10px; left: 20px;'>Helloworld</div>
-        <div class="bg" style="transform: translate(100%, 150px)">
-            <div v-for='i in 5' class="scaler" v-bind:style="{transform: `scale(${i / 1.})`}">
+        <div class="bg" style="transform: translate(550px, 50px)">
+            <div v-for='i in 2' class="scaler" v-bind:style="{transform: `scale(${i / 0.8})`}">
                 <div class='ring'></div>
             </div>
         </div>
@@ -112,6 +143,19 @@
             <h1 id='date'>
                 {{(new Date()).getDate()}}
             </h1>
+        </div>
+
+        <div class="prompt">
+
+            <div class="text">
+                <div class="title">
+                    Flutter 势头正盛<br>2020 春季速递
+                </div>
+                <span>
+                    在过去的几个月中，Google Flutter 团队的工程师、产品经理、UX
+                    研究人员、技术作者和开发者关系工程师们都遭遇了不少的挑战..
+                </span>
+            </div>
         </div>
     </div>
 
