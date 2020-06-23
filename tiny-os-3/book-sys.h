@@ -5,6 +5,7 @@
 #include "hal-display.h"
 #include "hal-io.h"
 #include "hal-nap.h"
+#include "hal-net.h"
 #include "shared.h"
 
 ////////////ALL SIGNALS
@@ -77,12 +78,21 @@ void fallback_renderer()
         sig_clear(&SIG_BEFORE_SLEEP);
         changed = true;
         message += "\n\n  [ Powered down ]";
+        message += String("\n\n  Wake Scheduled = ") + SIG_WAKE_AFTER.value;
     }
     if (SIG_RTC_INVALID.triggered)
     {
+        sys_broke = true;
         sig_clear(&SIG_RTC_INVALID);
         changed = true;
         message += "\n\n  ! Time Invalid !\n\n  Wi-Fi connection is required to setup time.";
+    }
+    if (SIG_WIFI.triggered)
+    {
+        sys_broke = true;
+        sig_clear(&SIG_WIFI);
+        changed = true;
+        message += "  WIFI STATE = ";
     }
     // if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_FAILED)
     // {
@@ -114,7 +124,9 @@ void sleep_prevention()
 void reg_sigs()
 {
     sig_reg(&SIG_WAKE);
+    sig_reg(&SIG_WIFI);
     sig_reg(&SIG_BEFORE_SLEEP);
+    sig_reg(&SIG_WAKE_AFTER);
     sig_reg(&SIG_ENC_DELTA);
     sig_reg(&SIG_ENC_COUNT);
     sig_reg(&SIG_SW_DOWN);
@@ -127,6 +139,7 @@ void reg_sigs()
     sig_reg(&SIG_FS_MSG);
     sig_reg(&SIG_EINK_DRAW);
     sig_reg(&SIG_RTC_INVALID);
+    sig_reg(&SIG_SW_PRESSING);
 
     SIG_USER_ACTION.debug_level = -1;
 }
@@ -158,15 +171,20 @@ void sys_init()
 void sys_wake()
 {
     //check bootup hold
-    while (SIG_SW_DOWN.value == 1)
+    while (SIG_SW_PRESSING.value == 1)
     {
         if (millis() > 6000)
         {
             // hal_wifi_reconfig();
+            net_wifi_config();
         }
+        hal_io_loop();
     }
+    DEBUG("TIME-CHECK-ERR", String(SIG_RTC_INVALID.value).c_str());
 
-    if(SIG_RTC_INVALID.value && !net_update_time()) {
+    if (SIG_RTC_INVALID.value > 0 && net_update_time() <= 0)
+    {
+        DEBUG("Time Configuration", "Failed");
         nap_set_sleep_duration(5000);
         nap_try_sleep(true);
     }

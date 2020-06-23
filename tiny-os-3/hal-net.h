@@ -14,10 +14,20 @@ const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
 
+#define WIFI_CONFIG 10
+#define WIFI_CONNECTING 2
+#define WIFI_FAILED -1
+#define WIFI_SUCC 1
+
 SIGNAL(WIFI, SIG_IMMEDIATE, SIG_RUNTIME, 0)
 
-void net_update_time() {
+int net_update_time() {
     //warning, block
+    return -1;
+}
+
+void net_wifi_config() {
+    sig_set(&SIG_WIFI, WIFI_CONFIG);
 }
 
 #endif

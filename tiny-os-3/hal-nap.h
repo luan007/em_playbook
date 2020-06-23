@@ -20,7 +20,7 @@ void nap_set_sleep_duration(uint32_t override_next_wake)
 }
 
 //kickstart ULP
-void nap_enter_sleep(uint32_t ms)
+void nap_enter_sleep()
 {
     sig_save(true); //force save
 
@@ -39,16 +39,7 @@ void nap_enter_sleep(uint32_t ms)
     ulp__prev_encoder_state = 255;
     esp_err_t err = ulptool_load_binary(0, ulp_main_bin_start, (ulp_main_bin_end - ulp_main_bin_start) / sizeof(uint32_t));
 
-    if (next_wake_interval != -1)
-    {
-        ms = next_wake_interval;
-        DEBUG("SLEEP", (String("OVERRIDE = ") + ms).c_str());
-    }
-    else
-    {
-        DEBUG("SLEEP", (String("WAKE AFTER = ") + ms).c_str());
-    }
-    esp_sleep_enable_timer_wakeup(ms * 1000);
+    esp_sleep_enable_timer_wakeup(SIG_WAKE_AFTER.value * 1000);
     // nap_schedule_next_wake();
     esp_sleep_enable_ulp_wakeup();
     ulp_set_wakeup_period(0, 50); // needs to be fast in order to get correct result
@@ -74,11 +65,22 @@ void nap_try_sleep(bool NOW, uint32_t set_schedule = 0)
 {
     if (NOW || millis() > next_sleep)
     {
-        //enter sleep
-        sig_set(&SIG_BEFORE_SLEEP, 1);
         uint32_t ms = schedule_compute_millis();
+        ms = set_schedule == 0 ? ms : set_schedule;
+        if (next_wake_interval != -1)
+        {
+            ms = next_wake_interval;
+            DEBUG("SLEEP", (String("OVERRIDE = ") + ms).c_str());
+        }
+        else
+        {
+            DEBUG("SLEEP", (String("WAKE AFTER = ") + ms).c_str());
+        }
 
-        nap_enter_sleep(set_schedule == 0 ? ms : set_schedule);
+        //enter sleep
+        sig_set(&SIG_WAKE_AFTER, ms);
+        sig_set(&SIG_BEFORE_SLEEP, 1);
+        nap_enter_sleep();
     }
 }
 

@@ -29,7 +29,7 @@
 #include <SparkFun_CAP1203_Registers.h>
 #include <SparkFun_CAP1203_Types.h>
 #include <Wire.h>
-#include "RTClib.h"
+#include <RTClib.h>
 RTC_DS1307 rtc;
 ///////////////////////// OBJS
 
@@ -40,6 +40,7 @@ CAP1203 hw_cap_sensor;
 
 SIGNAL(ENC_DELTA, SIG_ALL, SIG_ONCE, 0)
 SIGNAL(ENC_COUNT, SIG_ALL, SIG_POWERLOSS, 0)
+SIGNAL(SW_PRESSING, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(SW_DOWN, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(SW_UP, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(SW_CLICK, SIG_ALL, SIG_ONCE, 0)
@@ -140,6 +141,8 @@ int _hold_flag = 0;
 void io_sw_update()
 {
     int sw_state = digitalRead(SW);
+    sig_set(&SIG_SW_PRESSING, sw_state ? 1 : 0);
+
     if (SIG_SW_CLICK.value)
     {
         sig_clear(&SIG_SW_CLICK, 0); //Hit!
