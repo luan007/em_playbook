@@ -8,6 +8,6 @@ void setup()
 
 void loop()
 {
-    hal_io_loop();
-    sys_tick();
+    // hal_io_loop();
+    // sys_tick();
 }

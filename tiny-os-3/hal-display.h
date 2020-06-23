@@ -14,7 +14,7 @@
 //
 GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ 5, /*DC=*/0, /*RST=*/-1, /*BUSY=*/4));
 
-SIGNAL(EINK_DRAW, SIGNAL_VIZ_NONE, SIGNAL_PRESIST_RUNTIME, 0)
+SIGNAL(EINK_DRAW, SIG_NONE, SIG_RUNTIME, 0)
 
 int e_ink_state = -1;
 void display_power(int ON_OFF)
@@ -41,7 +41,7 @@ void display_power(int ON_OFF)
         display.hibernate();
     }
     display.epd2.PROTECTED = 0;
-    signal_raise(&SIG_EINK_DRAW, millis());
+    sig_set(&SIG_EINK_DRAW, millis());
     //DO NOT INTERRUPT POWER SEQUENCE
 }
 

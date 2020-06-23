@@ -26,8 +26,10 @@ uint32_t schedule_compute_millis()
     for (auto scheduler : schedulers)
     {
         auto purposed = scheduler();
+        DEBUG("SCHEDULER", (String("WAKE PURPOSAL = ") + purposed).c_str());
         next_wake_in_millis = next_wake_in_millis < purposed ? next_wake_in_millis : purposed;
     }
+    DEBUG("SCHEDULER", (String("WAKE POINT = ") + next_wake_in_millis).c_str());
     return next_wake_in_millis;
 }
 
@@ -197,6 +199,7 @@ void sig_save(bool LAST_CYCLE = false)
     {
         return;
     }
+
     for (auto i : signals)
     {
         if (i->presist_behavior == SIG_POWERLOSS && (i->value != i->_saved_value))
@@ -206,12 +209,12 @@ void sig_save(bool LAST_CYCLE = false)
             _signal_store.putInt(i->name, i->value);
             _signal_store.putInt((String("t") + i->name).c_str(), i->triggered);
             i->_saved_value = i->value;
-            DEBUG("SIG", (String("Save ") + i->name + " = " + i->value).c_str());
         }
     }
     if (has_saved)
     {
         sig_last_save = millis();
+        DEBUG("SIG-SAVE", (String("Force ") + " = " + LAST_CYCLE).c_str());
     }
     _signal_store.end();
 }
@@ -233,5 +236,9 @@ void sig_tick()
     sig_save();
     sig_external_trigger();
 }
+
+SIGNAL(WAKE, SIG_ALL, SIG_RUNTIME, 0)
+SIGNAL(BEFORE_SLEEP, SIG_ALL, SIG_RUNTIME, 0)
+SIGNAL(SYS_BROKE, SIG_ALL, SIG_IMMEDIATE, 0)
 
 #endif

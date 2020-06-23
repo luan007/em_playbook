@@ -29,7 +29,8 @@
 #include <SparkFun_CAP1203_Registers.h>
 #include <SparkFun_CAP1203_Types.h>
 #include <Wire.h>
-
+#include "RTClib.h"
+RTC_DS1307 rtc;
 ///////////////////////// OBJS
 
 ESP32Encoder hw_encoder;
@@ -46,6 +47,7 @@ SIGNAL(SW_HOLD, SIG_ALL, SIG_ONCE, 0)
 SIGNAL(TOUCH_DOWN, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(TOUCH_CLICK, SIG_ALL, SIG_ONCE, 0)
 SIGNAL(USER_ACTION, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(RTC_INVALID, SIG_NONE, SIG_RUNTIME, 0)
 
 void io_user_interaction(const char *reason)
 {
@@ -175,6 +177,13 @@ void io_sw_update()
 void hal_io_setup()
 {
     Wire.begin();
+    rtc.begin();
+
+    if (!rtc.isrunning())
+    {
+        sig_set(&SIG_RTC_INVALID, 1);
+    }
+
     hw_cap_sensor.begin();
     hw_cap_sensor.setSensitivity(SENSITIVITY_128X);
 

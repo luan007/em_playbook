@@ -12,6 +12,11 @@
 
 SIGNAL(FS_MSG, SIG_ALL, SIG_RUNTIME, 0)
 
+void hal_fs_wipe() {
+    USE_FS.end();
+    USE_FS.format();
+}
+
 void hal_fs_setup()
 {
     if (!USE_FS.begin())
