@@ -260,6 +260,7 @@ void signal_presist_update(bool LAST_CYCLE = false)
 
 //always stored value with some versatility
 //i.e capable of storing strings and so on
+
 Preferences _config_store;
 typedef struct config
 {

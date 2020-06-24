@@ -19,7 +19,7 @@ void DEBUG(const char *module, const char *stuff, int LEVEL = DBG_LEVEL_LOG)
 //////////////WDT FOR BAD STUFF WHEN NEEDED
 #define CPU_WDT 1
 
-hw_timer_t *timer = NULL;
+//TODO: see if this actually works
 void wdt_feed(void *pvParameters)
 {
     (void)pvParameters;
@@ -30,7 +30,8 @@ void wdt_feed(void *pvParameters)
     }
 }
 
-void wdt_clear() {
+void wdt_clear()
+{
     esp_task_wdt_reset();
 }
 
@@ -42,7 +43,7 @@ void wdt_start()
     xTaskCreatePinnedToCore(
         wdt_feed, "wdt_feed",
         4096, NULL, 2, &handle, CPU_WDT);
-    
+
     const char *result;
 
     esp_task_wdt_init(WDT_TIMEOUT_SEC, true);
@@ -66,7 +67,6 @@ void wdt_start()
         break;
     }
     DEBUG("WDT", (String("RESULT = ") + result).c_str());
-
 }
 
 extern void sig_external_event(); //this should be defined somewhere
@@ -81,6 +81,8 @@ uint32_t schedule_compute_millis()
     {
         auto purposed = scheduler();
         DEBUG("SCHEDULER", (String("WAKE PURPOSAL = ") + purposed).c_str());
+        if (purposed == 0)
+            continue;
         next_wake_in_millis = next_wake_in_millis < purposed ? next_wake_in_millis : purposed;
     }
     DEBUG("SCHEDULER", (String("WAKE POINT = ") + next_wake_in_millis).c_str());
@@ -117,6 +119,16 @@ typedef struct signal
 };
 
 #define SIGNAL(NAME, visibility, presist_behavior, default_value) struct signal SIG_##NAME = {#NAME, visibility, presist_behavior, default_value, 0, 0};
+
+SIGNAL(CONFIG_CHANGED, SIG_ALL, SIG_RUNTIME, 0)
+SIGNAL(WAKE, SIG_ALL, SIG_RUNTIME, 0)
+SIGNAL(NOTIFY_RELEASE, SIG_ALL, SIG_IMMEDIATE, 0)
+SIGNAL(BEFORE_SLEEP, SIG_ALL, SIG_IMMEDIATE, 0)
+SIGNAL(WAKE_AFTER, SIG_ALL, SIG_RUNTIME, 0)
+SIGNAL(SYS_BROKE, SIG_ALL, SIG_IMMEDIATE, 0)
+SIGNAL(SYS_MSG, SIG_ALL, SIG_IMMEDIATE, 0)
+SIGNAL(ALLOW_LOOP, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(NO_MORE_OP, SIG_ALL, SIG_IMMEDIATE, 0)
 
 std::list<struct signal *> signals;
 
@@ -188,9 +200,9 @@ void sig_clear(struct signal *sig, int v)
     if (sig->triggered)
     {
         sig->triggered = 0;
-        sig->value = v;
         DEBUG("SIG", (String("[RESOLVE] ") + sig->name).c_str(), sig->debug_level);
     }
+    sig->value = v;
 }
 
 void sig_clear(struct signal *sig)
@@ -242,10 +254,10 @@ void sig_init()
     _signal_store.end();
 }
 
-unsigned long sig_last_save = 0;
-unsigned long sig_save_min_freq = 10000; //limit qps (like 10)
 void sig_save(bool LAST_CYCLE = false)
 {
+    static unsigned long sig_last_save = 0;
+    static unsigned long sig_save_min_freq = 10000; //limit qps (like 10)
     //qps limit
     bool can_save = LAST_CYCLE || (millis() - sig_last_save > sig_save_min_freq);
     bool has_saved = false;
@@ -263,6 +275,7 @@ void sig_save(bool LAST_CYCLE = false)
             _signal_store.putInt(i->name, i->value);
             _signal_store.putInt((String("t") + i->name).c_str(), i->triggered);
             i->_saved_value = i->value;
+            DEBUG(">>> WRITE", (String(i->name) + " = " + i->value).c_str());
         }
     }
     if (has_saved)
@@ -291,11 +304,137 @@ void sig_tick()
     sig_external_trigger();
 }
 
-SIGNAL(WAKE, SIG_ALL, SIG_RUNTIME, 0)
-SIGNAL(NOTIFY_RELEASE, SIG_ALL, SIG_IMMEDIATE, 0)
-SIGNAL(BEFORE_SLEEP, SIG_ALL, SIG_IMMEDIATE, 0)
-SIGNAL(WAKE_AFTER, SIG_ALL, SIG_RUNTIME, 0)
-SIGNAL(SYS_BROKE, SIG_ALL, SIG_IMMEDIATE, 0)
-SIGNAL(SYS_MSG, SIG_ALL, SIG_IMMEDIATE, 0)
+////////////// CONFIG
+
+Preferences _config_store;
+typedef struct config
+{
+    const char *name;
+    int value64;
+    String valueString;
+
+    int old_value64;
+    String old_valueString;
+
+    int changed;
+};
+
+#define CONFIG(NAME, default_64, str) struct config CFG_##NAME = {#NAME, default_64, String(str)};
+
+std::list<struct config *> configs;
+
+void cfg_reg(struct config *conf)
+{
+    configs.push_back(conf);
+}
+
+void cfg_flush_store()
+{
+    _config_store.begin("config_store", false);
+    _config_store.clear();
+    DEBUG("CONFIG", "Store Flushed");
+    _config_store.end();
+    for (auto i : configs)
+    {
+        i->old_valueString = String();
+        i->old_value64 = 0;
+    }
+}
+
+struct config *cfg_find(const char *name)
+{
+    for (auto i : configs)
+    {
+        if (strcmp(i->name, name) == 0)
+        {
+            return i;
+        }
+    }
+    return NULL;
+}
+
+void cfg_init()
+{
+    int has_change = 0;
+    //this loads stuff if previously saved
+    for (auto i : configs)
+    {
+        _config_store.begin("config_store", false);
+        i->value64 = _config_store.getInt((String(i->name) + "i").c_str(), i->value64);
+        i->valueString = _config_store.getString((String(i->name) + "s").c_str(), i->valueString);
+        i->old_value64 = _config_store.getInt((String(i->name) + "i").c_str());
+        i->old_valueString = _config_store.getString((String(i->name) + "s").c_str());
+        DEBUG("CONFIG", (String("Load ") + i->name + " V64 = " + i->value64).c_str());
+        DEBUG("CONFIG", (String("Load ") + i->name + " STR = " + i->valueString).c_str());
+        has_change = 1;
+    }
+    _config_store.end();
+    if (has_change)
+    {
+        sig_set(&SIG_CONFIG_CHANGED, 1);
+    }
+}
+
+void cfg_clear_change(struct config *i)
+{
+    i->changed = 0;
+}
+
+int cfg_autosave(struct config *i, bool auto_end = true)
+{
+    if (i->value64 != i->old_value64 ||
+        !i->valueString.equals(i->old_valueString))
+    {
+        //changed
+        _config_store.begin("config_store", false); //preferences.h already checks _started for us
+        _config_store.putInt((String(i->name) + "i").c_str(), i->value64);
+        _config_store.putString((String(i->name) + "s").c_str(), i->valueString);
+        if (auto_end)
+        {
+            _config_store.end();
+        }
+        i->old_value64 = i->value64;
+        i->old_valueString = String(i->valueString);
+        i->changed = 1;
+        DEBUG("CONFIG", (String("Save ") + i->name + " V64 = " + i->value64).c_str());
+        DEBUG("CONFIG", (String("Save ") + i->name + " STR = " + i->valueString).c_str());
+        //ROM
+        sig_set(&SIG_CONFIG_CHANGED, 1);
+
+        return 1;
+    }
+    else
+    {
+        i->changed = 0; //TODO: this might be wrong
+    }
+    return 0;
+}
+
+int cfg_set(struct config *i, String val)
+{
+    i->valueString.clear();
+    i->valueString = val;
+    return cfg_autosave(i);
+}
+
+int cfg_set(struct config *i, const char *val)
+{
+    return cfg_set(i, String(val));
+}
+
+int cfg_set(struct config *i, int val)
+{
+    i->value64 = val;
+    return cfg_autosave(i);
+}
+
+void cfg_tick()
+{
+    for (auto i : configs)
+    {
+        cfg_autosave(i, false);
+    }
+    _config_store.end();
+}
 
 #endif

@@ -7,11 +7,24 @@
 #include "hal-nap.h"
 #include "hal-net.h"
 #include "shared.h"
+#include "app-engine.h"
+
+////////////HELPER
+
+void factory_reset()
+{
+    sig_set(&SIG_SYS_MSG, 1);
+    cfg_flush_store();
+    hal_fs_wipe();
+    net_wipe();
+    nap_set_sleep_duration(1000);
+    nap_try_sleep(true);
+}
 
 ////////////ALL SIGNALS
-String message;
 void fallback_renderer()
 {
+    static String message;
     bool changed = false;
     bool sys_broke = false;
 
@@ -109,6 +122,37 @@ void fallback_renderer()
         changed = true;
         message += String("\n\n  Release button to continue.\n\n");
     }
+    if (SIG_NO_MORE_OP.triggered)
+    {
+        sys_broke = true;
+        sig_clear(&SIG_NO_MORE_OP);
+        changed = true;
+        message += String("\n\n  Empty loop reached, system corrupt.\n\n");
+    }
+    if (SIG_APP_UPT_STATE.triggered)
+    {
+        sys_broke = true;
+        sig_clear(&SIG_APP_UPT_STATE);
+        String sig_app_upt_msg;
+        if (SIG_APP_UPT_STATE.value == APP_UPT_STATE_IDLE)
+        {
+            sig_app_upt_msg = "/";
+        }
+        else if (SIG_APP_UPT_STATE.value == APP_UPT_STATE_FAILED)
+        {
+            sig_app_upt_msg = "[X] Failed";
+        }
+        else if (SIG_APP_UPT_STATE.value == APP_UPT_STATE_WORKING)
+        {
+            sig_app_upt_msg = "Working..";
+        }
+        else if (SIG_APP_UPT_STATE.value == APP_UPT_STATE_SUCC)
+        {
+            sig_app_upt_msg = "Completed!";
+        }
+        changed = true;
+        message += String("\n\n  Application Updator => ") + sig_app_upt_msg;
+    }
     // if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_FAILED)
     // {
     //     signal_resolve(&SIG_APP_UPT_STATE);
@@ -128,6 +172,7 @@ void fallback_renderer()
 void sig_external_event()
 {
     DEBUG("SIG_EXT", "UPDATE TRIGGERED");
+    app_inject_signals();
     fallback_renderer();
 }
 
@@ -136,7 +181,7 @@ void sleep_prevention()
     nap_set_enter_sleep_after(SIG_EINK_DRAW.value + 100); //when drawed, don't sleep
 }
 
-void reg_sigs()
+void reg_vars()
 {
     sig_reg(&SIG_WAKE);
     sig_reg(&SIG_WIFI);
@@ -159,6 +204,22 @@ void reg_sigs()
     sig_reg(&SIG_WIFI_TRY);
     sig_reg(&SIG_TIME);
     sig_reg(&SIG_NOTIFY_RELEASE);
+    sig_reg(&SIG_ALLOW_LOOP);
+    sig_reg(&SIG_NO_MORE_OP);
+
+    sig_reg(&SIG_CONFIG_CHANGED);
+    sig_reg(&SIG_APP_SAFE_RENDER);
+    sig_reg(&SIG_APP_UPT_STATE);
+    sig_reg(&SIG_APP_TAINT);
+    sig_reg(&SIG_APP_REFRESH_REQUEST);
+    sig_reg(&SIG_APP_TRY);
+
+    sig_reg(&SIG_APP_NRUN);
+    sig_reg(&SIG_APP_NUPD);
+
+    cfg_reg(&CFG_SRV_ROOT);
+
+    schedulers.push_back(&app_schedule_wake);
 
     SIG_USER_ACTION.debug_level = -1;
 }
@@ -176,22 +237,14 @@ void sys_tick()
 void sys_init()
 {
     REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN); //stop ULP immediately
-    reg_sigs();
+    reg_vars();
     sig_init();
+    cfg_init();
     hal_fs_setup();
     hal_io_setup();
     nap_wake();
     //waking up
     sys_wake();
-}
-
-void factory_reset()
-{
-    sig_set(&SIG_SYS_MSG, 1);
-    hal_fs_wipe();
-    net_wipe();
-    nap_set_sleep_duration(1000);
-    nap_try_sleep(true);
 }
 
 //////////////ACTUAL WAKE SEQ
@@ -242,13 +295,57 @@ void sys_wake()
     }
 
     DEBUG("TIME-CHECK-ERR", String(SIG_RTC_INVALID.value).c_str());
+    DEBUG("TIME-CHECKPOINT", String(rtc_unix_time()).c_str());
 
     if (SIG_RTC_INVALID.value > 0 && net_update_time() <= 0)
     {
         DEBUG("Time Configuration", "Failed - Retry soon");
-        nap_set_sleep_duration(SIG_WIFI_TRY.value > 3 ? (60 * 60 * 1000) : 10000);
-        nap_try_sleep(true);
+        nap_set_sleep_duration(SIG_WIFI_TRY.value > 2 ? (60 * 60 * 1000) : 5000);
+        return nap_try_sleep(true); //end
     }
+
+    if (SIG_SYS_BROKE.value > 0)
+    {
+        //FIXING DISK (FORMAT)
+        //start network and update
+        if (net_wifi_connect() < 0 || app_mgr_upgrade() < 0)
+        {
+            nap_set_sleep_duration(SIG_WIFI_TRY.value > 3 ? (60 * 60 * 1000) : 5000);
+            return nap_try_sleep(true);
+        }
+        else if (SIG_SYS_BROKE.value == 0) //App fixed all broken signals
+        {
+            //so we're good now
+            return nap_try_sleep(true);
+        }
+        else
+        {
+            //still broken, do we want to fix?
+            nap_set_sleep_duration((60 * 60 * 1000)); //one hour cool down
+            return nap_try_sleep(true);
+        }
+    }
+    //now, system is NOT BROKEN anymore, reboot into app loop yo
+
+    //everything is good, lets see why we're here
+    if (SIG_WAKE.value == WAKE_TIMER || SIG_WAKE.value == WAKE_NONE)
+    {
+        //app needs refresh?
+        if (rtc_unix_time() > (uint32_t)SIG_APP_NRUN.value)
+        {
+            app_full_refresh();
+        }
+
+        //app needs update?
+        if (rtc_unix_time() > (uint32_t)SIG_APP_NUPD.value)
+        {
+            if (app_mgr_upgrade_auto_net() < 0)
+            {
+                return nap_try_sleep(true);
+            }
+        }
+    }
+    return nap_try_sleep(true);
 }
 
 #endif

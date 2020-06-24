@@ -198,6 +198,18 @@ void hal_io_setup()
     hw_encoder.attachHalfQuad(DT, CLK);
 }
 
+uint32_t rtc_unix_time()
+{
+    DateTime now = rtc.now();
+    return (uint32_t)now.unixtime();
+}
+
+DateTime rtc_date_time()
+{
+    DateTime now = rtc.now();
+    return now;
+}
+
 void hal_io_loop()
 {
     io_touch_update();

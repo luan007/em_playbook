@@ -66,7 +66,7 @@ void nap_try_sleep(bool NOW, uint32_t set_schedule = 0)
 {
     if (NOW || millis() > next_sleep)
     {
-        uint32_t ms = schedule_compute_millis();
+        uint32_t ms = (uint32_t)schedule_compute_millis();
         ms = set_schedule == 0 ? ms : set_schedule;
         if (next_wake_interval != -1)
         {
@@ -81,6 +81,8 @@ void nap_try_sleep(bool NOW, uint32_t set_schedule = 0)
         //enter sleep
         sig_set(&SIG_WAKE_AFTER, ms);
         sig_set(&SIG_BEFORE_SLEEP, 1);
+        
+        sig_save(true);
         nap_enter_sleep();
     }
 }
