@@ -32,7 +32,7 @@ void display_power(int ON_OFF)
     {
         pinMode(IT8951_RESET, OUTPUT);
         digitalWrite(IT8951_RESET, LOW);
-        vTaskDelay(150); //100+ , 70 is risky as f
+        vTaskDelay(100); //100+ , 70 is risky as f
         digitalWrite(IT8951_RESET, HIGH);
         display.init(0, false, false);
     }

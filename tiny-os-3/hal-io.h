@@ -141,7 +141,7 @@ int _hold_flag = 0;
 void io_sw_update()
 {
     int sw_state = digitalRead(SW);
-    sig_set(&SIG_SW_PRESSING, sw_state ? 1 : 0);
+    sig_set(&SIG_SW_PRESSING, sw_state == 1 ? 0 : 1);
 
     if (SIG_SW_CLICK.value)
     {
@@ -203,6 +203,7 @@ void hal_io_loop()
     io_touch_update();
     io_sw_update();
     io_encoder_update(-1, -1);
+    wdt_clear();
 }
 
 #endif

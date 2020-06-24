@@ -66,33 +66,48 @@ void fallback_renderer()
     //     signal_resolve(&SIG_PORTAL_STATE);
     // }
 
+    if (SIG_SYS_MSG.triggered)
+    {
+        sys_broke = true;
+        message += "\n\n  [ SYSTEM WIPE ]\n\n\n\n  IN PROCESS\n\n";
+        sig_clear(&SIG_SYS_MSG);
+        changed = true;
+    }
     if (SIG_WAKE.triggered)
     {
         sys_broke = true;
         sig_clear(&SIG_WAKE);
         changed = true;
-        message += "  ! Bootstrap Required !\n\n  >> Hold down the knob for 6 seconds to configure Wi-Fi.";
+        message += "\n\n  ! Bootstrap Required !\n\n  >> Hold down the knob for 6 seconds to configure Wi-Fi.\n\n";
     }
     if (SIG_BEFORE_SLEEP.triggered)
     {
         sig_clear(&SIG_BEFORE_SLEEP);
         changed = true;
         message += "\n\n  [ Powered down ]";
-        message += String("\n\n  Wake Scheduled = ") + SIG_WAKE_AFTER.value;
+        message += String("\n\n  Wake Scheduled = ") + SIG_WAKE_AFTER.value + "\n\n";
     }
     if (SIG_RTC_INVALID.triggered)
     {
         sys_broke = true;
         sig_clear(&SIG_RTC_INVALID);
         changed = true;
-        message += "\n\n  ! Time Invalid !\n\n  Wi-Fi connection is required to setup time.";
+        message += "\n\n  ! Time Invalid !\n\n  Wi-Fi connection is required to setup time.\n\n";
     }
     if (SIG_WIFI.triggered)
     {
         sys_broke = true;
         sig_clear(&SIG_WIFI);
         changed = true;
-        message += "  WIFI STATE = ";
+        message += String("\n\n  WIFI STATE = ") + SIG_WIFI.value;
+    }
+    if (SIG_NOTIFY_RELEASE.triggered)
+    {
+        message.clear();
+        sys_broke = true;
+        sig_clear(&SIG_NOTIFY_RELEASE);
+        changed = true;
+        message += String("\n\n  Release button to continue.\n\n");
     }
     // if (SIG_APP_UPT_STATE.resolved && SIG_APP_UPT_STATE.value == APP_UPT_STATE_FAILED)
     // {
@@ -140,6 +155,10 @@ void reg_sigs()
     sig_reg(&SIG_EINK_DRAW);
     sig_reg(&SIG_RTC_INVALID);
     sig_reg(&SIG_SW_PRESSING);
+    sig_reg(&SIG_SYS_MSG);
+    sig_reg(&SIG_WIFI_TRY);
+    sig_reg(&SIG_TIME);
+    sig_reg(&SIG_NOTIFY_RELEASE);
 
     SIG_USER_ACTION.debug_level = -1;
 }
@@ -156,14 +175,23 @@ void sys_tick()
 
 void sys_init()
 {
+    REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN); //stop ULP immediately
     reg_sigs();
     sig_init();
     hal_fs_setup();
     hal_io_setup();
     nap_wake();
-
     //waking up
     sys_wake();
+}
+
+void factory_reset()
+{
+    sig_set(&SIG_SYS_MSG, 1);
+    hal_fs_wipe();
+    net_wipe();
+    nap_set_sleep_duration(1000);
+    nap_try_sleep(true);
 }
 
 //////////////ACTUAL WAKE SEQ
@@ -171,21 +199,54 @@ void sys_init()
 void sys_wake()
 {
     //check bootup hold
-    while (SIG_SW_PRESSING.value == 1)
+    wdt_start();
+    sig_tick();
+    hal_io_loop();
+
+    if (SIG_SW_PRESSING.value == 1)
     {
-        if (millis() > 6000)
+        DEBUG("! PRESS UPON START", "");
+        while (SIG_SW_PRESSING.value == 1)
         {
-            // hal_wifi_reconfig();
-            net_wifi_config();
+            hal_io_loop();
+            if (millis() > 6000)
+            {
+                if (SIG_SW_PRESSING.value == 1)
+                {
+                    DEBUG("! STILL PRESSING AFTER 6000", "");
+                    sig_set(&SIG_NOTIFY_RELEASE, 1);
+                    while (SIG_SW_PRESSING.value == 1)
+                    {
+                        hal_io_loop();
+                    }
+                }
+                // hal_wifi_reconfig();
+                net_wifi_config(); //after this, wifi-config done
+                break;             //you should not get here
+            }
         }
-        hal_io_loop();
     }
+    else if (SIG_TOUCH_DOWN.value == 1)
+    {
+        DEBUG("! TOUCH UPON START", "");
+        while (SIG_TOUCH_DOWN.value == 1)
+        {
+            hal_io_loop();
+            if (millis() > 6000)
+            {
+                // hal_wifi_reconfig();
+                factory_reset(); //after this, wifi-config done
+                break;           //you should not get here
+            }
+        }
+    }
+
     DEBUG("TIME-CHECK-ERR", String(SIG_RTC_INVALID.value).c_str());
 
     if (SIG_RTC_INVALID.value > 0 && net_update_time() <= 0)
     {
-        DEBUG("Time Configuration", "Failed");
-        nap_set_sleep_duration(5000);
+        DEBUG("Time Configuration", "Failed - Retry soon");
+        nap_set_sleep_duration(SIG_WIFI_TRY.value > 3 ? (60 * 60 * 1000) : 10000);
         nap_try_sleep(true);
     }
 }

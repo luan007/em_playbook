@@ -3,8 +3,7 @@
 //TODO: note, wear levelling should be considered
 #include <list>
 #include <Preferences.h>
-
-extern void sig_external_event(); //this should be defined somewhere
+#include "esp_task_wdt.h"
 
 //////////////DEBUG
 
@@ -16,6 +15,61 @@ void DEBUG(const char *module, const char *stuff, int LEVEL = DBG_LEVEL_LOG)
     auto msg = String("[DBG] ") + module + " : " + stuff;
     Serial.println(msg.c_str());
 }
+
+//////////////WDT FOR BAD STUFF WHEN NEEDED
+#define CPU_WDT 1
+
+hw_timer_t *timer = NULL;
+void wdt_feed(void *pvParameters)
+{
+    (void)pvParameters;
+    while (1)
+    {
+        esp_task_wdt_reset();
+        vTaskDelay(1);
+    }
+}
+
+void wdt_clear() {
+    esp_task_wdt_reset();
+}
+
+#define WDT_TIMEOUT_SEC 2
+void wdt_start()
+{
+    TaskHandle_t handle;
+    //enable interrupt
+    xTaskCreatePinnedToCore(
+        wdt_feed, "wdt_feed",
+        4096, NULL, 2, &handle, CPU_WDT);
+    
+    const char *result;
+
+    esp_task_wdt_init(WDT_TIMEOUT_SEC, true);
+    esp_err_t err = esp_task_wdt_add(handle);
+    switch (err)
+    {
+    case ESP_OK:
+        result = "OK";
+        break;
+    case ESP_ERR_INVALID_ARG:
+        result = "ERR = INVALID ARG";
+        break;
+    case ESP_ERR_NO_MEM:
+        result = "ERR = NO MEM";
+        break;
+    case ESP_ERR_INVALID_STATE:
+        result = "ERR = INVALID STATE";
+        break;
+    default:
+        result = "ERR = OTHER";
+        break;
+    }
+    DEBUG("WDT", (String("RESULT = ") + result).c_str());
+
+}
+
+extern void sig_external_event(); //this should be defined somewhere
 
 //////////////SCHEDULER
 
@@ -135,7 +189,7 @@ void sig_clear(struct signal *sig, int v)
     {
         sig->triggered = 0;
         sig->value = v;
-        DEBUG("SIG", (String("Clear ") + sig->name).c_str(), sig->debug_level);
+        DEBUG("SIG", (String("[RESOLVE] ") + sig->name).c_str(), sig->debug_level);
     }
 }
 
@@ -238,8 +292,10 @@ void sig_tick()
 }
 
 SIGNAL(WAKE, SIG_ALL, SIG_RUNTIME, 0)
+SIGNAL(NOTIFY_RELEASE, SIG_ALL, SIG_IMMEDIATE, 0)
 SIGNAL(BEFORE_SLEEP, SIG_ALL, SIG_IMMEDIATE, 0)
 SIGNAL(WAKE_AFTER, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(SYS_BROKE, SIG_ALL, SIG_IMMEDIATE, 0)
+SIGNAL(SYS_MSG, SIG_ALL, SIG_IMMEDIATE, 0)
 
 #endif

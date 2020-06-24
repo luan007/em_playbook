@@ -33,21 +33,22 @@ void nap_enter_sleep()
     rtc_gpio_init(GPIO_NUM_14);
     rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_INPUT_ONLY);
 
-    ulp__switch = 0;
-    ulp__touch = 0;
-    ulp__encoder_state = 0;
-    ulp__prev_encoder_state = 255;
     esp_err_t err = ulptool_load_binary(0, ulp_main_bin_start, (ulp_main_bin_end - ulp_main_bin_start) / sizeof(uint32_t));
 
-    esp_sleep_enable_timer_wakeup(SIG_WAKE_AFTER.value * 1000);
+    esp_sleep_enable_timer_wakeup((uint64_t)(SIG_WAKE_AFTER.value) * 1000ULL);
     // nap_schedule_next_wake();
     esp_sleep_enable_ulp_wakeup();
-    ulp_set_wakeup_period(0, 50); // needs to be fast in order to get correct result
+    ulp_set_wakeup_period(0, 100); // needs to be fast in order to get correct result
     err = ulp_run((&ulp_entry - RTC_SLOW_MEM) / sizeof(uint32_t));
     if (err)
         Serial.println("Error Starting ULP Coprocessor");
 
     Serial.println("Entering Sleep Now.");
+
+    ulp__switch = 0;
+    ulp__touch = 0;
+    ulp__encoder_state = 0;
+    ulp__prev_encoder_state = 255;
     esp_deep_sleep_start();
 }
 
