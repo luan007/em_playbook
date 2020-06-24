@@ -19,7 +19,7 @@ int app_full_refresh();
 #define APP_NEXT_RUN_BAD_INTERVAL 300     //10sec - for debug only
 #define APP_NEXT_RUN_DEFAULT_INTERVAL 120 //10sec - for debug only
 #define APP_NEXT_RUN_DEFAULT_UPDATE 60    //30sec - for debug only
-CONFIG(SRV_ROOT, 0, "http://192.168.1.183:9898/")
+CONFIG(SRV_ROOT, 0, "http://192.168.9.104:9898/")
 
 SIGNAL(APP_TAINT, SIG_NONE, SIG_RUNTIME, 0)
 SIGNAL(APP_REFRESH_REQUEST, SIG_NONE, SIG_RUNTIME, 0)
@@ -304,27 +304,6 @@ int app_inject_signals()
     // }
 }
 
-void app_loop()
-{
-    app_inject_signals(); //DO WE HAVE ANY NEWS?
-
-    int bypass = 0;
-    if (SIG_BEFORE_SLEEP.value == 1)
-    {
-        if (SIG_APP_TAINT.value > 0)
-        {
-            //immediate refresh requried
-            app_full_refresh();
-            bypass = 1;
-        }
-    }
-    else if (SIG_APP_REFRESH_REQUEST.value > 0 && millis() > SIG_APP_REFRESH_REQUEST.value)
-    {
-        app_full_refresh();
-        sig_clear(&SIG_APP_REFRESH_REQUEST, 0);
-    }
-}
-
 uint32_t app_schedule_wake()
 {
 
@@ -357,6 +336,19 @@ uint32_t app_schedule_wake()
     }
     DEBUG("APP SCHEDULE WAKE", String(next_wake_point).c_str());
     return next_wake_point;
+}
+
+//see if the canvas is tainted
+void app_before_sleep_cleanup()
+{
+    if (SIG_BEFORE_SLEEP.value == 1)
+    {
+        if (SIG_APP_TAINT.value > 0)
+        {
+            //clear out taint
+            app_full_refresh();
+        }
+    }
 }
 
 #endif

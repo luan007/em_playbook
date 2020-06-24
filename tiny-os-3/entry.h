@@ -173,6 +173,7 @@ void sig_external_event()
 {
     DEBUG("SIG_EXT", "UPDATE TRIGGERED");
     app_inject_signals();
+    app_before_sleep_cleanup();
     fallback_renderer();
 }
 
@@ -345,7 +346,24 @@ void sys_wake()
             }
         }
     }
-    return nap_try_sleep(true);
+    else if (SIG_WAKE.value == WAKE_ULP)
+    {
+        //ok UX triggered, tiny loop then
+        app_full_refresh(); //the user is intended to interact - boot the display first
+        while (true)
+        {
+            hal_io_loop(); //any draw action should be safe now
+            if (SIG_BEFORE_SLEEP.value == 1)
+            {
+            }
+            else if (SIG_APP_REFRESH_REQUEST.value > 0 && millis() > SIG_APP_REFRESH_REQUEST.value)
+            {
+                app_full_refresh();
+                sig_clear(&SIG_APP_REFRESH_REQUEST, 0);
+            }
+        }
+    }
+    return nap_try_sleep(true); //this should be your end
 }
 
 #endif
