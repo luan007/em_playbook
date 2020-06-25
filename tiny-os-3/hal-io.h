@@ -69,7 +69,6 @@ void io_encoder_update(int A, int B)
     {
         A = A & 0xffff;
         B = B & 0xffff;
-        cannot_determine = true;
         // Serial.println(String(A) + ":" + String(B));
         if ((A == 1 && B == 3) || (A == 2 && B == 0))
         {
@@ -89,6 +88,7 @@ void io_encoder_update(int A, int B)
         }
         else if ((A == 3 && B == 0) || (A == 0 && B == 3))
         {
+            cannot_determine = true;
         }
     }
     else

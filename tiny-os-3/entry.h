@@ -179,6 +179,7 @@ void sig_external_event()
 
 void reg_vars()
 {
+    sig_reg(&SIG_EINK_MEM_ONLY); //<--warning: things related to this one still needs to be tested
     sig_reg(&SIG_DBG_MODE);
     sig_reg(&SIG_WAKE);
     sig_reg(&SIG_WIFI);
@@ -358,14 +359,17 @@ void sys_wake()
     }
     else if (SIG_WAKE.value == WAKE_ULP)
     {
+        nap_io_from_ulp();
         if (SIG_DBG_MODE.value > 0)
         {
             DEBUG("X  -  -  WARNING  -  -  X\n\n", "DEBUG_MODE_ENABLED");
         }
         //ok UX triggered, tiny loop then
-        app_full_refresh(); //the user is intended to interact - boot the display first
+        // app_full_refresh(); //the user is intended to interact - boot the display first
+        // no need though
         while (true)
         {
+            hal_io_loop(); //any draw action should be safe now
             while (Serial.available())
             {
                 //read stuff from serial
@@ -403,12 +407,10 @@ void sys_wake()
                 app_full_refresh();
                 sig_clear(&SIG_APP_REFRESH_REQUEST, 0);
             }
-            hal_io_loop(); //any draw action should be safe now
             if (compute_sleep_preconditions())
             {
                 break;
             }
-
             sig_save();
             yield();
         }

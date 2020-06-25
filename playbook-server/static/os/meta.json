@@ -1,9 +1,8 @@
 {
-    "version": 10005,
+    "version": 10006,
     "capability": {
         "main": "main",
         "os": "os",
-        "overlay": "signal",
         "signal": "signal"
     }
 }

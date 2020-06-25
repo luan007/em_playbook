@@ -33,8 +33,8 @@ public:
   static const uint16_t reset_to_ready_time = 10; // ms, e.g. 1721883us
   static const uint16_t power_on_time = 10;         // ms, e.g. 3879us
   static const uint16_t power_off_time = 10;       // ms, e.g. 109875us 1000
-  static const uint16_t full_refresh_time = 300;    // ms, e.g. 573921us 600
-  static const uint16_t partial_refresh_time = 100; // ms, e.g. 246948us 300
+  static const uint16_t full_refresh_time = 200;    // ms, e.g. 573921us 600
+  static const uint16_t partial_refresh_time = 50; // ms, e.g. 246948us 300
   static const uint16_t refresh_cmd_time = 10;      // ms, e.g. 6460us
   static const uint16_t refresh_par_time = 2;       // ms, e.g. 1921us
   static const uint16_t default_wait_time = 1;      // ms, default busy check, needed?

@@ -14,6 +14,8 @@
 // extern int app_full_refresh();
 // extern int app_safe_refresh();
 
+extern int app_restore_display_memory();
+
 Preferences preferences;
 extern "C"
 {
@@ -212,6 +214,7 @@ extern "C"
             display.fillScreen(GxEPD_WHITE);
             display.println(final);
         } while (display.nextPage());
+        return 1;
     }
 
     static int expose_screen_print_complex(lua_State *lua)
@@ -234,6 +237,7 @@ extern "C"
             display.fillScreen(GxEPD_WHITE);
             display.println(final);
         } while (display.nextPage());
+        return 1;
     }
 
     static int expose_serial_print(lua_State *lua)
@@ -241,10 +245,12 @@ extern "C"
         String a = String(luaL_checkstring(lua, 1));
         Serial.print("LUA OUTPUT:\t");
         Serial.println(a);
+        return 1;
     }
 
     static int expose_smart_draw(lua_State *lua)
     {
+        app_restore_display_memory();
         String asset = String(luaL_checkstring(lua, 1));
         int16_t _w = (luaL_checkinteger(lua, 2));
         int16_t _h = (luaL_checkinteger(lua, 3));
@@ -265,10 +271,71 @@ extern "C"
                                dstx,
                                dsty,
                                flush_count);
+        return 1;
+    }
+
+    static int expose_smart_draw_corrected_dim(lua_State *lua)
+    {
+        app_restore_display_memory();
+        String asset = String(luaL_checkstring(lua, 1));
+        //note, twist
+        int16_t imgw = (luaL_checkinteger(lua, 2));
+        int16_t imgh = (luaL_checkinteger(lua, 3));
+        int16_t srcminx = (luaL_checkinteger(lua, 4));
+        int16_t srcminy = (luaL_checkinteger(lua, 5));
+        int16_t srcmaxx = (luaL_checkinteger(lua, 6));
+        int16_t srcmaxy = (luaL_checkinteger(lua, 7));
+        int16_t dstx = (luaL_checkinteger(lua, 8));
+        int16_t dsty = (luaL_checkinteger(lua, 9));
+        int16_t flush_count = (luaL_checkinteger(lua, 10));
+        int16_t width = srcmaxx - srcminx;
+
+        display_power(1);
+        display_bin_smart_draw(asset.c_str(),
+                               imgh, imgw,
+                               srcminy,        //real x on flipped img
+                               imgw - srcmaxx, //real y on flipped img
+                               srcmaxy,
+                               imgw - srcminx,
+                               dsty,
+                               600 - dstx - width,
+                               flush_count);
+        return 1;
+    }
+
+    static int expose_smart_draw_corrected_relative(lua_State *lua)
+    {
+        app_restore_display_memory();
+        String asset = String(luaL_checkstring(lua, 1));
+        //note, twist
+        int16_t imgw = (luaL_checkinteger(lua, 2));
+        int16_t imgh = (luaL_checkinteger(lua, 3));
+        int16_t srcminx = (luaL_checkinteger(lua, 4));
+        int16_t srcminy = (luaL_checkinteger(lua, 5));
+        int16_t srcmaxx = srcminx + (luaL_checkinteger(lua, 6));
+        int16_t srcmaxy = srcminy + (luaL_checkinteger(lua, 7));
+        int16_t dstx = (luaL_checkinteger(lua, 8));
+        int16_t dsty = (luaL_checkinteger(lua, 9));
+        int16_t flush_count = (luaL_checkinteger(lua, 10));
+        srcmaxx = srcmaxx > imgw ? imgw : srcmaxx;
+        srcmaxy = srcmaxy > imgh ? imgh : srcmaxy;
+        int16_t width = srcmaxx - srcminx;
+        display_power(1);
+        display_bin_smart_draw(asset.c_str(),
+                               imgh, imgw,
+                               srcminy,        //real x on flipped img
+                               imgw - srcmaxx, //real y on flipped img
+                               srcmaxy,
+                               imgw - srcminx,
+                               dsty,
+                               600 - dstx - width,
+                               flush_count);
+        return 1;
     }
 
     static int expose_flush_screen(lua_State *lua)
     {
+        app_restore_display_memory();
         int16_t x = (luaL_checkinteger(lua, 1));
         int16_t y = (luaL_checkinteger(lua, 2));
         int16_t w = (luaL_checkinteger(lua, 3));
@@ -276,11 +343,54 @@ extern "C"
         bool partial = (luaL_checkinteger(lua, 5)) > 0 ? true : false;
         display_power(1);
         display_bin_flush_screen(x, y, w, h, partial);
+        return 1;
+    }
+
+    static int expose_flush_screen_corrected(lua_State *lua)
+    {
+        app_restore_display_memory();
+        int16_t x = (luaL_checkinteger(lua, 1));
+        int16_t y = (luaL_checkinteger(lua, 2));
+        int16_t w = (luaL_checkinteger(lua, 3));
+        int16_t h = (luaL_checkinteger(lua, 4));
+        bool partial = (luaL_checkinteger(lua, 5)) > 0 ? true : false;
+        display_power(1);
+        display_bin_flush_screen(y, x, h, w, partial);
+        return 1;
+    }
+
+    static int expose_flush_auto(lua_State *lua)
+    {
+        app_restore_display_memory();
+        display_power(1);
+        display_bin_auto_flush_if_dirty(
+            luaL_checkinteger(lua, 1),
+            luaL_checkinteger(lua, 2) > 0 ? true : false
+        );
+        return 1;
+    }
+
+    static int expose_flush_clear(lua_State *lua)
+    {
+        reset_dirty_indicator();
+        return 1;
     }
 
     static int expose_require_base_render(lua_State *lua)
     {
-        // app_safe_refresh();
+        app_restore_display_memory();
+        return 1;
+    }
+
+    static int expose_screen_need_restore(lua_State *lua)
+    {
+        sig_set(&SIG_APP_TAINT, 1);
+        if (lua_gettop(lua) == 1)
+        {
+            int16_t auto_restore = (luaL_checkinteger(lua, 1));
+            sig_set(&SIG_APP_REFRESH_REQUEST,
+                    SIG_APP_REFRESH_REQUEST.value > auto_restore ? auto_restore : SIG_APP_REFRESH_REQUEST.value);
+        }
         return 1;
     }
 }
@@ -332,6 +442,11 @@ void lua_shell_prep()
     lua_shell_inject_function("smart_draw", (const lua_CFunction)&expose_smart_draw);
     lua_shell_inject_function("sys_yield", (const lua_CFunction)&expose_yield);
     lua_shell_inject_function("flush_screen", (const lua_CFunction)&expose_flush_screen);
+    lua_shell_inject_function("flush_screen_c", (const lua_CFunction)&expose_flush_screen_corrected);
+    lua_shell_inject_function("flush_auto", (const lua_CFunction)&expose_flush_auto);
+    lua_shell_inject_function("clear_auto_flush", (const lua_CFunction)&epose_flush_clear);
+    lua_shell_inject_function("smart_draw_c", (const lua_CFunction)&expose_smart_draw_corrected_dim);
+    lua_shell_inject_function("smart_draw_r", (const lua_CFunction)&expose_smart_draw_corrected_relative);
 
     lua_shell_inject_function("load_float", (const lua_CFunction)&expose_load_float);
     lua_shell_inject_function("load_int", (const lua_CFunction)&expose_load_int);
@@ -346,7 +461,9 @@ void lua_shell_prep()
     lua_shell_inject_function("sig_get", (const lua_CFunction)&expose_get_signal_value);
     lua_shell_inject_function("sig_set", (const lua_CFunction)&expose_set_signal_value);
     lua_shell_inject_function("sig_clear", (const lua_CFunction)&expose_resolve_signal);
-    // lua_shell_inject_function("base_draw", (const lua_CFunction)&expose_require_base_render);
+    lua_shell_inject_function("mem_draw", (const lua_CFunction)&expose_require_base_render);
+    lua_shell_inject_function("req_redraw", (const lua_CFunction)&expose_screen_need_restore);
+    lua_shell_inject_function("tainted", (const lua_CFunction)&expose_screen_need_restore);
 
     //inject libs
     File shared_root = USE_FS.open("/shared");

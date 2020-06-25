@@ -1,14 +1,19 @@
 -- wake sequence
 
-local ox = 20
+sprint("WAKING FROM SIGNALS")
+local ox = 700
 local oy = 20
 
-if sig_alert("WIFI") > 0 or sig_alert("WAKE") > 0 then
-    smart_draw("/os/elements-en.bin", 300, 600, 0, 600 - 64, 64, 600, 0 + ox, 0 + oy, 0)
-    smart_draw("/os/elements-en.bin", 300, 600, 0, 600 - 300, 64, 600 - 64, 0 + ox, 64 + oy, 0)
-    flush_screen(ox, oy, 64, 128, 0)
+if sig_alert("ENC_COUNT") > 0 then
+    -- smart_draw("/os/elements-en.bin", 300, 600, 0, 600 - 64, 64, 600, 0 + ox, 0 + oy, 0)
+    smart_draw_r("/os/elements-en.bin", 600, 300, 0, 0, 64, 64, 600 - 100, 700, 0)
+    -- smart_draw("/os/elements-en.bin", 600, 300, 0, 0, 64, 64, 600 - 84, 800 - 100, 0)
+    -- smart_draw("/os/elements-en.bin", 300, 600, 0, 600 - 300, 64, 600 - 64, 0 + ox, 64 + oy, 0)
+    -- flush_screen(ox, oy, 64, 64, 0)
+    -- flush_screen(ox, oy, 64, 64, 0)
 end
 
+sig_clear("ENC_COUNT")
 sig_clear("SYS_MSG")
 sig_clear("WAKE")
 sig_clear("BEFORE_SLEEP")

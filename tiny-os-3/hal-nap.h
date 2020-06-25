@@ -89,6 +89,10 @@ void nap_try_sleep(bool NOW, uint32_t set_schedule = 0)
 
 void nap_io_from_ulp()
 {
+    DEBUG("NAP-IO-TOUCH", String((ulp__touch & 0xFFFF)).c_str());
+    DEBUG("NAP-IO-SW", String((ulp__switch & 0xFFFF)).c_str());
+    DEBUG("NAP-IO-EN", String((ulp__encoder_state & 0xFFFF)).c_str());
+    DEBUG("NAP-IO-EN_P", String((ulp__prev_encoder_state & 0xFFFF)).c_str());
     if ((ulp__touch & 0xFFFF) > 0)
     {
         io_touch_update();

@@ -114,7 +114,8 @@ typedef struct signal
     int value;
     int debug_level;
     int triggered;
-    int _saved_value; //to ensure not writing too many times during loop
+    int _saved_value;   //to ensure not writing too many times during loop
+    int _saved_trigger; //to ensure not writing too many times during loop
     int _notified_value;
 };
 
@@ -130,6 +131,17 @@ SIGNAL(SYS_MSG, SIG_ALL, SIG_IMMEDIATE, 0)
 SIGNAL(ALLOW_LOOP, SIG_NONE, SIG_RUNTIME, 0)
 SIGNAL(NO_MORE_OP, SIG_ALL, SIG_IMMEDIATE, 0)
 SIGNAL(DBG_MODE, SIG_ALL, SIG_POWERLOSS, 0)
+
+
+SIGNAL(APP_TAINT, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(APP_REFRESH_REQUEST, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(APP_SAFE_RENDER, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(APP_UPT_STATE, SIG_ALL, SIG_IMMEDIATE, 0)
+SIGNAL(APP_TRY, SIG_NONE, SIG_POWERLOSS, 0)
+SIGNAL(APP_NRUN, SIG_NONE, SIG_POWERLOSS, 0) //NEXT RUN
+SIGNAL(APP_NUPD, SIG_NONE, SIG_POWERLOSS, 0) //NEXT UPDATE
+
+
 
 std::list<struct signal *> signals;
 
@@ -248,6 +260,7 @@ void sig_init()
             i->value = _signal_store.getInt(i->name);
             i->triggered = _signal_store.getInt((String("t") + i->name).c_str(), 0);
             i->_saved_value = i->value;
+            i->_saved_trigger = i->triggered;
             i->_notified_value = i->value;
             DEBUG("SIG", (String("Load ") + i->name + " = " + i->value).c_str());
         }
@@ -269,13 +282,14 @@ void sig_save(bool LAST_CYCLE = false)
 
     for (auto i : signals)
     {
-        if (i->presist_behavior == SIG_POWERLOSS && (i->value != i->_saved_value))
+        if (i->presist_behavior == SIG_POWERLOSS && ((i->value != i->_saved_value) || (i->triggered != i->_saved_trigger)))
         {
             has_saved = true;
             _signal_store.begin("signal_store", false); //preferences.h already checks _started for us
             _signal_store.putInt(i->name, i->value);
             _signal_store.putInt((String("t") + i->name).c_str(), i->triggered);
             i->_saved_value = i->value;
+            i->_saved_trigger = i->triggered;
             DEBUG(">>> WRITE", (String(i->name) + " = " + i->value).c_str());
         }
     }

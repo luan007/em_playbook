@@ -15,6 +15,7 @@
 GxEPD2_BW<GxEPD2_it60, GxEPD2_it60::HEIGHT / 24> display(GxEPD2_it60(/*CS=5*/ 5, /*DC=*/0, /*RST=*/-1, /*BUSY=*/4));
 
 SIGNAL(EINK_DRAW, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(EINK_MEM_ONLY, SIG_NONE, SIG_RUNTIME, 0)
 
 int e_ink_state = -1;
 void display_power(int ON_OFF)
@@ -124,14 +125,82 @@ void display_dbg_print_no_fullscreen(String str)
     sig_set(&SIG_EINK_DRAW, millis());
 }
 
+struct
+{
+    int minx = 1000;
+    int miny = 1000;
+    int maxx = 0;
+    int maxy = 0;
+    bool dirty = false;
+} display_dirty_area;
+
 //draw bin
+
+int reset_dirty_indicator()
+{
+    display_dirty_area.minx = 1000;
+    display_dirty_area.miny = 1000;
+    display_dirty_area.maxx = 0;
+    display_dirty_area.maxy = 0;
+    display_dirty_area.dirty = false;
+}
 
 int display_bin_flush_screen(int16_t x, int16_t y, int16_t w, int16_t h, bool partial_mode)
 {
+
+    if (SIG_EINK_MEM_ONLY.value != 0)
+        return 0;
+
+    int tx = x + w;
+    int ty = y + h;
+    x = max(min((int)x, 800), 0);
+    y = max(min((int)y, 600), 0);
+    tx = max(min((int)tx, 800), 0);
+    ty = max(min((int)ty, 600), 0);
+
+    w = tx - x;
+    h = ty - y;
+
+    Serial.printf("FLUSH (%d,%d) (%d,%d)\n",
+                  x,
+                  y,
+                  w,
+                  h);
+
+    if (w + h == 0)
+    {
+        return 0;
+    }
+    //this call will be suppressed during mem init
     display.epd2.refresh(x, y, w, h, partial_mode);
     sig_set(&SIG_EINK_DRAW, millis());
+
+    return 1;
 }
 
+int display_bin_auto_flush_if_dirty(int count, bool partial_mode)
+{
+    if (display_dirty_area.dirty)
+    {
+        Serial.printf("CLEAN (%d,%d) (%d,%d)\n",
+                      display_dirty_area.minx,
+                      display_dirty_area.miny,
+                      display_dirty_area.maxx,
+                      display_dirty_area.maxy);
+        for (int i = 0; i < count; i++)
+        {
+            display_bin_flush_screen(
+                display_dirty_area.minx,
+                display_dirty_area.miny,
+                display_dirty_area.maxx - display_dirty_area.minx,
+                display_dirty_area.maxy - display_dirty_area.miny,
+                partial_mode);
+        }
+        reset_dirty_indicator();
+    }
+}
+
+//memory = 485k
 int display_bin_smart_draw(const char *name,
                            int16_t _w, int16_t _h,
                            int16_t BIN_SRC_MINX,
@@ -142,6 +211,10 @@ int display_bin_smart_draw(const char *name,
                            int16_t DSTY,
                            int16_t FLUSH_COUNT)
 {
+
+    Serial.printf("DBSD (%d %d) (%d,%d) (%d,%d) => [%d,%d]\n",
+                  _w, _h, BIN_SRC_MINX, BIN_SRC_MINY, BIN_SRC_MAXX, BIN_SRC_MAXY, DSTX, DSTY);
+
     int EINKW = 800;
     int EINKH = 600;
     DSTX = DSTX < 0 ? 0 : DSTX;
@@ -220,12 +293,26 @@ int display_bin_smart_draw(const char *name,
     }
     display.epd2.endWriteNativeNoRefresh();
     file.close();
-    for (int i = 0; i < FLUSH_COUNT; i++)
+    for (int i = 0; SIG_EINK_MEM_ONLY.value == 0 && i < FLUSH_COUNT; i++)
     {
         display.epd2.refresh(DSTX, DSTY, clamp_w, clamp_h, false);
     }
+    //real stuff will taint the display!
+    if (SIG_EINK_MEM_ONLY.value == 0 && FLUSH_COUNT == 0) //no flush, screen dirty
+    {
+        //push to dirty area
+        display_dirty_area.minx = min(display_dirty_area.minx, (int)DSTX);
+        display_dirty_area.miny = min(display_dirty_area.miny, (int)DSTY);
+        display_dirty_area.maxx = max(display_dirty_area.maxx, (int)(clamp_w + DSTX));
+        display_dirty_area.maxy = max(display_dirty_area.maxy, (int)(clamp_h + DSTY));
+        display_dirty_area.dirty = true;
+        Serial.printf("DIRTY (%d,%d) (%d,%d)\n",
+                      display_dirty_area.minx,
+                      display_dirty_area.miny,
+                      display_dirty_area.maxx,
+                      display_dirty_area.maxy);
+    }
     sig_set(&SIG_EINK_DRAW, millis());
 }
-
 
 #endif

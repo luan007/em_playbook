@@ -21,14 +21,6 @@ int app_full_refresh();
 #define APP_NEXT_RUN_DEFAULT_UPDATE 60    //30sec - for debug only
 CONFIG(SRV_ROOT, 0, "http://192.168.9.104:9898/")
 
-SIGNAL(APP_TAINT, SIG_NONE, SIG_RUNTIME, 0)
-SIGNAL(APP_REFRESH_REQUEST, SIG_NONE, SIG_RUNTIME, 0)
-SIGNAL(APP_SAFE_RENDER, SIG_NONE, SIG_RUNTIME, 0)
-SIGNAL(APP_UPT_STATE, SIG_ALL, SIG_IMMEDIATE, 0)
-SIGNAL(APP_TRY, SIG_NONE, SIG_POWERLOSS, 0)
-SIGNAL(APP_NRUN, SIG_NONE, SIG_POWERLOSS, 0) //NEXT RUN
-SIGNAL(APP_NUPD, SIG_NONE, SIG_POWERLOSS, 0) //NEXT UPDATE
-
 DynamicJsonDocument app_data(2048); //good chunk of memory
 
 //download one app & inflate
@@ -90,6 +82,27 @@ inline void _app_upgrade_failed_attempt()
     sig_set(&SIG_APP_TRY, SIG_APP_TRY.value + 1);
 }
 
+int app_load_version_file(bool force = false)
+{
+    static int app_data_version_exist = 0;
+    if (app_data_version_exist == 0 || force)
+    {
+        app_data_version_exist = 1;
+        app_data.clear();
+        File f = USE_FS.open("/versions");
+        String json = f.readString();
+        DeserializationError error = deserializeJson(app_data, json);
+        f.close();
+        if (error)
+        {
+            app_data_version_exist = 0; //needs retry next time :p
+            return -1;
+        }
+        return 1;
+    }
+    return 1;
+}
+
 //periodic update of app list
 int app_mgr_upgrade(bool FORCE = false)
 {
@@ -110,13 +123,9 @@ int app_mgr_upgrade(bool FORCE = false)
         return -1;
     }
     //read everything in mem
-    app_data.clear();
-    File f = USE_FS.open("/versions");
-    String json = f.readString();
-    DeserializationError error = deserializeJson(app_data, json);
-    f.close();
+    int _ver_result = app_load_version_file(true);
     JsonObject root = app_data.as<JsonObject>();
-    if (error)
+    if (_ver_result == -1)
     {
         sig_set(&SIG_APP_UPT_STATE, APP_UPT_STATE_FAILED);
         _app_upgrade_failed_attempt();
@@ -238,15 +247,6 @@ int app_mgr_loop_procedures(String key)
 {
     Serial.print("APP LOOP Procedures - ");
     Serial.println(key);
-    app_data.clear();
-    File f = USE_FS.open("/versions");
-    String json = f.readString();
-    DeserializationError error = deserializeJson(app_data, json);
-    f.close();
-    if (error)
-    {
-        return -1;
-    }
     JsonObject root = app_data.as<JsonObject>();
     for (auto p : root)
     {
@@ -259,7 +259,13 @@ int app_refresh_inited = 0;
 
 int app_full_refresh()
 {
+    if (app_load_version_file() == -1)
+    {
+        return -1;
+    }
+
     sig_clear(&SIG_APP_TAINT, 0);
+    app_mgr_loop_procedures("background");
     String current_app = getString("APP");
     if (current_app != "")
     {
@@ -267,22 +273,34 @@ int app_full_refresh()
     }
     else
     {
-        app_mgr_run_procedure("os", "main");
+        app_mgr_run_procedure("os", "no_app");
     }
-    app_mgr_loop_procedures("os");
+    app_mgr_run_procedure("os", "os");
     app_mgr_loop_procedures("overlay");
-    app_refresh_inited = 1;
     sig_set(&SIG_APP_NRUN, rtc_unix_time() + APP_NEXT_RUN_DEFAULT_INTERVAL);
+
+    display_bin_auto_flush_if_dirty(2, false);
     return 0;
 }
 
-int app_safe_refresh()
+int app_restore_display_memory() //dangerous
 {
-    if (!app_refresh_inited)
+    if (app_refresh_inited == 0)
     {
+        app_refresh_inited = 1;
+        display_power(1);
         DEBUG("APP", "SAFE REFRESH");
+        sig_set(&SIG_EINK_MEM_ONLY, 1);
+
+        auto _current_state = _state; //pointer to old lua
         app_full_refresh();
+        _state = _current_state; //swap back
+
+        sig_set(&SIG_EINK_MEM_ONLY, 0);
+        display_bin_flush_screen(0, 0, 800, 600, false);
+        display_bin_flush_screen(0, 0, 800, 600, false); //make this super clear
     }
+    return 0;
 }
 
 int app_inject_signals()
@@ -299,8 +317,11 @@ int app_inject_signals()
     // }
     // if (trigger)
     // {
-    Serial.println("APP SIG TRIGGER!----");
+    if (app_load_version_file() == -1)
+        return -1;
     app_mgr_loop_procedures("signal");
+    display_bin_auto_flush_if_dirty(1, false);
+    return 1;
     // }
 }
 
