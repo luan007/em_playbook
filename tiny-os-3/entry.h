@@ -177,13 +177,9 @@ void sig_external_event()
     fallback_renderer();
 }
 
-void sleep_prevention()
-{
-    nap_set_enter_sleep_after(SIG_EINK_DRAW.value + 100); //when drawed, don't sleep
-}
-
 void reg_vars()
 {
+    sig_reg(&SIG_DBG_MODE);
     sig_reg(&SIG_WAKE);
     sig_reg(&SIG_WIFI);
     sig_reg(&SIG_BEFORE_SLEEP);
@@ -231,7 +227,6 @@ void sys_wake();
 void sys_tick()
 {
     sig_tick();
-    sleep_prevention();
     //hal_io_tick <-- this should be called manually
 }
 
@@ -249,6 +244,21 @@ void sys_init()
 }
 
 //////////////ACTUAL WAKE SEQ
+
+bool compute_sleep_preconditions()
+{
+    if (SIG_DBG_MODE.value > 0)
+    {
+        return false;
+    }
+    if (millis() - SIG_EINK_DRAW.value < 3000)
+        return false;
+    if (millis() - SIG_USER_ACTION.value < 3000)
+        return false;
+    if (SIG_APP_REFRESH_REQUEST.value > 0)
+        return false;
+    return true;
+}
 
 void sys_wake()
 {
@@ -348,19 +358,59 @@ void sys_wake()
     }
     else if (SIG_WAKE.value == WAKE_ULP)
     {
+        if (SIG_DBG_MODE.value > 0)
+        {
+            DEBUG("X  -  -  WARNING  -  -  X\n\n", "DEBUG_MODE_ENABLED");
+        }
         //ok UX triggered, tiny loop then
         app_full_refresh(); //the user is intended to interact - boot the display first
         while (true)
         {
-            hal_io_loop(); //any draw action should be safe now
-            if (SIG_BEFORE_SLEEP.value == 1)
+            while (Serial.available())
             {
+                //read stuff from serial
+                char c = Serial.read();
+                switch (c)
+                {
+                case 'D': //start DBG mode
+                    sig_set(&SIG_DBG_MODE, 1);
+                    sig_save(true);
+                    break;
+                case 'E': //stop DBG mode
+                    sig_set(&SIG_DBG_MODE, 0);
+                    sig_save(true);
+                    break;
+                case 'R': //force refresh
+                    sig_set(&SIG_APP_REFRESH_REQUEST, millis());
+                    break;
+                case 'N': //force download
+                    net_wifi_connect();
+                    break;
+                case '0': //force download
+                    net_reset();
+                    break;
+                case 'U': //force download
+                    app_mgr_upgrade();
+                    break;
+                case 'F': //force download
+                    DEBUG("WARN", "Forcing full update");
+                    app_mgr_upgrade(true);
+                    break;
+                }
             }
-            else if (SIG_APP_REFRESH_REQUEST.value > 0 && millis() > SIG_APP_REFRESH_REQUEST.value)
+            if (SIG_APP_REFRESH_REQUEST.value > 0 && millis() > SIG_APP_REFRESH_REQUEST.value)
             {
                 app_full_refresh();
                 sig_clear(&SIG_APP_REFRESH_REQUEST, 0);
             }
+            hal_io_loop(); //any draw action should be safe now
+            if (compute_sleep_preconditions())
+            {
+                break;
+            }
+
+            sig_save();
+            yield();
         }
     }
     return nap_try_sleep(true); //this should be your end

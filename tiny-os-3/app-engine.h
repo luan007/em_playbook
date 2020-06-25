@@ -91,7 +91,7 @@ inline void _app_upgrade_failed_attempt()
 }
 
 //periodic update of app list
-int app_mgr_upgrade()
+int app_mgr_upgrade(bool FORCE = false)
 {
     if (!WiFi.isConnected())
     {
@@ -126,7 +126,7 @@ int app_mgr_upgrade()
     for (auto p : root)
     {
         const char *key = p.key().c_str();
-        if (app_mgr_is_update_needed(key, p.value().as<JsonObject>()) > 0)
+        if (FORCE || app_mgr_is_update_needed(key, p.value().as<JsonObject>()) > 0)
         {
             result = 2;                                        //something has change
             result = app_mgr_fetch_app(key) > 0 ? result : -3; //has app error

@@ -108,6 +108,14 @@ int net_wifi_connect(int internal_retries, bool sneaky_time_config = true)
     }
 }
 
+int net_reset()
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        WiFi.disconnect();
+    }
+}
+
 int net_wifi_connect(bool sneaky_time_config = true)
 {
     if (WiFi.status() == WL_CONNECTED)

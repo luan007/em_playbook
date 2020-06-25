@@ -215,7 +215,7 @@ void hal_io_loop()
     io_touch_update();
     io_sw_update();
     io_encoder_update(-1, -1);
-    wdt_clear();
+    // wdt_clear();
 }
 
 #endif
