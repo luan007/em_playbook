@@ -444,7 +444,7 @@ void lua_shell_prep()
     lua_shell_inject_function("flush_screen", (const lua_CFunction)&expose_flush_screen);
     lua_shell_inject_function("flush_screen_c", (const lua_CFunction)&expose_flush_screen_corrected);
     lua_shell_inject_function("flush_auto", (const lua_CFunction)&expose_flush_auto);
-    lua_shell_inject_function("clear_auto_flush", (const lua_CFunction)&epose_flush_clear);
+    lua_shell_inject_function("clear_auto_flush", (const lua_CFunction)&expose_flush_clear);
     lua_shell_inject_function("smart_draw_c", (const lua_CFunction)&expose_smart_draw_corrected_dim);
     lua_shell_inject_function("smart_draw_r", (const lua_CFunction)&expose_smart_draw_corrected_relative);
 
