@@ -16,6 +16,16 @@
 
 extern int app_restore_display_memory();
 
+String lua_shell_injection; //code pieces gets called before anything
+
+void lua_set_shell_reason(const char *reason)
+{
+    // Serial.print("REASON PREP");
+    // Serial.println(reason);
+    lua_shell_injection.clear();
+    lua_shell_injection = String("REASON = \"") + reason + "\"";
+}
+
 Preferences preferences;
 extern "C"
 {
@@ -66,8 +76,13 @@ extern "C"
         //namespace, key, value
         String ns = String(luaL_checkstring(lua, 1));
         const char *key = (luaL_checkstring(lua, 2));
+        int def = 0;
+        if (lua_gettop(lua) == 3)
+        {
+            def = luaL_checkinteger(lua, 3);
+        }
         preferences.begin((ns).c_str(), false);
-        int val = preferences.getInt(key, val);
+        int val = preferences.getInt(key, def);
         preferences.end();
         lua_pushnumber(lua, (lua_Number)val);
         return 1;
@@ -248,6 +263,23 @@ extern "C"
         return 1;
     }
 
+    static int expose_load_lib(lua_State *lua)
+    {
+        String path = String(luaL_checkstring(lua, 1));
+        //note this one is not isolated yet
+        //TODO: add security
+        File file = USE_FS.open(path);
+        const int ret = luaL_dostring(lua, file.readString().c_str());
+        if (ret != LUA_OK)
+        {
+            Serial.println("Error\n");
+            Serial.println(lua_tostring(lua, -1));
+            lua_pop(lua, 1); // pop error message
+        }
+        file.close();
+        return 1;
+    }
+
     static int expose_smart_draw(lua_State *lua)
     {
         app_restore_display_memory();
@@ -365,8 +397,7 @@ extern "C"
         display_power(1);
         display_bin_auto_flush_if_dirty(
             luaL_checkinteger(lua, 1),
-            luaL_checkinteger(lua, 2) > 0 ? true : false
-        );
+            luaL_checkinteger(lua, 2) > 0 ? true : false);
         return 1;
     }
 
@@ -431,6 +462,7 @@ void lua_shell_prep()
     luaL_requiref(_state, LUA_MATHLIBNAME, luaopen_math, 1);
     lua_pop(_state, 1);
 
+    lua_shell_inject_function("loadlib", (const lua_CFunction)&expose_load_lib);
     lua_shell_inject_function("sprint", (const lua_CFunction)&expose_serial_print);
     lua_shell_inject_function("delay", (const lua_CFunction)&expose_delay);
     lua_shell_inject_function("pinMode", (const lua_CFunction)&expose_gpio_pinmode);
@@ -464,6 +496,15 @@ void lua_shell_prep()
     lua_shell_inject_function("mem_draw", (const lua_CFunction)&expose_require_base_render);
     lua_shell_inject_function("req_redraw", (const lua_CFunction)&expose_screen_need_restore);
     lua_shell_inject_function("tainted", (const lua_CFunction)&expose_screen_need_restore);
+
+    const int ret = luaL_dostring(_state, lua_shell_injection.c_str());
+    Serial.println(lua_shell_injection);
+    if (ret != LUA_OK)
+    {
+        Serial.println("Error\n");
+        Serial.println(lua_tostring(_state, -1));
+        lua_pop(_state, 1); // pop error message
+    }
 
     //inject libs
     File shared_root = USE_FS.open("/shared");

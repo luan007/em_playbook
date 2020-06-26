@@ -200,6 +200,7 @@ int display_bin_auto_flush_if_dirty(int count, bool partial_mode)
     }
 }
 
+//dirty code - needs clean up!
 //memory = 485k
 int display_bin_smart_draw(const char *name,
                            int16_t _w, int16_t _h,
@@ -237,6 +238,15 @@ int display_bin_smart_draw(const char *name,
     int x = 0;
     int y = 0;
     display.epd2.beginWriteNative(DSTX, DSTY, clamp_w, clamp_h);
+
+    int x_pad_begin = ((DSTX % 4) == 0) ? 0 : (4 - (DSTX % 4));
+    int x_pad_end = (((DSTX + clamp_w) % 4) == 0) ? 0 : (4 - ((DSTX + clamp_w) % 4));
+
+    Serial.printf("DISP CRP (%d %d) (%d %d)\n",
+                  DSTX, DSTY, DSTX + clamp_w, DSTY + clamp_h);
+
+    Serial.printf("DISP PAD (%d %d)\n", x_pad_begin, x_pad_end);
+
     int _ended = 0;
 
     int color = 0;
@@ -244,6 +254,7 @@ int display_bin_smart_draw(const char *name,
     uint8_t buf[512];
     uint8_t out_buf[512];
     int buf_len = 0;
+    int bit_c = 0;
     while (true)
     {
         int len = file.read(buf, sizeof(buf));
@@ -258,12 +269,43 @@ int display_bin_smart_draw(const char *name,
             int color = buf[i + 1];
             for (int j = 0; j < count; j++)
             {
+                if (y >= BIN_SRC_MINY && y < REAL_MAX_Y && x == 0)
+                { // src line begin
+                    for (int q = 0; q < x_pad_begin; q++)
+                    {
+                        if (bit_c == 0)
+                        {
+                            bit_c = 1;
+                            out_buf[buf_len] = 0;
+                        }
+                        else
+                        {
+                            bit_c = 0;
+                            out_buf[buf_len++] |= 0;
+                        }
+                        if (buf_len >= 512)
+                        {
+                            SPI.transfer(out_buf, buf_len);
+                            buf_len = 0;
+                        }
+                    }
+                }
+
                 if (x >= BIN_SRC_MINX && x < REAL_MAX_X &&
                     y >= BIN_SRC_MINY && y < REAL_MAX_Y)
                 {
                     //          display.epd2.writeSingleByte((unsigned char)(color & 0xff));
                     //            SPI.transfer(color & 0xff);
-                    out_buf[buf_len++] = color & 0xff;
+                    if (bit_c == 0)
+                    {
+                        bit_c = 1;
+                        out_buf[buf_len] = ((color >> 4) & 0xF) << 4;
+                    }
+                    else
+                    {
+                        bit_c = 0;
+                        out_buf[buf_len++] |= ((color >> 4) & 0xF);
+                    }
                     if (buf_len >= 512)
                     {
                         SPI.transfer(out_buf, buf_len);
@@ -271,6 +313,29 @@ int display_bin_smart_draw(const char *name,
                     }
                 }
                 x++;
+
+                if (y >= BIN_SRC_MINY && y < REAL_MAX_Y && x == _w)
+                { // src line begin
+                    for (int q = 0; q < x_pad_end; q++)
+                    {
+                        if (bit_c == 0)
+                        {
+                            bit_c = 1;
+                            out_buf[buf_len] = 0;
+                        }
+                        else
+                        {
+                            bit_c = 0;
+                            out_buf[buf_len++] |= 0;
+                        }
+                        if (buf_len >= 512)
+                        {
+                            SPI.transfer(out_buf, buf_len);
+                            buf_len = 0;
+                        }
+                    }
+                }
+
                 if (x >= _w)
                 {
                     y++;

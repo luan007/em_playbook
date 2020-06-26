@@ -5,6 +5,7 @@ var app = exp();
 var comp = require('./bmp-compress');
 var puppeteer = require('puppeteer');
 const Jimp = require("jimp")
+const sharp = require('sharp');
 var PORT = 9898;
 var APP_ROOT = __dirname + "/static/";
 var browser;
@@ -17,8 +18,8 @@ async function render_html(url, file_out) {
     await page.goto(url);
     const dimensions = await page.evaluate(() => {
         return {
-            width: document.body.offsetWidth,
-            height: document.body.offsetHeight,
+            width: document.querySelector(".capture") ? document.querySelector(".capture").offsetWidth : document.body.offsetWidth,
+            height: document.querySelector(".capture") ? document.querySelector(".capture").offsetHeight : document.body.offsetHeight,
             deviceScaleFactor: window.devicePixelRatio
         };
     });
@@ -29,30 +30,47 @@ async function render_html(url, file_out) {
         encoding: 'binary'
     });
     await page.close();
+
+    buf = await sharp(buf)
+        .rotate(90)
+        .png()
+        .toBuffer()
+
+    console.log("Done Rotation");
     var img = await Jimp.read(buf);
-    await img.crop(0, 0, dimensions.width, dimensions.height);
-    await img.rotate(90);
-    await img.crop(0, 0, dimensions.height, dimensions.width);
     await img.grayscale();
     await img.writeAsync(file_out);
 }
 
 async function preprocess_folder(folder, app) {
 
+    var meta = JSON.parse(fs.readFileSync(folder + "/" + "meta.json").toString());
+    var alias = meta.render_alias || {};
+
     var html_to_render = fs.readdirSync(folder).filter(v => {
         return v.endsWith(".html")
     });
 
     for (var i = 0; i < html_to_render.length; i++) {
-        var url = app_prefix(app, html_to_render[i]);
-        await render_html(url, folder + "/" + html_to_render[i].replace(".html", ".bmp"));
+        var cur = html_to_render[i];
+        var final = [""];
+        if (alias[cur]) {
+            final = alias[cur];
+        }
+        for (var q = 0; q < final.length; q++) {
+            var url = app_prefix(app, cur);
+            await render_html(url + "#" + final[q], folder + "/" + html_to_render[i].replace(".html", "")
+                + final[q] + ".bmp");
+        }
     }
 
     var bmps = fs.readdirSync(folder)
         .filter(v => {
             return v.endsWith(".bmp")
         }).forEach((v) => {
+            console.log("Compression");
             comp.compress(folder + '/' + v, folder + '/' + v.replace(".bmp", ".bin"))
+            console.log("Compressed..");
         });
 
     //convert to bin

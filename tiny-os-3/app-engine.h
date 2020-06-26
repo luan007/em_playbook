@@ -17,8 +17,8 @@ int app_full_refresh();
 #define APP_UPT_STATE_FAILED -1
 
 #define APP_NEXT_RUN_BAD_INTERVAL 300     //10sec - for debug only
-#define APP_NEXT_RUN_DEFAULT_INTERVAL 120 //10sec - for debug only
-#define APP_NEXT_RUN_DEFAULT_UPDATE 60    //30sec - for debug only
+#define APP_NEXT_RUN_DEFAULT_INTERVAL 60 //10sec - for debug only
+#define APP_NEXT_RUN_DEFAULT_UPDATE 300    //30sec - for debug only
 CONFIG(SRV_ROOT, 0, "http://192.168.9.104:9898/")
 
 DynamicJsonDocument app_data(2048); //good chunk of memory
@@ -219,6 +219,7 @@ int app_mgr_run_procedure_meta_loaded(String app, String key, JsonObject root)
         return -4;
     }
     String target = caps[key].as<String>();
+    lua_set_shell_reason(key.c_str());
     return app_mgr_run_file(app, target);
 }
 
@@ -319,6 +320,7 @@ int app_inject_signals()
     // {
     if (app_load_version_file() == -1)
         return -1;
+
     app_mgr_loop_procedures("signal");
     display_bin_auto_flush_if_dirty(1, false);
     return 1;

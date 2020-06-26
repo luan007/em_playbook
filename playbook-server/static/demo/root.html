@@ -15,12 +15,6 @@
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            position: relative;
-            min-width: 600px;
-            min-height: 800px;
-            width: 600px;
-            height: 800px;
         }
 
         * {
@@ -28,59 +22,32 @@
             font-weight: bolder;
         }
 
-        #main {
-            position: absolute;
+        .preview {
+            position: relative;
             height: 800px;
             width: 600px;
             background: #fff;
             text-align: center;
-        }
-
-        .date-container {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            text-align: left;
-            margin: 0;
-            padding: 0;
-        }
-
-        #date {
-            text-align: left;
-            margin: 0;
-            padding: 0;
-            letter-spacing: -10px;
-            font-weight: bolder;
-            font-size: 300px;
-            line-height: 270px;
+            overflow: hidden;
         }
 
         .month {
             font-size: 60px;
             font-weight: 300;
-            vertical-align: middle;
             text-align: right;
         }
 
-        span {
-            vertical-align: middle;
-            font-weight: 300;
-            display: inline-block;
-        }
 
         .tag {
             font-size: 20px;
             display: inline-block;
             border-radius: 90px;
             padding: 6px 15px;
-            vertical-align: middle;
             color: #fff;
-            position: absolute;
             background: #000;
             font-size: 0.95em;
-            top: 30px;
             font-weight: bolder;
-            left: 22px;
+            margin-bottom: 13px;
         }
 
         .ring {
@@ -116,6 +83,7 @@
             overflow: hidden;
             border-radius: 10px;
         }
+
         .text span {
             display: block;
             text-overflow: ellipsis;
@@ -129,24 +97,82 @@
             font-size: 25px;
             padding-left: 120px;
         }
+
+        .template {
+            display: none;
+        }
+
+        .month,
+        .tag {
+            position: absolute;
+            bottom: 295px;
+            display: inline-block;
+            left: 50px;
+        }
+
+        .month {
+            left: 240px;
+            bottom: 290px;
+            text-align: right;
+        }
+
+        .date {
+            position: absolute;
+            bottom: 20px;
+            display: inline-block;
+            left: 30px;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            letter-spacing: -10px;
+            font-weight: bolder;
+            font-size: 300px;
+            line-height: 270px;
+        }
+
+        .crop {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offset {
+            position: absolute;
+            overflow: visible;
+            height: 800px;
+            width: 600px;
+        }
+
+        .L {
+            position: relative;
+            display: inline-block;
+            text-align: top;
+            vertical-align: top;
+        }
     </style>
     <script src="./vue.js"></script>
-    <div id="main">
+
+    <div id="bg" class="template">
         <div class="bg" style="transform: translate(550px, 50px)">
-            <div v-for='i in 2' class="scaler" v-bind:style="{transform: `scale(${i / 0.8})`}">
+            <div v-for='i in 2' class="scaler" v-bind:style="{transform: `scale(${ i / 0.8})`}">
                 <div class='ring'></div>
             </div>
         </div>
-        <div class="date-container">
-            <div class='month'><span>{{month}}.</span></div>
-            <span class='tag'>{{day.toUpperCase()}}</span>
-            <h1 id='date'>
-                {{(new Date()).getDate()}}
-            </h1>
+    </div>
+
+    <div id="crop" class="template">
+        <div class="crop" :style="{ width: W + 'px', height: H + 'px' }">
+            <div class='offset' v-bind:style="{top: '-' + Y + 'px', left: '-' + X + 'px'}">
+                <slot></slot>
+            </div>
         </div>
+    </div>
 
-        <div class="prompt">
-
+    <div id="main">
+        <div v-if="alias==''" class="preview capture">
+            <bg></bg>
+            <div class='month'><span>Aug.</span></div>
+            <span class='tag'>FRIDAY</span>
+            <h1 class='date'>26</h1>
             <div class="text">
                 <div class="title">
                     Flutter 势头正盛<br>2020 春季速递
@@ -157,9 +183,37 @@
                 </span>
             </div>
         </div>
+        <div v-if="alias=='BG'" class="preview capture">
+            <bg></bg>
+        </div>
+
+
+        <div v-if="alias=='ELM'" class='L capture'>
+            <crop v-for="wk in w" X=50 Y=460 W=120 H=32>
+                <bg></bg>
+                <span class='tag'>{{wk.toUpperCase()}}</span>
+            </crop>
+            <crop v-for="mth in m" X=230 Y=440 W=150 H=70>
+                <bg></bg>
+                <div class='month'><span>{{mth}}.</span></div>
+            </crop>
+        </div>
+
+        <div v-if="alias=='NUM'" class='L capture'>
+            <crop v-for="i in 31" X=30 Y=510 W=325 H=270>
+                <bg></bg>
+                <h1 class='date'>{{i}}</h1>
+            </crop>
+        </div>
+
     </div>
 
     <script>
+
+        var alias = location.hash.replace("#", "");
+
+        //$0.getBoundingClientRect()
+
         var d = new Date();
         var month = new Array();
         month[0] = "Jan";
@@ -187,13 +241,24 @@
         weekday[6] = "Saturday";
 
         var nd = weekday[d.getDay()];
+        Vue.component("bg", {
+            template: document.querySelector("#bg").innerHTML
+        });
+        Vue.component("crop", {
+            props: ["X", "Y", "W", "H"],
+            template: document.querySelector("#crop").innerHTML
+        });
         var app = new Vue({
             el: '#main',
             data: {
+                alias: alias,
+                m: month,
+                w: weekday,
                 month: n,
                 day: nd
             }
         })
+
     </script>
 </body>
 
