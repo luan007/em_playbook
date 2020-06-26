@@ -12,8 +12,19 @@ var browser;
 
 function app_prefix(name, file) { return "http://localhost:" + PORT + "/" + name + "/" + file };
 
-async function render_html(url, file_out) {
-    console.log("rendering ", url, file_out)
+function file_cached(file, cache) {
+    if (fs.existsSync(file) && Date.now() - fs.statSync(file).mtime.getTime() < (cache * 1000)) {
+        return true;
+    }
+    return false;
+}
+
+async function render_html(url, file_out, cache) {
+    if (file_cached(file_out, cache)) {
+        console.log("render cached", url);
+        return;
+    }
+    console.log("rendering ", url, file_out);
     const page = await browser.newPage();
     await page.goto(url);
     const dimensions = await page.evaluate(() => {
@@ -32,7 +43,8 @@ async function render_html(url, file_out) {
     await page.close();
 
     buf = await sharp(buf)
-        .rotate(90)
+        .extract({ left: 0, top: 0, width: dimensions.width, height: dimensions.height })
+        .rotate(-90)
         .png()
         .toBuffer()
 
@@ -46,6 +58,7 @@ async function preprocess_folder(folder, app) {
 
     var meta = JSON.parse(fs.readFileSync(folder + "/" + "meta.json").toString());
     var alias = meta.render_alias || {};
+    var cache = meta.cache || 0;
 
     var html_to_render = fs.readdirSync(folder).filter(v => {
         return v.endsWith(".html")
@@ -60,7 +73,7 @@ async function preprocess_folder(folder, app) {
         for (var q = 0; q < final.length; q++) {
             var url = app_prefix(app, cur);
             await render_html(url + "#" + final[q], folder + "/" + html_to_render[i].replace(".html", "")
-                + final[q] + ".bmp");
+                + final[q] + ".bmp", cache || 0);
         }
     }
 
@@ -68,6 +81,9 @@ async function preprocess_folder(folder, app) {
         .filter(v => {
             return v.endsWith(".bmp")
         }).forEach((v) => {
+            if (file_cached(folder + '/' + v.replace(".bmp", ".bin"), cache)) {
+                return;
+            }
             console.log("Compression");
             comp.compress(folder + '/' + v, folder + '/' + v.replace(".bmp", ".bin"))
             console.log("Compressed..");

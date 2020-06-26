@@ -1,0 +1,10 @@
+{
+    "version": 125,
+    "cache": 10000050,
+    "render_alias": {
+        "root.html": ["BG", "ELM", "NUM", "ERR"]
+    },
+    "capability": {
+        "main": "main"
+    }
+}

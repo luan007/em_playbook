@@ -16,9 +16,9 @@ int app_full_refresh();
 #define APP_UPT_STATE_WORKING 1
 #define APP_UPT_STATE_FAILED -1
 
-#define APP_NEXT_RUN_BAD_INTERVAL 300     //10sec - for debug only
+#define APP_NEXT_RUN_BAD_INTERVAL 300    //10sec - for debug only
 #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 //10sec - for debug only
-#define APP_NEXT_RUN_DEFAULT_UPDATE 300    //30sec - for debug only
+#define APP_NEXT_RUN_DEFAULT_UPDATE 300  //30sec - for debug only
 CONFIG(SRV_ROOT, 0, "http://192.168.9.104:9898/")
 
 DynamicJsonDocument app_data(2048); //good chunk of memory
@@ -264,7 +264,6 @@ int app_full_refresh()
     {
         return -1;
     }
-
     sig_clear(&SIG_APP_TAINT, 0);
     app_mgr_loop_procedures("background");
     String current_app = getString("APP");
@@ -299,7 +298,7 @@ int app_restore_display_memory() //dangerous
 
         sig_set(&SIG_EINK_MEM_ONLY, 0);
         display_bin_flush_screen(0, 0, 800, 600, false);
-        display_bin_flush_screen(0, 0, 800, 600, false); //make this super clear
+        // display_bin_flush_screen(0, 0, 800, 600, false); //make this super clear
     }
     return 0;
 }
@@ -329,7 +328,6 @@ int app_inject_signals()
 
 uint32_t app_schedule_wake()
 {
-
     uint32_t next_wake_point = SIG_APP_NUPD.value;
 
     if (SIG_APP_TRY.value > 3) //give several tries
@@ -359,6 +357,16 @@ uint32_t app_schedule_wake()
     }
     DEBUG("APP SCHEDULE WAKE", String(next_wake_point).c_str());
     return next_wake_point;
+}
+
+uint32_t app_third_party_schedule_wake()
+{
+    if (SIG_APP_3PT_NUPD.value > 0)
+    {
+        DEBUG("3rd PARTY APP SCHEDULE WAKE", String(SIG_APP_3PT_NUPD.value).c_str());
+        return (uint32_t)(SIG_APP_3PT_NUPD.value) * (uint32_t)1000;
+    }
+    return (uint32_t)0;
 }
 
 //see if the canvas is tainted

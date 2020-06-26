@@ -1,9 +1,0 @@
-{
-    "version": 5,
-    "render_alias": {
-        "root.html": ["BG", "ELM", "NUM"]
-    },
-    "capability": {
-        "main": "main"
-    }
-}

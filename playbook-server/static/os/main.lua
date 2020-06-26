@@ -4,5 +4,5 @@ sprint(json.stringify({
 }))
 
 -- select app
-sprint("selecting demo as app")
-save_string("main", "APP", "demo")
+sprint("selecting scal as app")
+save_string("main", "APP", "scal")

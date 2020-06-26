@@ -213,11 +213,13 @@ void reg_vars()
     sig_reg(&SIG_APP_TRY);
 
     sig_reg(&SIG_APP_NRUN);
+    sig_reg(&SIG_APP_3PT_NUPD);
     sig_reg(&SIG_APP_NUPD);
 
     cfg_reg(&CFG_SRV_ROOT);
 
     schedulers.push_back(&app_schedule_wake);
+    schedulers.push_back(&app_third_party_schedule_wake);
 
     SIG_USER_ACTION.debug_level = -1;
 }
@@ -342,12 +344,6 @@ void sys_wake()
     //everything is good, lets see why we're here
     if (SIG_WAKE.value == WAKE_TIMER || SIG_WAKE.value == WAKE_NONE)
     {
-        //app needs refresh?
-        if (rtc_unix_time() > (uint32_t)SIG_APP_NRUN.value)
-        {
-            app_full_refresh();
-        }
-
         //app needs update?
         if (rtc_unix_time() > (uint32_t)SIG_APP_NUPD.value)
         {
@@ -356,6 +352,20 @@ void sys_wake()
                 return nap_try_sleep(true);
             }
         }
+        //app needs refresh?
+        //ACTUALLY
+        //IF YOU WAKE UP FROM NOTHINGNESS
+        //YOU SHOULD REFRESH
+        //TODO: Refine following conditions
+        // if (rtc_unix_time() > (uint32_t)SIG_APP_NRUN.value)
+        // {
+
+        if (app_refresh_inited == 0 || SIG_APP_TAINT.value > 0)
+        {
+            //init or fix, anyway, less draw call = better battery life
+            app_full_refresh();
+        }
+        // }
     }
     else if (SIG_WAKE.value == WAKE_ULP)
     {

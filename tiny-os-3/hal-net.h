@@ -58,7 +58,8 @@ bool _net_config_time(int tout)
         //// January 21, 2014 at 3am you would call:
         // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
         Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-        rtc.adjust(DateTime(timeinfo.tm_year + 1970, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+        rtc.adjust(DateTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+        sig_clear(&SIG_RTC_INVALID, 0);
     }
     return result;
 }

@@ -492,6 +492,7 @@ void GxEPD2_it60::_send8pixel(uint8_t data)
   SPI.transfer(data);
 }
 
+extern bool GLOBAL_4BIT_MODE;
 void GxEPD2_it60::_setPartialRamArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
   //_IT8951WriteReg(LISAR + 2 , IT8951DevInfo.usImgBufAddrH);
@@ -499,7 +500,14 @@ void GxEPD2_it60::_setPartialRamArea(uint16_t x, uint16_t y, uint16_t w, uint16_
   uint16_t usArg[5];
   //usArg[0] = (IT8951_LDIMG_L_ENDIAN << 8 ) | (IT8951_8BPP << 4) | (IT8951_ROTATE_0);
   // usArg[0] = (IT8951_LDIMG_B_ENDIAN << 8) | (IT8951_8BPP << 4) | (IT8951_ROTATE_0);
-  usArg[0] = (IT8951_LDIMG_B_ENDIAN << 8) | (IT8951_4BPP << 4) | (IT8951_ROTATE_0);
+  if (GLOBAL_4BIT_MODE)
+  {
+    usArg[0] = (IT8951_LDIMG_B_ENDIAN << 8) | (IT8951_4BPP << 4) | (IT8951_ROTATE_0);
+  }
+  else
+  {
+    usArg[0] = (IT8951_LDIMG_B_ENDIAN << 8) | (IT8951_8BPP << 4) | (IT8951_ROTATE_0);
+  }
   usArg[1] = x;
   usArg[2] = y;
   usArg[3] = w;

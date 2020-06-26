@@ -200,6 +200,7 @@ int display_bin_auto_flush_if_dirty(int count, bool partial_mode)
     }
 }
 
+bool GLOBAL_4BIT_MODE = false;
 //dirty code - needs clean up!
 //memory = 485k
 int display_bin_smart_draw(const char *name,
@@ -213,6 +214,7 @@ int display_bin_smart_draw(const char *name,
                            int16_t FLUSH_COUNT)
 {
 
+    GLOBAL_4BIT_MODE = true;
     Serial.printf("DBSD (%d %d) (%d,%d) (%d,%d) => [%d,%d]\n",
                   _w, _h, BIN_SRC_MINX, BIN_SRC_MINY, BIN_SRC_MAXX, BIN_SRC_MAXY, DSTX, DSTY);
 
@@ -357,6 +359,8 @@ int display_bin_smart_draw(const char *name,
         buf_len = 0;
     }
     display.epd2.endWriteNativeNoRefresh();
+
+    GLOBAL_4BIT_MODE = false; //end 4bit mode
     file.close();
     for (int i = 0; SIG_EINK_MEM_ONLY.value == 0 && i < FLUSH_COUNT; i++)
     {

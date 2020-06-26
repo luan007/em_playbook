@@ -38,7 +38,7 @@ void nap_enter_sleep()
     esp_sleep_enable_timer_wakeup((uint64_t)(SIG_WAKE_AFTER.value) * 1000ULL);
     // nap_schedule_next_wake();
     esp_sleep_enable_ulp_wakeup();
-    ulp_set_wakeup_period(0, 100); // needs to be fast in order to get correct result
+    ulp_set_wakeup_period(0, 50); // needs to be fast in order to get correct result
     err = ulp_run((&ulp_entry - RTC_SLOW_MEM) / sizeof(uint32_t));
     if (err)
         Serial.println("Error Starting ULP Coprocessor");
