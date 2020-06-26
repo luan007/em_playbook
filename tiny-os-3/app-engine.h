@@ -297,8 +297,8 @@ int app_restore_display_memory() //dangerous
         _state = _current_state; //swap back
 
         sig_set(&SIG_EINK_MEM_ONLY, 0);
-        display_bin_flush_screen(0, 0, 800, 600, false);
-        // display_bin_flush_screen(0, 0, 800, 600, false); //make this super clear
+        display_bin_flush_screen(0, 0, 800, 600, false); //double flash is needed, as the drive rail is not strong enough
+        display_bin_flush_screen(0, 0, 800, 600, false); //make this super clear
     }
     return 0;
 }
