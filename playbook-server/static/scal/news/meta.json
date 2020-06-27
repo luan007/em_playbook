@@ -1,8 +1,17 @@
 {
-    "version": 25,
-    "cache": 13213231223,
+    "version": 29,
+    "cache": 1,
+    "content": "为了帮助开发者开发出更加轻快高效的应用，我们在<br> Android Studio 3.0 以及更高版本中加入了 Android Profiler 工具，用于应用的 CPU、内存、网络和能耗分析。",
+    "link": "https://mp.weixin.qq.com/s/MIuSi85lnrETqq3rl0Hc6A",
+    "title": "使用 Android Studio Profiler<br> 工具解析应用的内存和 CPU 使用数据",
+    "showDate": {
+        "m": 6,
+        "d": 27
+    },
     "render_alias": {
-        "root.html": ["NEWS"]
+        "root.html": [
+            "NEWS"
+        ]
     },
     "capability": {
         "asset-pack": 1

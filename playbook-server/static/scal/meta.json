@@ -1,8 +1,8 @@
 {
-    "version": 25,
+    "version": 31,
     "cache": 13213231223,
     "render_alias": {
-        "root.html": ["BG", "ELM", "NUM", "ERR", "NEWS"]
+        "root.html": ["BG", "ELM", "NUM", "ERR"]
     },
     "capability": {
         "main": "main"

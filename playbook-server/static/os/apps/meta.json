@@ -1,0 +1,11 @@
+{
+    "version": 10001,
+    "render_alias": {
+        "tray.html": [
+            "en"
+        ]
+    },
+    "capability": {
+        "asset-pack": 1
+    }
+}

@@ -8,8 +8,8 @@
 </head>
 
 <body>
-    <link rel="stylesheet" href="./font-awesome/css/all.css">
-    <script src="./qrcode.min.js"></script>
+    <link rel="stylesheet" href="../_libs/font-awesome/css/all.css">
+    <script src="../_libs/qrcode.min.js"></script>
 
     <style>
         /* https://stackoverflow.com/questions/9122904/how-to-make-the-body-or-div-of-fixed-size-stay-always-in-the-center-of-the-pag */
@@ -188,7 +188,7 @@
             vertical-align: top;
         }
     </style>
-    <script src="./vue.js"></script>
+    <script src="../_libs/vue.js"></script>
 
     <div id="bg" class="template">
         <div class="bg" style="transform: translate(550px, 50px)">
@@ -217,11 +217,9 @@
                     <div class="qrcode"></div>
                     <img class='overlaylogo' src="./logo.png" />
                 </div>
-                <div class="title">
-                    使用 Android Studio Profiler<br> 工具解析应用的内存和 CPU 使用数据
+                <div class="title" v-html="news.title">
                 </div>
-                <span>
-                    为了帮助开发者开发出更加轻快高效的应用，我们在<br> Android Studio 3.0 以及更高版本中加入了 Android Profiler 工具，用于应用的 CPU、内存、网络和能耗分析。
+                <span v-html="news.content">
                 </span>
             </div>
         </div>
@@ -235,12 +233,9 @@
                         <div class="qrcode"></div>
                         <img class='overlaylogo' src="./logo.png" />
                     </div>
-                    <div class="title">
-                        使用 Android Studio Profiler<br> 工具解析应用的内存和 CPU 使用数据
+                    <div class="title" v-html="news.title">
                     </div>
-                    <span>
-                        为了帮助开发者开发出更加轻快高效的应用，我们在<br> Android Studio 3.0 以及更高版本中加入了 Android Profiler 工具，用于应用的
-                        CPU、内存、网络和能耗分析。
+                    <span v-html="news.content">
                     </span>
                 </div>
             </crop>
@@ -294,68 +289,75 @@
 
     <script>
 
-        var alias = location.hash.replace("#", "");
+        (async function () {
+            var news = await fetch("./news/meta.json");
+            news = await news.json();
+            console.log(news);
 
-        //$0.getBoundingClientRect()
+            var alias = location.hash.replace("#", "");
 
-        var d = new Date();
-        var month = new Array();
-        month[0] = "Jan";
-        month[1] = "Feb";
-        month[2] = "Mar";
-        month[3] = "Apr";
-        month[4] = "May";
-        month[5] = "Jun";
-        month[6] = "July";
-        month[7] = "Aug";
-        month[8] = "Sept";
-        month[9] = "Oct";
-        month[10] = "Nov";
-        month[11] = "Dec";
-        var n = month[d.getMonth()];
+            //$0.getBoundingClientRect()
 
-        var d = new Date();
-        var weekday = new Array(7);
-        weekday[0] = "Sunday";
-        weekday[1] = "Monday";
-        weekday[2] = "Tuesday";
-        weekday[3] = "Wednesday";
-        weekday[4] = "Thursday";
-        weekday[5] = "Friday";
-        weekday[6] = "Saturday";
+            var d = new Date();
+            var month = new Array();
+            month[0] = "Jan";
+            month[1] = "Feb";
+            month[2] = "Mar";
+            month[3] = "Apr";
+            month[4] = "May";
+            month[5] = "Jun";
+            month[6] = "July";
+            month[7] = "Aug";
+            month[8] = "Sept";
+            month[9] = "Oct";
+            month[10] = "Nov";
+            month[11] = "Dec";
+            var n = month[d.getMonth()];
 
-        var nd = weekday[d.getDay()];
-        Vue.component("bg", {
-            template: document.querySelector("#bg").innerHTML
-        });
-        Vue.component("crop", {
-            props: ["X", "Y", "W", "H"],
-            template: document.querySelector("#crop").innerHTML
-        });
-        var app = new Vue({
-            el: '#main',
-            data: {
-                alias: alias,
-                m: month,
-                w: weekday,
-                month: n,
-                day: nd
-            },
-            mounted: function () {
-                document.querySelectorAll(".qrcode").forEach((v) => {
-                    new QRCode(v,
-                        {
-                            text: "https://mp.weixin.qq.com/s/MIuSi85lnrETqq3rl0Hc6A",
-                            width: 90,
-                            height: 90,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.M
-                        }
-                    );
-                });
-            }
-        })
+            var d = new Date();
+            var weekday = new Array(7);
+            weekday[0] = "Sunday";
+            weekday[1] = "Monday";
+            weekday[2] = "Tuesday";
+            weekday[3] = "Wednesday";
+            weekday[4] = "Thursday";
+            weekday[5] = "Friday";
+            weekday[6] = "Saturday";
+
+            var nd = weekday[d.getDay()];
+            Vue.component("bg", {
+                template: document.querySelector("#bg").innerHTML
+            });
+            Vue.component("crop", {
+                props: ["X", "Y", "W", "H"],
+                template: document.querySelector("#crop").innerHTML
+            });
+            var app = new Vue({
+                el: '#main',
+                data: {
+                    alias: alias,
+                    m: month,
+                    w: weekday,
+                    month: n,
+                    day: nd,
+                    news: news
+                },
+                mounted: function () {
+                    document.querySelectorAll(".qrcode").forEach((v) => {
+                        new QRCode(v,
+                            {
+                                text: news.link,
+                                width: 90,
+                                height: 90,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff",
+                                correctLevel: QRCode.CorrectLevel.M
+                            }
+                        );
+                    });
+                }
+            })
+        })()
 
     </script>
 </body>

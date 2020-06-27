@@ -85,7 +85,7 @@ async function preprocess_folder(folder, app, work_folder) {
                 return;
             }
             console.log("Compression");
-            comp.compress(folder + '/' + v, folder + '/' + sub_folder + v.replace(".bmp", ".bin"))
+            comp.compress(folder + '/' + sub_folder + v, folder + '/' + sub_folder + v.replace(".bmp", ".bin"))
             console.log("Compressed..");
         });
 
@@ -129,6 +129,7 @@ app.get("/versions", (req, res) => {
     var aggr = {};
     for (var i = 0; i < apps.length; i++) {
         var app = apps[i];
+        if(!fs.existsSync(APP_ROOT + app + "/" + "meta.json")) continue;
         try {
             aggr[app] = JSON.parse(fs.readFileSync(APP_ROOT + app + "/" + "meta.json").toString());
             var sub_packs = fs.readdirSync((APP_ROOT + app));

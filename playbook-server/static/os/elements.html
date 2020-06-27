@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Test</title>
+</head>
+
+<body>
+    <link rel="stylesheet" href="../_libs/font-awesome/css/all.css">
+    <style>
+        /* https://stackoverflow.com/questions/9122904/how-to-make-the-body-or-div-of-fixed-size-stay-always-in-the-center-of-the-pag */
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+            min-width: 600px;
+            min-height: 300px;
+            width: 600px;
+            height: 300px;
+        }
+
+        * {
+            font-family: sans-serif;
+            font-weight: bolder;
+        }
+
+        #main {
+            position: absolute;
+            height: 300px;
+            width: 600px;
+            background: #444;
+            text-align: center;
+        }
+
+        .left {
+            text-align: left;
+            display: flex;
+        }
+
+        .icon {
+            width: 64px;
+            background: white;
+            text-align: center;
+            font-size: 25px;
+            line-height: 64px;
+            overflow: hidden;
+            color: #333;
+        }
+
+        .icon.inv {
+            color: #fff;
+            background: #000;
+        }
+
+        .grp {
+            display: flex;
+        }
+
+        i {
+            position: relative;
+        }
+
+        i>i {
+            display: block;
+            position: absolute;
+            top: 120%;
+            left: 100%;
+            font-size: 0.8em;
+            transform: translate(-50%, -50%);
+        }
+
+        .message {
+            font-size: 15px;
+            padding-left: 10px;
+            padding-right: 10px;
+            width: 600px;
+            height: 28px;
+            line-height: 28px;
+            background: black;
+            color: white;
+            display: block;
+        }
+
+
+        .message>i {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            margin-right: 5px;
+        }
+
+        .message.stribes {
+            background-image: linear-gradient(45deg, #000000 25%, #404040 25%, #404040 50%, #000000 50%, #000000 75%, #404040 75%, #404040 100%);
+            background-size: 33.94px 33.94px;
+        }
+
+        .icon {
+            position: relative;
+        }
+
+        .tiny-text.test {
+            position: absolute;
+            top: 42px;
+            left: 17px;
+        }
+
+        .tiny-text {
+            position: relative;
+            display: block;
+            padding-left: 1px;
+            font-size: 10px;
+            line-height: 10px;
+            font-weight: 800;
+            text-align: left;
+            font-family: 'Roboto';
+        }
+    </style>
+    <div id="main">
+        <div class="left">
+            <div class="grp">
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fas fa-check-circle"></i>
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fas fa-sort"></i>
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fas fa-times"></i>
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fas fa-cog"></i>
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fas fa-spinner"></i>
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fa fa-exclamation-circle"></i>
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wifi">
+                        <i class="fa fa-question"></i>
+                    </i>
+                </div>
+            </div>
+        </div>
+
+        <div class="left">
+            <div class="grp">
+                <div class="icon">
+                    <i class="fas fa-battery-full">
+                    </i>
+                    <!-- <span class="tiny-text test">ON</span> -->
+                </div>
+                <div class="icon">
+                    <i class="fas fa-battery-half">
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-battery-quarter">
+                    </i>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-battery-empty">
+                        <i class="fas fa-times"></i>
+                    </i>
+                    <!-- <span class="tiny-text test">ACTIVE</span> -->
+                </div>
+                <div class="icon">
+                    <span class="tiny-text">ECO</span>
+                    <span class="tiny-text">ON</span>
+                    <span class="tiny-text">ERR</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="left">
+            <div class="message">
+                <i class="fas fa-cog"></i> Release the button to enter AP Config Mode
+            </div>
+        </div>
+        <div class="left">
+            <div class="message stribes">
+                <i class="fas fa-wifi"></i> Please Connect to [ EM Paper ] to config your gadget. (120 Seconds)
+            </div>
+        </div>
+        <div class="left">
+            <div class="message stribes">
+                <i class="fas fa-broadcast-tower"></i> Previous Powerloss Detected, Restoring Clock upon connection
+            </div>
+        </div>
+        <div class="left">
+            <div class="message">
+                <i class="fas fa-battery-empty"></i><i class="fas fa-exclamation-circle"></i> Battery Critically Low
+            </div>
+        </div>
+        <div class="left">
+            <div class="message stribes">
+                <i class="fas fa-microchip"></i><i class="fas fa-exclamation-circle"></i> Restoring Factory Settings -
+                Please do not remove batteries
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
