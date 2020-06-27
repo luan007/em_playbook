@@ -54,9 +54,10 @@ async function render_html(url, file_out, cache) {
     await img.writeAsync(file_out);
 }
 
-async function preprocess_folder(folder, app) {
-
-    var meta = JSON.parse(fs.readFileSync(folder + "/" + "meta.json").toString());
+async function preprocess_folder(folder, app, work_folder) {
+    work_folder = work_folder || "";
+    var sub_folder = (work_folder ? (work_folder + "/") : "");
+    var meta = JSON.parse(fs.readFileSync(folder + "/" + sub_folder + "meta.json").toString());
     var alias = meta.render_alias || {};
     var cache = meta.cache || 0;
 
@@ -72,20 +73,19 @@ async function preprocess_folder(folder, app) {
         }
         for (var q = 0; q < final.length; q++) {
             var url = app_prefix(app, cur);
-            await render_html(url + "#" + final[q], folder + "/" + html_to_render[i].replace(".html", "")
+            await render_html(url + "#" + final[q], folder + "/" + sub_folder + html_to_render[i].replace(".html", "")
                 + final[q] + ".bmp", cache || 0);
         }
     }
-
-    var bmps = fs.readdirSync(folder)
+    var bmps = fs.readdirSync(folder + '/' + sub_folder)
         .filter(v => {
             return v.endsWith(".bmp")
         }).forEach((v) => {
-            if (file_cached(folder + '/' + v.replace(".bmp", ".bin"), cache)) {
+            if (file_cached(folder + '/' + sub_folder + v.replace(".bmp", ".bin"), cache)) {
                 return;
             }
             console.log("Compression");
-            comp.compress(folder + '/' + v, folder + '/' + v.replace(".bmp", ".bin"))
+            comp.compress(folder + '/' + v, folder + '/' + sub_folder + v.replace(".bmp", ".bin"))
             console.log("Compressed..");
         });
 
@@ -93,23 +93,26 @@ async function preprocess_folder(folder, app) {
 }
 
 app.get("/app/:name", async (req, res) => {
-    var path = APP_ROOT + req.params.name;
+    var app = req.params.name.split("-")[0];
+    var sub = req.params.name.split("-")[1] || "";
+    var path = APP_ROOT + app;
+    var real_path = APP_ROOT + app + (sub ? "/" : "") + sub;
+    console.log(path);
     if (!req.params.name || !fs.existsSync(path)) {
         res.status(404).end();
     }
-    var app = req.params.name;
     res.set("Connection", "close");
     res.removeHeader("Transfer-Encoding");
-
-    await preprocess_folder(path, app);
-    var files = fs.readdirSync(APP_ROOT + req.params.name)
+    console.log(path);
+    await preprocess_folder(path, app, sub);
+    var files = fs.readdirSync(real_path)
         .filter(v => {
             return v.endsWith(".bin") || v.endsWith(".lua") || v.endsWith(".txt") || v.endsWith(".json")
         });
 
     tar.c( // or tar.create
         {
-            C: path,
+            C: real_path,
             strict: true,
             portable: true,
             gzip: false
@@ -128,8 +131,13 @@ app.get("/versions", (req, res) => {
         var app = apps[i];
         try {
             aggr[app] = JSON.parse(fs.readFileSync(APP_ROOT + app + "/" + "meta.json").toString());
+            var sub_packs = fs.readdirSync((APP_ROOT + app));
+            sub_packs.forEach(v => {
+                if (fs.existsSync(APP_ROOT + app + "/" + v + "/meta.json")) {
+                    aggr[app + "-" + v] = JSON.parse(fs.readFileSync(APP_ROOT + app + "/" + v + "/meta.json").toString());
+                }
+            });
         } catch (e) {
-
         }
     }
     res.json(aggr);

@@ -197,6 +197,16 @@ extern "C"
     static int expose_appoint_reboot_sec(lua_State *lua)
     {
         int val_secs = (luaL_checkinteger(lua, 1));
+        if (SIG_APP_3PT_NRUN.value == 0 || SIG_APP_3PT_NRUN.value > val_secs)
+        {
+            sig_set(&SIG_APP_3PT_NRUN, val_secs);
+        }
+        return 1;
+    }
+
+    static int expose_appoint_update_sec(lua_State *lua)
+    {
+        int val_secs = (luaL_checkinteger(lua, 1));
         if (SIG_APP_3PT_NUPD.value == 0 || SIG_APP_3PT_NUPD.value > val_secs)
         {
             sig_set(&SIG_APP_3PT_NUPD, val_secs);
@@ -492,6 +502,7 @@ void lua_shell_prep()
     lua_shell_inject_function("unix", (const lua_CFunction)&expose_unix_time);
     lua_shell_inject_function("now", (const lua_CFunction)&expose_now);
     lua_shell_inject_function("appoint", (const lua_CFunction)&expose_appoint_reboot_sec);
+    lua_shell_inject_function("appointUpdate", (const lua_CFunction)&expose_appoint_reboot_sec);
 
     lua_shell_inject_function("load_float", (const lua_CFunction)&expose_load_float);
     lua_shell_inject_function("load_int", (const lua_CFunction)&expose_load_int);

@@ -2,9 +2,9 @@
     "version": 25,
     "cache": 13213231223,
     "render_alias": {
-        "root.html": ["BG", "ELM", "NUM", "ERR", "NEWS"]
+        "root.html": ["NEWS"]
     },
     "capability": {
-        "main": "main"
+        "asset-pack": 1
     }
 }

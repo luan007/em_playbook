@@ -9,6 +9,7 @@
 
 <body>
     <link rel="stylesheet" href="./font-awesome/css/all.css">
+    <script src="./qrcode.min.js"></script>
 
     <style>
         /* https://stackoverflow.com/questions/9122904/how-to-make-the-body-or-div-of-fixed-size-stay-always-in-the-center-of-the-pag */
@@ -67,7 +68,7 @@
             transform: scale(2);
         }
 
-        .text {
+        .notification {
             white-space: normal;
             word-break: break-all;
             color: white;
@@ -75,30 +76,66 @@
             width: 500px;
             top: 0;
             left: 0;
-            max-height: 213px;
+            height: 160px;
             transform: translate(-50%, 0);
             left: 50%;
             top: 100px;
             background: #333;
             font-size: 18px;
             text-align: left;
-            overflow: hidden;
             border-radius: 10px;
         }
 
-        .text span {
-            display: block;
+        .notification span {
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
             text-overflow: ellipsis;
-            height: 100%;
+            white-space: normal;
             margin: 20px;
+            font-weight: 300;
+            font-size: 16px;
         }
 
-        .title {
-            margin: 20px;
-            margin-bottom: 5px;
-            font-size: 25px;
-            padding-left: 120px;
+        .notification .icon {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 5px solid #333;
+            background: white;
+            top: -25px;
+            border-radius: 10px;
+            left: 15px;
         }
+
+        .notification .icon .qrcode {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            height: 90px;
+            width: 90px;
+        }
+
+        .notification .title {
+            margin: 20px;
+            margin-top: 22px;
+            font-size: 20px;
+            padding-left: 115px;
+        }
+
+        .notification .overlaylogo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 30px;
+            width: 30px;
+            transform: translate(-50%, -50%);
+            color: black;
+            border-radius: 999px;
+        }
+
+
 
         .template {
             display: none;
@@ -175,16 +212,41 @@
             <div class='month'><span>Aug.</span></div>
             <span class='tag'>FRIDAY</span>
             <h1 class='date'>26</h1>
-            <div class="text">
+            <div class="notification">
+                <div class='icon'>
+                    <div class="qrcode"></div>
+                    <img class='overlaylogo' src="./logo.png" />
+                </div>
                 <div class="title">
-                    Flutter 势头正盛<br>2020 春季速递
+                    使用 Android Studio Profiler<br> 工具解析应用的内存和 CPU 使用数据
                 </div>
                 <span>
-                    在过去的几个月中，Google Flutter 团队的工程师、产品经理、UX
-                    研究人员、技术作者和开发者关系工程师们都遭遇了不少的挑战..
+                    为了帮助开发者开发出更加轻快高效的应用，我们在<br> Android Studio 3.0 以及更高版本中加入了 Android Profiler 工具，用于应用的 CPU、内存、网络和能耗分析。
                 </span>
             </div>
         </div>
+
+
+        <div v-if="alias=='NEWS'" class="L capture">
+            <crop X=50 Y=75 W=500 H=185>
+                <bg></bg>
+                <div class="notification">
+                    <div class='icon'>
+                        <div class="qrcode"></div>
+                        <img class='overlaylogo' src="./logo.png" />
+                    </div>
+                    <div class="title">
+                        使用 Android Studio Profiler<br> 工具解析应用的内存和 CPU 使用数据
+                    </div>
+                    <span>
+                        为了帮助开发者开发出更加轻快高效的应用，我们在<br> Android Studio 3.0 以及更高版本中加入了 Android Profiler 工具，用于应用的
+                        CPU、内存、网络和能耗分析。
+                    </span>
+                </div>
+            </crop>
+        </div>
+
+
         <div v-if="alias=='BG'" class="preview capture">
             <bg></bg>
         </div>
@@ -198,8 +260,12 @@
                     <Br>
                     <b>Syncing Clock</b>
                     <br>
-                    <span style="display: block; font-weight: 300; margin-top:50px; font-size: 0.5em;">lost track of time due to reset or powerloss<br>content will come back to your display briefly</span>
-                    <span style="display: inline-block; padding: 20px; border: 3px solid black; opacity: 0.5; font-weight: 600; margin-top:150px; font-size: 0.5em;">this message should disappear shortly, <br> if not, please try to reconfigure the Wi-Fi connection.</span>
+                    <span style="display: block; font-weight: 300; margin-top:50px; font-size: 0.5em;">lost track of
+                        time due to reset or powerloss<br>content will come back to your display briefly</span>
+                    <span
+                        style="display: inline-block; padding: 20px; border: 3px solid black; opacity: 0.5; font-weight: 600; margin-top:150px; font-size: 0.5em;">this
+                        message should disappear shortly, <br> if not, please try to reconfigure the Wi-Fi
+                        connection.</span>
                 </div>
             </h1>
             <h1></h1>
@@ -274,6 +340,20 @@
                 w: weekday,
                 month: n,
                 day: nd
+            },
+            mounted: function () {
+                document.querySelectorAll(".qrcode").forEach((v) => {
+                    new QRCode(v,
+                        {
+                            text: "https://mp.weixin.qq.com/s/MIuSi85lnrETqq3rl0Hc6A",
+                            width: 90,
+                            height: 90,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        }
+                    );
+                });
             }
         })
 

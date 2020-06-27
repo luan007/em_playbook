@@ -195,6 +195,9 @@ void reg_vars()
     sig_reg(&SIG_TOUCH_CLICK);
     sig_reg(&SIG_USER_ACTION);
     sig_reg(&SIG_FS_MSG);
+    sig_reg(&SIG_FS_TOTAL);
+    sig_reg(&SIG_FS_USED_COMPUTED);
+    sig_reg(&SIG_FS_FREE);
     sig_reg(&SIG_EINK_DRAW);
     sig_reg(&SIG_RTC_INVALID);
     sig_reg(&SIG_SW_PRESSING);
@@ -214,6 +217,7 @@ void reg_vars()
 
     sig_reg(&SIG_APP_NRUN);
     sig_reg(&SIG_APP_3PT_NUPD);
+    sig_reg(&SIG_APP_3PT_NRUN);
     sig_reg(&SIG_APP_NUPD);
 
     cfg_reg(&CFG_SRV_ROOT);
@@ -307,6 +311,19 @@ void sys_wake()
             }
         }
     }
+    else if (SIG_TOUCH_DOWN.value == 3)
+    {
+        DEBUG("! TOUCH UPON START", "");
+        while (SIG_TOUCH_DOWN.value == 3)
+        {
+            hal_io_loop();
+            if (millis() > 3000)
+            {
+                net_wifi_connect() && app_mgr_upgrade();
+                break; //you should not get here
+            }
+        }
+    }
 
     DEBUG("TIME-CHECK-ERR", String(SIG_RTC_INVALID.value).c_str());
     DEBUG("TIME-CHECKPOINT", String(rtc_unix_time()).c_str());
@@ -359,7 +376,6 @@ void sys_wake()
         //TODO: Refine following conditions
         // if (rtc_unix_time() > (uint32_t)SIG_APP_NRUN.value)
         // {
-
         if (app_refresh_inited == 0 || SIG_APP_TAINT.value > 0)
         {
             //init or fix, anyway, less draw call = better battery life

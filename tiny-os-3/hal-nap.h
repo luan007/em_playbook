@@ -77,7 +77,6 @@ void nap_try_sleep(bool NOW, uint32_t set_schedule = 0)
         {
             DEBUG("SLEEP", (String("WAKE AFTER = ") + ms).c_str());
         }
-
         //enter sleep
         sig_set(&SIG_WAKE_AFTER, ms);
         sig_set(&SIG_BEFORE_SLEEP, 1);

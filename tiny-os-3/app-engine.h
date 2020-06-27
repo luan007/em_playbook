@@ -16,9 +16,9 @@ int app_full_refresh();
 #define APP_UPT_STATE_WORKING 1
 #define APP_UPT_STATE_FAILED -1
 
-#define APP_NEXT_RUN_BAD_INTERVAL 300    //10sec - for debug only
-#define APP_NEXT_RUN_DEFAULT_INTERVAL 60 //10sec - for debug only
-#define APP_NEXT_RUN_DEFAULT_UPDATE 300  //30sec - for debug only
+#define APP_NEXT_RUN_BAD_INTERVAL 60 * 60 * 4     //10sec - for debug only
+#define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 1 //1 hour
+#define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 6   //6 hour
 CONFIG(SRV_ROOT, 0, "http://192.168.9.104:9898/")
 
 DynamicJsonDocument app_data(2048); //good chunk of memory
@@ -328,6 +328,14 @@ int app_inject_signals()
 
 uint32_t app_schedule_wake()
 {
+    if (SIG_APP_3PT_NUPD.value > 0)
+    {
+        uint32_t next_3rdparty_upd = (uint32_t)SIG_APP_3PT_NUPD.value + (uint32_t)rtc_unix_time();
+        if(next_3rdparty_upd < SIG_APP_NUPD.value) {
+            sig_set(&SIG_APP_NUPD, next_3rdparty_upd);
+        }
+    }
+
     uint32_t next_wake_point = SIG_APP_NUPD.value;
 
     if (SIG_APP_TRY.value > 3) //give several tries
@@ -361,10 +369,10 @@ uint32_t app_schedule_wake()
 
 uint32_t app_third_party_schedule_wake()
 {
-    if (SIG_APP_3PT_NUPD.value > 0)
+    if (SIG_APP_3PT_NRUN.value > 0)
     {
-        DEBUG("3rd PARTY APP SCHEDULE WAKE", String(SIG_APP_3PT_NUPD.value).c_str());
-        return (uint32_t)(SIG_APP_3PT_NUPD.value) * (uint32_t)1000;
+        DEBUG("3rd PARTY APP SCHEDULE WAKE", String(SIG_APP_3PT_NRUN.value).c_str());
+        return (uint32_t)(SIG_APP_3PT_NRUN.value) * (uint32_t)1000;
     }
     return (uint32_t)0;
 }

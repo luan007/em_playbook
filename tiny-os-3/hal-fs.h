@@ -12,18 +12,30 @@
 
 SIGNAL(FS_MSG, SIG_ALL, SIG_RUNTIME, 0)
 
-void _dbg_ls_dir(const char *c, int levels)
+SIGNAL(FS_FREE, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(FS_USED_COMPUTED, SIG_NONE, SIG_RUNTIME, 0)
+SIGNAL(FS_TOTAL, SIG_NONE, SIG_RUNTIME, 0)
+
+void update_fs_info()
 {
+    sig_set(&SIG_FS_FREE, USE_FS.freeBytes());
+    sig_set(&SIG_FS_TOTAL, USE_FS.totalBytes());
+    Serial.printf("Disk Status: %d : %d / %d", SIG_FS_FREE.value, SIG_FS_USED_COMPUTED.value, SIG_FS_TOTAL.value);
+}
+
+int _dbg_ls_dir(const char *c, int levels)
+{
+    int sz = 0;
     File root = USE_FS.open(c);
     if (!root)
     {
         Serial.println("- failed to open directory");
-        return;
+        return 0;
     }
     if (!root.isDirectory())
     {
         Serial.println(" - not a directory");
-        return;
+        return 0;
     }
 
     File file = root.openNextFile();
@@ -35,7 +47,7 @@ void _dbg_ls_dir(const char *c, int levels)
             Serial.println(file.name());
             if (levels)
             {
-                _dbg_ls_dir(file.name(), levels - 1);
+                sz += _dbg_ls_dir(file.name(), levels - 1);
             }
         }
         else
@@ -44,9 +56,16 @@ void _dbg_ls_dir(const char *c, int levels)
             Serial.print(file.name());
             Serial.print("\tSIZE: ");
             Serial.println(file.size());
+            sz += file.size();
         }
         file = root.openNextFile();
     }
+    if (strcmp(c, "/") == 0)
+    {
+        sig_set(&SIG_FS_USED_COMPUTED, sz);
+        update_fs_info();
+    }
+    return sz;
 }
 
 void _rm_recur(const char *c)
