@@ -379,7 +379,7 @@ void sys_wake()
         if (app_refresh_inited == 0 || SIG_APP_TAINT.value > 0)
         {
             //init or fix, anyway, less draw call = better battery life
-            app_full_refresh();
+            app_full_refresh(false);
         }
         // }
     }
@@ -410,6 +410,9 @@ void sys_wake()
                     sig_set(&SIG_DBG_MODE, 0);
                     sig_save(true);
                     break;
+                case 'G': //force refresh
+                    Serial.printf("NEXT REQ - %d, <- %d\n", SIG_APP_REFRESH_REQUEST.value, millis());
+                    break;
                 case 'R': //force refresh
                     sig_set(&SIG_APP_REFRESH_REQUEST, millis());
                     break;
@@ -430,8 +433,8 @@ void sys_wake()
             }
             if (SIG_APP_REFRESH_REQUEST.value > 0 && millis() > SIG_APP_REFRESH_REQUEST.value)
             {
-                app_full_refresh();
                 sig_clear(&SIG_APP_REFRESH_REQUEST, 0);
+                app_full_refresh(true);
             }
             if (compute_sleep_preconditions())
             {

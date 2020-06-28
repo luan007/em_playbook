@@ -9,7 +9,7 @@
 #include "lua-engine.h"
 //so crude though
 
-int app_full_refresh();
+int app_full_refresh(bool force);
 
 #define APP_UPT_STATE_SUCC 2
 #define APP_UPT_STATE_IDLE 0
@@ -19,7 +19,7 @@ int app_full_refresh();
 #define APP_NEXT_RUN_BAD_INTERVAL 60 * 60 * 4     //10sec - for debug only
 #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 1 //1 hour
 #define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 6   //6 hour
-CONFIG(SRV_ROOT, 0, "http://192.168.9.104:9898/")
+CONFIG(SRV_ROOT, 0, "http://192.168.1.183:9898/")
 
 DynamicJsonDocument app_data(2048); //good chunk of memory
 
@@ -158,7 +158,7 @@ int app_mgr_upgrade(bool FORCE = false)
     //APP UPDATED, rerender must happen
     if (result == 2)
     {
-        app_full_refresh();
+        app_full_refresh(false);
     }
     return result;
 }
@@ -258,7 +258,7 @@ int app_mgr_loop_procedures(String key)
 //pseudo OS loop
 int app_refresh_inited = 0;
 
-int app_full_refresh()
+int app_full_refresh(bool force = false)
 {
     if (app_load_version_file() == -1)
     {
@@ -267,9 +267,10 @@ int app_full_refresh()
     sig_clear(&SIG_APP_TAINT, 0);
     app_mgr_loop_procedures("background");
     String current_app = getString("APP");
+    DEBUG("APP-CUR", current_app.c_str());
     if (current_app != "")
     {
-        app_mgr_run_procedure(getString("APP"), "main");
+        app_mgr_run_procedure(current_app, "main");
     }
     else
     {
@@ -279,7 +280,16 @@ int app_full_refresh()
     app_mgr_loop_procedures("overlay");
     sig_set(&SIG_APP_NRUN, rtc_unix_time() + APP_NEXT_RUN_DEFAULT_INTERVAL);
 
+    // if (force)
+    // {
+    //     display_bin_flush_screen(0, 0, 800, 600, false);
+    //     display_bin_flush_screen(0, 0, 800, 600, false);
+    //     reset_dirty_indicator();
+    // }
+    // else
+    // {
     display_bin_auto_flush_if_dirty(2, false);
+    // }
     return 0;
 }
 
@@ -293,7 +303,7 @@ int app_restore_display_memory() //dangerous
         sig_set(&SIG_EINK_MEM_ONLY, 1);
 
         auto _current_state = _state; //pointer to old lua
-        app_full_refresh();
+        app_full_refresh(false);
         _state = _current_state; //swap back
 
         sig_set(&SIG_EINK_MEM_ONLY, 0);
@@ -331,7 +341,8 @@ uint32_t app_schedule_wake()
     if (SIG_APP_3PT_NUPD.value > 0)
     {
         uint32_t next_3rdparty_upd = (uint32_t)SIG_APP_3PT_NUPD.value + (uint32_t)rtc_unix_time();
-        if(next_3rdparty_upd < SIG_APP_NUPD.value) {
+        if (next_3rdparty_upd < SIG_APP_NUPD.value)
+        {
             sig_set(&SIG_APP_NUPD, next_3rdparty_upd);
         }
     }
@@ -385,7 +396,7 @@ void app_before_sleep_cleanup()
         if (SIG_APP_TAINT.value > 0)
         {
             //clear out taint
-            app_full_refresh();
+            app_full_refresh(true);
         }
     }
 }

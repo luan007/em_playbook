@@ -43,6 +43,46 @@ if wifi_id ~= -1 then
     save_int("os", "wifi", wifi_id)
 end
 
+function mod(a, b)
+    return a - (math.floor(a/b)*b)
+end
+
+if sig_alert("ENC_COUNT") > 0 then
+
+    local vers = json.parse(file_string("/versions"))
+
+    local apps = {}
+    for key, value in pairs(vers) do --pseudocode
+        sprint(key)
+        if value.capability["asset-pack"] ~= 1 and key ~= "os" then
+            apps[#apps+1]=key
+        end
+    end
+
+    table.sort( apps )
+
+    local len = #apps
+    local picked = mod(sig_get("ENC_COUNT"), len)
+
+    sprint(apps[picked + 1])
+    save_string("main", "APP", apps[picked + 1])
+
+    for i=1,len do
+        local v = i * 2 - 2
+        if i == (picked + 1) then
+            v = v + 1
+        end
+        smart_draw_r("/os-apps/tray-en.bin", 125, 26 * len * 2, 0, 26 * v, 125, 26, 600 - 125, 26 * (i - 1), 0)
+    end
+
+    sig_clear("ENC_COUNT")
+    req_redraw(millis() + 5000)
+
+
+end
+
+
+
 loadlib("/os/renderer.lua")
 
 sig_clear("ENC_COUNT")

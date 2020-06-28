@@ -22,16 +22,50 @@
             font-family: sans-serif;
             font-weight: bolder;
         }
+
+        #main {
+            display: inline-block;
+        }
+
+        .tray {
+            font-size: 15px;
+            height: 26px;
+            line-height: 26px;
+            vertical-align: middle;
+            padding-right: 5px;
+            width: 120px;
+            text-align: right;
+        }
+
+        .tray.inv {
+            color: white;
+            background: black;
+        }
     </style>
-    <div id="main">
+    <div id="main" class="capture">
+        <div v-for="v,k in vers" v-if="k != 'os' && !v.capability['asset-pack']">
+            <div class='tray'>
+                {{v.title}} <i style="opacity: 0;" class="fas fa-arrow-left"></i>
+            </div>
+            <div class='tray inv'>
+                {{v.title}} <i class="fas fa-arrow-left"></i>
+            </div>
+        </div>
     </div>
     <script>
         (async function () {
             var vers = await fetch("/versions");
             vers = await vers.json();
             console.log(vers);
+            var app = new Vue({
+                el: '#main',
+                data: {
+                    vers: vers
+                },
+                mounted: function () {
 
-            
+                }
+            })
         })();
     </script>
 </body>
