@@ -1,0 +1,15 @@
+{
+    "version": 10002,
+    "render_alias": {
+        "elements.html": [
+            "-en"
+        ],
+        "tray.html": []
+    },
+    "capability": {
+        "main": "main",
+        "os": "os",
+        "signal": "signal",
+        "overlay": "overlay"
+    }
+}

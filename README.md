@@ -18,11 +18,11 @@ In short, the `app` pipeline is defined as:
 6. Image is `stitched` quickly & esp goes to sleep.
 
 
-## /Tiny-OS
+## /OS
 
 ESP32 Firmware, with lua engine, documents TBD
 
-## /Playbook-Server
+## /server
 
 ## /dev-compression-alg
 

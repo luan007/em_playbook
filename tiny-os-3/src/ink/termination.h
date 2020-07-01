@@ -1,6 +1,0 @@
-#ifndef _H_GUARD_TERM
-#define _H_GUARD_TERM
-
-int DISPLAY_REQ_TERMINATION = 1; //PATCH
-
-#endif
