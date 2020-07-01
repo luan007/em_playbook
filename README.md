@@ -20,9 +20,18 @@ In short, the `app` pipeline is defined as:
 
 ## /OS
 
-ESP32 Firmware, with lua engine, documents TBD
+ESP32 Core firmware, with eink driver (slightly modified), with lua engine & power saving logic
+
+TODO: docs
 
 ## /server
 
-## /dev-compression-alg
+TODO: docs
 
+## /experiments
+
+TODO: docs
+
+## /hw
+
+TODO: files & docs
