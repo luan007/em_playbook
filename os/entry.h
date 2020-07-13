@@ -9,6 +9,8 @@
 #include "shared.h"
 #include "app-engine.h"
 
+#define ENABLE_UART false
+
 ////////////HELPER
 
 void factory_reset()
@@ -398,7 +400,7 @@ void sys_wake()
         {
             SIG_DBG_MODE.value = 0; //force for production
             hal_io_loop(); //any draw action should be safe now
-            while (false && Serial.available())
+            while (ENABLE_UART && Serial.available())
             {
                 //read stuff from serial
                 char c = Serial.read();

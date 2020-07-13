@@ -40,7 +40,7 @@ void entry()
         halt();
     }
 
-    if (_switch == debounce_limit)
+    if (_switch == debounce_limit || _touch == debounce_limit)
     {
         wake();
         halt();

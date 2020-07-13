@@ -1,5 +1,7 @@
 #ifndef _GUARD_APP_ENGINE
 #define _GUARD_APP_ENGINE
+
+
 #include <ArduinoJson.h>
 #include "src/presist.h"
 #include "shared.h"
@@ -19,7 +21,7 @@ int app_full_refresh(bool force);
 #define APP_NEXT_RUN_BAD_INTERVAL 60 * 60 * 4     //10sec - for debug only
 #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 1 //1 hour
 #define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 6   //6 hour
-CONFIG(SRV_ROOT, 0, "http://192.168.1.183:9898/")
+CONFIG(SRV_ROOT, 0, "http://192.168.40.183:9898/")
 
 DynamicJsonDocument app_data(2048); //good chunk of memory
 

@@ -6,7 +6,8 @@
 #define LED1 32
 #define LED2 33
 
-#define BAT_IN 25
+#define BAT_IN 34
+#define VBUS_IN 35
 
 #define SW 27
 #define SW_GPIO GPIO_NUM_27
@@ -206,7 +207,7 @@ void hal_io_setup()
     pinMode(LED2, OUTPUT);
 
     hw_encoder.attachHalfQuad(DT, CLK);
-    int r = max(0, min(100, (((analogRead(25) * 1650 / 1000) / 3) - 1000) * 198 / 1000));
+    int r = max(0, min(100, (((analogRead(BAT_IN) * 1650 / 1000) / 3) - 1000) * 198 / 1000));
     sig_set(&SIG_BAT, r);
     Serial.print("BATTERY %%% ");
     Serial.print(r);
