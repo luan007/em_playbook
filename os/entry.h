@@ -84,7 +84,6 @@ void fallback_renderer()
 
   if (SIG_OTA.triggered)
   {
-    sys_broke = true;
     sig_clear(&SIG_OTA);
     changed = true;
     message = "   \n\n";
