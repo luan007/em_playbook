@@ -185,6 +185,11 @@ void io_sw_update()
 #define LED_B_ON digitalWrite(LED2, HIGH)
 #define LED_B_OFF digitalWrite(LED2, LOW)
 
+bool hal_read_ota_mode_entry() {
+    pinMode(SW, INPUT);
+    return !digitalRead(SW);
+}
+
 void hal_io_setup()
 {
     Wire.begin();

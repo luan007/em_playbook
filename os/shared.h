@@ -132,6 +132,7 @@ SIGNAL(ALLOW_LOOP, SIG_NONE, SIG_RUNTIME, 0)
 SIGNAL(NO_MORE_OP, SIG_ALL, SIG_IMMEDIATE, 0)
 SIGNAL(DBG_MODE, SIG_ALL, SIG_POWERLOSS, 0)
 SIGNAL(BAT, SIG_ALL, SIG_POWERLOSS, 0)
+SIGNAL(OTA, SIG_ALL, SIG_RUNTIME, 0)
 
 SIGNAL(APP_TAINT, SIG_NONE, SIG_RUNTIME, 0)
 SIGNAL(APP_REFRESH_REQUEST, SIG_NONE, SIG_RUNTIME, 0)
@@ -338,6 +339,7 @@ typedef struct config
 
 #define CONFIG(NAME, default_64, str) struct config CFG_##NAME = {#NAME, default_64, String(str)};
 
+
 std::list<struct config *> configs;
 
 void cfg_reg(struct config *conf)
@@ -453,5 +455,6 @@ void cfg_tick()
     }
     _config_store.end();
 }
+CONFIG(SRV_ROOT, 0, "http://192.168.40.183:9898/")
 
 #endif
