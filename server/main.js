@@ -46,6 +46,7 @@ async function render_html(url, file_out, cache) {
     console.log("rendering ", url, file_out);
     const page = await browser.newPage();
     await page.goto(url);
+    await page.waitForFunction(() => 'renderDone' in window);
     const dimensions = await page.evaluate(() => {
         return {
             width: document.querySelector(".capture") ? document.querySelector(".capture").offsetWidth : document.body.offsetWidth,
