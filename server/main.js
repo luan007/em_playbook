@@ -175,7 +175,7 @@ async function init() {
     browser = await puppeteer.launch({
         args: ['--no-sandbox']
     });
-    render_html('https://baidu.com', "demo.bmp");
+    // render_html('https://baidu.com', "demo.bmp");
     app.listen(PORT);
 }
 
