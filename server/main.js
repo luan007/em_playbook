@@ -10,6 +10,24 @@ var PORT = process.argv[2] || 9898;
 var APP_ROOT = __dirname + "/static/";
 var browser;
 
+var next_reboot = Date.now() + 1000 * 60 * 30;
+var lock = 0;
+
+function lock_reboot() {
+    lock++;
+}
+function safe_to_reboot() {
+    lock--;
+}
+
+setTimeout(() => {
+    //ensures reboot
+    if (lock <= 0 && Date.now() > next_reboot) {
+        browser && browser.close();
+        process.exit();
+    }
+}, 1000);
+
 function app_prefix(name, file) { return "http://localhost:" + PORT + "/" + name + "/" + file };
 
 function file_cached(file, cache) {
@@ -93,6 +111,7 @@ async function preprocess_folder(folder, app, work_folder) {
 }
 
 app.get("/app/:name", async (req, res) => {
+    lock_reboot();
     var app = req.params.name.split("-")[0];
     var sub = req.params.name.split("-")[1] || "";
     var path = APP_ROOT + app;
@@ -119,12 +138,14 @@ app.get("/app/:name", async (req, res) => {
         },
         files
     ).pipe(res).on('finish', () => {
+        safe_to_reboot();
         res.end();
     });
 });
 
 app.get("/versions", (req, res) => {
     //aggregate meta
+    lock_reboot();
     var apps = fs.readdirSync(APP_ROOT);
     var aggr = {};
     for (var i = 0; i < apps.length; i++) {
@@ -141,6 +162,7 @@ app.get("/versions", (req, res) => {
         } catch (e) {
         }
     }
+    safe_to_reboot();
     res.json(aggr);
 });
 
