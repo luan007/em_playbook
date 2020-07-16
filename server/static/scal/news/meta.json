@@ -1,12 +1,12 @@
 {
-    "version": 31,
+    "version": 32,
     "cache": 1,
     "content": "在游戏变得日益复杂的今天，一根加载进度条不再仅仅只是开启冒险的倒计时，更是连接玩家与开发者的信使。玩家们总是希望游戏能马上加载完毕，这意味着 \"加载\" 这件事情本身也有轻重缓急: 游戏开始几分钟内会被用到的资源需要打包进 APK，其他的内容则等玩家启动游戏后在后台下载。",
     "link": "https://mp.weixin.qq.com/s/MIuSi85lnrETqq3rl0Hc6A",
     "title": "卓盟科技: 动态资源加载技术背后的<br>兼容性升级 | Android 开发者故事",
     "showDate": {
         "m": 7,
-        "d": 9
+        "d": 15
     },
     "render_alias": {
         "root.html": [

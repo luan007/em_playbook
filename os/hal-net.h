@@ -28,7 +28,7 @@ SIGNAL(WIFI, SIG_IMMEDIATE, SIG_RUNTIME, 0)
 SIGNAL(TIME, SIG_IMMEDIATE, SIG_RUNTIME, 0)
 SIGNAL(WIFI_TRY, SIG_ALL, SIG_POWERLOSS, 0)
 
-WiFiManagerParameter server_addr_param("server", "application server", "", 40);
+WiFiManagerParameter server_addr_param("server", "application server", "http://192.168.40.183:9898/", 40);
 WiFiManager wm; // global wm instance
 
 int net_wipe()
@@ -159,6 +159,7 @@ bool net_wifi_config()
     bool result = false;
     wm.setConfigPortalBlocking(false);
     wm.startConfigPortal("[ EMPaper_CFG ]");
+    wm.addParameter(&server_addr_param);
     sig_set(&SIG_WIFI_TRY, 0);
     uint32_t start_time = millis();
     sig_set(&SIG_WIFI, WIFI_CONFIG);
@@ -169,6 +170,9 @@ bool net_wifi_config()
         if (wm.process())
         {
             result = true;
+           
+            //CONFIG(SRV_ROOT, 0, server_addr_param.getValue())
+            cfg_set(&CFG_SRV_ROOT, server_addr_param.getValue());
             break;
         }
         if (millis() - start_time > (240 * 1000) ||
