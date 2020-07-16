@@ -1,1 +1,1 @@
-smart_draw_r("/about/root.bin", 600, 800, 0, 0, 600, 800, 0, 0, 0)
+smart_draw_r("/about/root.bin", 600, 2400, 0, 0, 600, 800, 0, 0, 0)

@@ -6,7 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-.bmp.bin
+*.bmp.bin
+*.bmp
+*.bin
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
