@@ -7,10 +7,11 @@ var puppeteer = require('puppeteer');
 const Jimp = require("jimp")
 const sharp = require('sharp');
 var PORT = process.argv[2] || 9898;
+var TIMEOUT = process.argv[3] || (60 * 30);
 var APP_ROOT = __dirname + "/static/";
 var browser;
 
-var next_reboot = Date.now() + 1000 * 60 * 30;
+var next_reboot = Date.now() + 1000 * TIMEOUT;
 var lock = 0;
 
 function lock_reboot() {
