@@ -6,7 +6,7 @@ var comp = require('./bmp-compress');
 var puppeteer = require('puppeteer');
 const Jimp = require("jimp")
 const sharp = require('sharp');
-var PORT = 1990;
+var PORT = process.argv[2] || 9898;
 var APP_ROOT = __dirname + "/static/";
 var browser;
 
