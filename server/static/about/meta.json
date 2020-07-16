@@ -1,7 +1,8 @@
 {
-    "version": 13,
+    "version": 15,
     "capability": {
-        "main": "main"
+        "main": "main",
+        "signal": "signal"
     },
     "title": "About"
 }

@@ -7,7 +7,7 @@ function render_wifi()
         return
     end
 
-    local wifi_pos_x = 600 - 75 - 60
+    local wifi_pos_x = 600 - 75 - 60 - 50
     local wifi_pos_y = icon_tray_y
 
     if render_wifi_id == -1 then
@@ -25,7 +25,7 @@ function render_wifi()
 end
 
 
-local bat_pos_x = 600 - 75
+local bat_pos_x = 600 - 75 - 50
 local bat_pos_y = icon_tray_y
 local render_bat_id = 0
 

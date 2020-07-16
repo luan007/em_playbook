@@ -76,8 +76,7 @@ if sig_alert("ENC_COUNT") > 0 then
     end
 
     sig_clear("ENC_COUNT")
-    req_redraw(millis() + 5000)
-
+    req_redraw(millis() + 2000)
 
 end
 
