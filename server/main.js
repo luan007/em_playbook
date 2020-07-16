@@ -21,7 +21,7 @@ function safe_to_reboot() {
     lock--;
 }
 
-setTimeout(() => {
+setInterval(() => {
     //ensures reboot
     if (lock <= 0 && Date.now() > next_reboot) {
         browser && browser.close();
