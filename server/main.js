@@ -129,7 +129,7 @@ app.get("/versions", (req, res) => {
     var aggr = {};
     for (var i = 0; i < apps.length; i++) {
         var app = apps[i];
-        if(!fs.existsSync(APP_ROOT + app + "/" + "meta.json")) continue;
+        if (!fs.existsSync(APP_ROOT + app + "/" + "meta.json")) continue;
         try {
             aggr[app] = JSON.parse(fs.readFileSync(APP_ROOT + app + "/" + "meta.json").toString());
             var sub_packs = fs.readdirSync((APP_ROOT + app));
@@ -148,7 +148,9 @@ app.use(require('serve-static')("static"));
 
 async function init() {
     console.log("Launching browser")
-    browser = await puppeteer.launch();
+    browser = await puppeteer.launch({
+        args: ['--no-sandbox']
+    });
     render_html('https://baidu.com', "demo.bmp");
     app.listen(PORT);
 }
