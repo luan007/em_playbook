@@ -7,6 +7,7 @@
 #include "hal-nap.h"
 #include "hal-net.h"
 #include "hal-ota.h"
+#include "hal-blink.h"
 #include "shared.h"
 #include "app-engine.h"
 
@@ -260,6 +261,7 @@ void sys_init()
   FLAG_OTA_PRESSED = hal_read_ota_mode_entry();
   LED_A_ON;
   LED_B_ON;
+  hal_blink_setup();
   REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN); //stop ULP immediately
   reg_vars();
   sig_init();
@@ -442,33 +444,33 @@ void sys_wake()
         char c = Serial.read();
         switch (c)
         {
-          case 'D': //start DBG mode
-            sig_set(&SIG_DBG_MODE, 1);
-            sig_save(true);
-            break;
-          case 'E': //stop DBG mode
-            sig_set(&SIG_DBG_MODE, 0);
-            sig_save(true);
-            break;
-          case 'G': //force refresh
-            Serial.printf("NEXT REQ - %d, <- %d\n", SIG_APP_REFRESH_REQUEST.value, millis());
-            break;
-          case 'R': //force refresh
-            sig_set(&SIG_APP_REFRESH_REQUEST, millis());
-            break;
-          case 'N': //force download
-            net_wifi_connect();
-            break;
-          case '0': //force download
-            net_reset();
-            break;
-          case 'U': //force download
-            app_mgr_upgrade();
-            break;
-          case 'F': //force download
-            DEBUG("WARN", "Forcing full update");
-            app_mgr_upgrade(true);
-            break;
+        case 'D': //start DBG mode
+          sig_set(&SIG_DBG_MODE, 1);
+          sig_save(true);
+          break;
+        case 'E': //stop DBG mode
+          sig_set(&SIG_DBG_MODE, 0);
+          sig_save(true);
+          break;
+        case 'G': //force refresh
+          Serial.printf("NEXT REQ - %d, <- %d\n", SIG_APP_REFRESH_REQUEST.value, millis());
+          break;
+        case 'R': //force refresh
+          sig_set(&SIG_APP_REFRESH_REQUEST, millis());
+          break;
+        case 'N': //force download
+          net_wifi_connect();
+          break;
+        case '0': //force download
+          net_reset();
+          break;
+        case 'U': //force download
+          app_mgr_upgrade();
+          break;
+        case 'F': //force download
+          DEBUG("WARN", "Forcing full update");
+          app_mgr_upgrade(true);
+          break;
         }
       }
       if ((unsigned long)SIG_APP_REFRESH_REQUEST.value > 0 && millis() > (unsigned long)SIG_APP_REFRESH_REQUEST.value)

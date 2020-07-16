@@ -455,6 +455,6 @@ void cfg_tick()
     }
     _config_store.end();
 }
-CONFIG(SRV_ROOT, 0, "http://192.168.40.183:9898/")
+CONFIG(SRV_ROOT, 0, "http://emerge.ltd:1919/")
 
 #endif

@@ -10,6 +10,7 @@
 #include "shared.h"
 #include "time.h"
 #include "src/untar.h"
+#include "hal-unique.h"
 
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 28800;
@@ -28,7 +29,7 @@ SIGNAL(WIFI, SIG_IMMEDIATE, SIG_RUNTIME, 0)
 SIGNAL(TIME, SIG_IMMEDIATE, SIG_RUNTIME, 0)
 SIGNAL(WIFI_TRY, SIG_ALL, SIG_POWERLOSS, 0)
 
-WiFiManagerParameter server_addr_param("server", "application server", "http://192.168.40.183:9898/", 40);
+WiFiManagerParameter server_addr_param("server", "application server", "http://emerge.ltd:1919/", 40);
 WiFiManager wm; // global wm instance
 
 int net_wipe()
@@ -209,6 +210,11 @@ int net_download_from_server(String fileName, String url)
     http.setConnectTimeout(5000); //5sec
     http.setTimeout(5000);        //5sec
     http.begin(url);
+
+    http.addHeader("CHIPID", get_chip_id());
+    http.addHeader("OS_CORE_VERSION",OS_CORE_VERSION);
+    http.addHeader("BATTERY", String(SIG_BAT.value));
+
     // Serial.printf("[HTTP] GET...\n", url.c_str());
     // start connection and send HTTP header
     int httpCode = http.GET();

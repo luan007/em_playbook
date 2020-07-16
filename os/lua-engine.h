@@ -439,11 +439,10 @@ extern "C"
         if (lua_gettop(lua) == 1)
         {
             int auto_restore = (luaL_checkinteger(lua, 1));
-            Serial.print("RESTORE REQ");
-            Serial.println(auto_restore);
-
+            //Serial.println("*********** RESTORE REQ *************");
+            //Serial.println(auto_restore);
             sig_set(&SIG_APP_REFRESH_REQUEST,
-                    (SIG_APP_REFRESH_REQUEST.value > auto_restore || SIG_APP_REFRESH_REQUEST.value == 0) ? auto_restore : SIG_APP_REFRESH_REQUEST.value);
+                    (SIG_APP_REFRESH_REQUEST.value < auto_restore || SIG_APP_REFRESH_REQUEST.value == 0) ? auto_restore : SIG_APP_REFRESH_REQUEST.value);
         }
         return 1;
     }
