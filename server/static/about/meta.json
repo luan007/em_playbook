@@ -1,5 +1,5 @@
 {
-    "version": 18,
+    "version": 20,
     "capability": {
         "main": "main",
         "signal": "signal"

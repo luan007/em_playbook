@@ -1,4 +1,4 @@
-if load_string("main", "APP") == "about" and sig_alert("TOUCH_CLICK") > 0 then
+if sig_alert("TOUCH_CLICK") > 0 then
     local touch = sig_get("TOUCH_CLICK")
     save_int("about", "page", touch)
     if touch > 0 then
