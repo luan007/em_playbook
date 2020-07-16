@@ -4,4 +4,4 @@ if touch > 0 then
 end
 sprint("TOUCH UPDATE")
 sprint(touch)
-smart_draw_r("/about/root.bin", 600, 2400, 0, 800 * touch, 600, 800, 0, 0, 0)
+smart_draw_r("/about/root.bin", 600, 2400, 0, 800 * (2 - touch), 600, 800, 0, 0, 0)
