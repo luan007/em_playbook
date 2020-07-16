@@ -27,6 +27,9 @@ setInterval(() => {
         browser && browser.close();
         process.exit();
     }
+    else if(lock >= 0 && Math.abs(Date.now() - next_reboot) < 60 * 1000) {
+        next_reboot = Date.now() + 1000 * 120; //dont do anything within 120s
+    }
 }, 1000);
 
 function app_prefix(name, file) { return "http://localhost:" + PORT + "/" + name + "/" + file };
