@@ -4,6 +4,10 @@ if sig_alert("NOTIFY_RELEASE") > 0 and sig_get("NOTIFY_RELEASE") > 0 then
     smart_draw_r("/os/elements-en.bin", 600, 300, 0, 128, 600, 28, 0, 0, 0)
 end
 
+if sig_alert("APP_UPT_STATE") > 0 and sig_get("APP_UPT_STATE") == 1 then
+    smart_draw_r("/os/elements-en.bin", 600, 300, 0, 128 + 28 * 5, 600, 28, 0, 0, 0)
+end
+
 local wifi_state = sig_get("WIFI")
 -- local wifi_ui_state = load_int("ux", "wifi", -1)
 wifi_id = -1
@@ -47,13 +51,12 @@ function mod(a, b)
     return a - (math.floor(a/b)*b)
 end
 
-if sig_alert("ENC_COUNT") > 0 then
+if sig_alert("ENC_COUNT") > 0 and sig_get("ENC_DELTA") ~= 0 then
 
     local vers = json.parse(file_string("/versions"))
 
     local apps = {}
     for key, value in pairs(vers) do --pseudocode
-        sprint(key)
         if value.capability["asset-pack"] ~= 1 and key ~= "os" then
             apps[#apps+1]=key
         end
@@ -64,7 +67,7 @@ if sig_alert("ENC_COUNT") > 0 then
     local len = #apps
     local picked = mod(sig_get("ENC_COUNT"), len)
 
-    sprint(apps[picked + 1])
+    sprint("MENU SELECT ******* " .. apps[picked + 1])
     save_string("main", "APP", apps[picked + 1])
 
     for i=1,len do
