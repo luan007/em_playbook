@@ -27,9 +27,6 @@ smart_draw_r("/lscal/rootNUM.bin", 180, 4650, 0, (day - 1) * 150, 180, 150, 50, 
 smart_draw_r("/lscal/rootELM.bin", 120, 1092, 0, (dow) * 36, 120, 36, 240, 50, 0)
 smart_draw_r("/lscal/rootELM.bin", 120, 1092, 0, 7 * 36 + 70 * (month - 1), 120, 70, 240, 100, 0)
 
-news_ver = json.parse(file_string("/lscal-news/meta.json"))
-if news_ver.showDate.m == month and news_ver.showDate.d == day then
-    smart_draw_r("/lscal-news/rootNEWS.bin", 500, 460, 0, 0, 500, 460, 50, 222, 0)
-end
+smart_draw_r("/lscal-news/rootNEWS.bin", 500, 460, 0, 0, 500, 460, 50, 222, 0)
 
 appoint(total_sec)

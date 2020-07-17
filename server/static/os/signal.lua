@@ -1,5 +1,9 @@
 -- wake sequence
 
+if sig_alert("WAKE") > 0 then
+    save_int("ux", "tick", 0)
+end
+
 if sig_alert("NOTIFY_RELEASE") > 0 and sig_get("NOTIFY_RELEASE") > 0 then
     smart_draw_r("/os/elements-en.bin", 600, 300, 0, 128, 600, 28, 0, 0, 0)
 end
@@ -51,36 +55,57 @@ function mod(a, b)
     return a - (math.floor(a/b)*b)
 end
 
-if sig_alert("ENC_COUNT") > 0 and sig_get("ENC_DELTA") ~= 0 then
-
-    local vers = json.parse(file_string("/versions"))
-
-    local apps = {}
-    for key, value in pairs(vers) do --pseudocode
-        if value.capability["asset-pack"] ~= 1 and key ~= "os" then
-            apps[#apps+1]=key
+if sig_alert("ENC_COUNT") > 0 then
+    local debounce = load_int("ux", "tick")
+    local prev_count = load_int("ux", "pc")
+    if debounce <= 0 or ((millis() / 100) - debounce) > 12 then
+        local selnum = load_int("ux", "sel")
+        local d = sig_get("ENC_COUNT")
+        if (d - prev_count) > 0 then
+            selnum = selnum - 1
+        elseif (d - prev_count) < 0 then
+            selnum = selnum + 1
         end
-    end
+        save_int("ux", "pc", d)
+        
+        local vers = json.parse(file_string("/versions"))
 
-    table.sort( apps )
-
-    local len = #apps
-    local picked = mod(sig_get("ENC_COUNT"), len)
-
-    sprint("MENU SELECT ******* " .. apps[picked + 1])
-    save_string("main", "APP", apps[picked + 1])
-
-    for i=1,len do
-        local v = i * 2 - 2
-        if i == (picked + 1) then
-            v = v + 1
+        local apps = {}
+        for key, value in pairs(vers) do --pseudocode
+            if value.capability["asset-pack"] ~= 1 and key ~= "os" then
+                apps[#apps+1]=key
+            end
         end
-        smart_draw_r("/os-apps/tray-en.bin", 125, 26 * len * 2, 0, 26 * v, 125, 26, 600 - 125, 26 * (i - 1), 0)
-    end
 
+        table.sort( apps )
+
+        local len = #apps
+        if selnum < 0 then
+            -- selnum = len - 1
+            selnum = 0
+        elseif selnum >= len then
+            -- selnum = 0
+            selnum = len - 1
+        end
+        save_int("ux", "sel", selnum)
+        local picked = selnum
+
+        sprint("MENU SELECT ******* " .. apps[picked + 1] .. selnum)
+
+        if(load_string("main", "APP") ~= apps[picked + 1]) then
+            save_string("main", "APP", apps[picked + 1])
+            for i=1,len do
+                local v = i * 2 - 2
+                if i == (picked + 1) then
+                    v = v + 1
+                end
+                smart_draw_r("/os-apps/tray-en.bin", 125, 26 * len * 2, 0, 26 * v, 125, 26, 600 - 125, 26 * (i - 1) + 70, 0)
+            end
+            save_int("ux", "tick", math.floor(millis() / 100))
+        end
+        req_redraw(millis() + 2000)
+    end
     sig_clear("ENC_COUNT")
-    req_redraw(millis() + 2000)
-
 end
 
 

@@ -1,5 +1,6 @@
 {
-    "version": 10006,
+    "version": 10030,
+    "cache": 1,
     "render_alias": {
         "elements.html": [
             "-en"

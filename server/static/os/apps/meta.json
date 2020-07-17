@@ -1,5 +1,6 @@
 {
-    "version": 10007,
+    "version": 1010,
+    "cache": 1,
     "render_alias": {
         "tray.html": [
             "-en"

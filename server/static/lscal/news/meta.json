@@ -1,26 +1,6 @@
 {
-    "version": 45,
+    "version": 46,
     "cache": 1,
-    "items": [
-        {
-            "content": "Google ARCore 1.18 近期发布重大更新，通过 Depth API（深度 API）解决了一直横亘在开发者面前的深度理解和遮挡难题。文末更有 7/18 技术直播分享活动，不要错过！",
-            "link": "https://mp.weixin.qq.com/s/NGwC67lk8JZRibs_vQGMfg",
-            "title": "ARCore Depth API <br> 深度解析：算法原理及开发细节",
-            "desc": "2020/7/17&nbsp;&nbsp;&nbsp;#ARCore #AR #Depth API"
-        },
-        {
-            "content": "Google 为 Flutter 设置的目标始终不变: 提供便携的工具包，用于构建以原生速度运行的精美 UI，且不受目标平台限制。为了验证这一能力，我们首先着眼于 Android 和 iOS 移动平台。目前在 Google Play 上已有超过 8 万款运行流畅、设计精美的 Flutter 应用发布。",
-            "link": "https://mp.weixin.qq.com/s/5RpAEaGfpZGAz-X9uR6Z4Q",
-            "title": "Canonical 在 Linux 上<br>提供 Flutter 桌面应用支持",
-            "desc": "2020/7/16&nbsp;&nbsp;&nbsp;#Flutter"
-        },
-        {
-            "content": "几周前，我们发布了 Android 11 的第一个 Beta 版，该版本强调了三个主题: 以人为本、灵活控制以及隐私安全。正如我们在发布 Beta 1 时强调的那样，我们正在使 Android 更加以人为本、更善于沟通，帮助用户控制他们的智能设备，让他们对敏感权限具有更多掌控权。开发者可以利用聊天 (Conversations)、Bubbles、设备控制 (Device Controls) 和媒体控制 (Media Controls) 等 API 将这些体验整合到自己的应用中。",
-            "link": "https://mp.weixin.qq.com/s/m3gVGYAPggMUNHNTeS3aDA",
-            "title": "Android 11 Beta 2 <Br>平台稳定性里程碑",
-            "desc": "2020/7/15&nbsp;&nbsp;&nbsp;#Android11 #Android Beta"
-        }
-    ],
     "render_alias": {
         "root.html": [
             "NEWS"
