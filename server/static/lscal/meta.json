@@ -1,6 +1,6 @@
 {
-    "version": 39,
-    "cache": 1,
+    "version": 49,
+    "cache": 50,
     "render_alias": {
         "root.html": [
             "BG",
@@ -9,7 +9,7 @@
             "ERR"
         ]
     },
-    "title": "Calendar",
+    "title": "Full",
     "capability": {
         "main": "main"
     }

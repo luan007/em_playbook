@@ -37,7 +37,7 @@
         .month {
             font-size: 60px;
             font-weight: 300;
-            text-align: right;
+            text-align: left;
         }
 
 
@@ -184,8 +184,8 @@
 
         .notification .overlaylogo {
             position: absolute;
-            right: 0px;
-            top: 30px;
+            right: -5px;
+            top: 35px;
             height: 40px;
             width: 40px;
             transform: translate(-50%, -50%);
@@ -260,6 +260,7 @@
             width: 600px;
             background-size: cover;
             opacity: 0.5;
+            position: absolute;
             overflow: hidden;
             filter: saturate(0) grayscale(1) brightness(1);
         }
@@ -315,13 +316,15 @@
 
 
         <div v-if="alias=='NEWS'" class="L capture">
-            <crop X=50 Y=75 W=500 H=210>
+            <crop X=50 Y=222 W=500 H=460>
                 <bg></bg>
+
                 <div class="notification-zone">
                     <div v-for="v in news.items" class="notification">
                         <div class='icon'>
                             <div class="qrcode"></div>
                         </div>
+                        <img class='overlaylogo' src="./logo.png" />
                         <div class="title" v-html="v.title">
                         </div>
                         <div class="desc" v-html="v.desc">
@@ -360,18 +363,18 @@
 
 
         <div v-if="alias=='ELM'" class='L capture'>
-            <crop v-for="wk in w" X=50 Y=460 W=120 H=32>
+            <crop v-for="wk in w" X=240 Y=50 W=120 H=36>
                 <bg></bg>
                 <span class='tag'>{{wk.toUpperCase()}}</span>
             </crop>
-            <crop v-for="mth in m" X=230 Y=440 W=150 H=70>
+            <crop v-for="mth in m" X=240 Y=100 W=120 H=70>
                 <bg></bg>
                 <div class='month'><span>{{mth}}.</span></div>
             </crop>
         </div>
 
         <div v-if="alias=='NUM'" class='L capture'>
-            <crop v-for="i in 31" X=30 Y=510 W=325 H=270>
+            <crop v-for="i in 31" X=50 Y=28 W=180 H=150>
                 <bg></bg>
                 <h1 class='date'>{{i}}</h1>
             </crop>

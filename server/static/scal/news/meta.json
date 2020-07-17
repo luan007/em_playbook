@@ -1,9 +1,10 @@
 {
-    "version": 35,
+    "version": 39,
     "cache": 1,
-    "content": "Google 为 Flutter 设置的目标始终不变: 提供便携的工具包，用于构建以原生速度运行的精美 UI，且不受目标平台限制。为了验证这一能力，我们首先着眼于 Android 和 iOS 移动平台。目前在 Google Play 上已有超过 8 万款运行流畅、设计精美的 Flutter 应用发布。",
-    "link": "https://mp.weixin.qq.com/s/5RpAEaGfpZGAz-X9uR6Z4Q",
-    "title": "Canonical 在 Linux 上<br>提供 Flutter 桌面应用支持",
+    "content": "Google ARCore 1.18 近期发布重大更新，通过 Depth API（深度 API）解决了一直横亘在开发者面前的深度理解和遮挡难题。文末更有 7/18 技术直播分享活动，不要错过！",
+    "link": "https://mp.weixin.qq.com/s/NGwC67lk8JZRibs_vQGMfg",
+    "title": "ARCore Depth API <br> 深度解析：算法原理及开发细节",
+    "desc": "2020/7/17&nbsp;&nbsp;&nbsp;#ARCore #AR #Depth API",
     "showDate": {
         "m": 7,
         "d": 17
