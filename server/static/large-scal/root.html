@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Test</title>
+</head>
+
+<body>
+    <link rel="stylesheet" href="../_libs/font-awesome/css/all.css">
+    <script src="../_libs/qrcode.min.js"></script>
+
+    <style>
+        /* https://stackoverflow.com/questions/9122904/how-to-make-the-body-or-div-of-fixed-size-stay-always-in-the-center-of-the-pag */
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        * {
+            font-family: 'open sans', "Roboto", "roboto", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-weight: bolder;
+        }
+
+        .preview {
+            position: relative;
+            height: 800px;
+            width: 600px;
+            background: #fff;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .month {
+            font-size: 60px;
+            font-weight: 300;
+            text-align: right;
+        }
+
+
+        .tag {
+            font-size: 20px;
+            display: inline-block;
+            border-radius: 90px;
+            padding: 6px 15px;
+            color: #fff;
+            background: #000;
+            font-size: 0.95em;
+            font-weight: bolder;
+            margin-bottom: 13px;
+        }
+
+        .ring {
+            position: absolute;
+            height: 300px;
+            width: 300px;
+            background-color: black;
+            /* border-radius: 99999em; */
+            opacity: 0.1;
+            transform: translate(-200px, -200px);
+        }
+
+        .scaler {
+            transform-origin: 0 0;
+            transform: scale(2);
+        }
+
+        .notification-zone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            transform: translate(-50%, -50%);
+        }
+
+        .notification {
+            /* white-space: normal;
+            word-break: break-all;
+            color: #000;
+            position: relative;
+            width: 500px;
+            height: 118px;
+            background: #ffffff;
+            font-size: 15px;
+            text-align: left;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px; */
+            white-space: normal;
+            word-break: break-all;
+            color: #000;
+            position: relative;
+            width: 500px;
+            height: 118px;
+            background: rgba(0, 0, 0, 0.5);
+            font-size: 15px;
+            backdrop-filter: blur(5px);
+            color: #fff;
+            text-align: left;
+            box-shadow: aliceblue;
+            border-radius: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .notification:first-child {
+            height: 180px;
+            margin-top: 120px;
+        }
+
+
+        .notification span {
+            /* -webkit-box-orient: vertical;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            font-weight: 700;
+            font-size: 16px;
+            padding-left: 130px;
+            opacity: 0.6;
+            padding-top: 6px;
+            padding-right: 20px;
+            display: none; */
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            font-weight: 700;
+            font-size: 16px;
+            padding-left: 20px;
+            opacity: 0.6;
+            padding-top: 18px;
+            padding-right: 20px;
+            display: none;
+        }
+
+        .notification:first-child span {
+            display: -webkit-box;
+        }
+
+
+        .notification .icon {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            /* border: 2px solid #999; */
+            background: white;
+            border-radius: 8px;
+            left: 10px;
+            top: 9px;
+            /* opacity: 0.5; */
+        }
+
+        .notification .icon .qrcode {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            height: 80px;
+            width: 80px;
+        }
+
+        .notification .title {
+            font-size: 19px;
+            position: relative;
+            padding-left: 130px;
+            padding-top: 20px;
+        }
+
+        .notification .desc {
+            font-size: 15px;
+            position: relative;
+            padding-left: 130px;
+            padding-top: 5px;
+            opacity: 0.5;
+        }
+
+        .notification .overlaylogo {
+            position: absolute;
+            right: 0px;
+            top: 30px;
+            height: 40px;
+            width: 40px;
+            transform: translate(-50%, -50%);
+            color: black;
+            border-radius: 999px;
+        }
+
+
+
+        .template {
+            display: none;
+        }
+
+        .month,
+        .tag {
+            position: absolute;
+            /* bottom: 295px; */
+            display: inline-block;
+            /* left: 50px; */
+        }
+
+        .tag {
+            top: 52px;
+            left: 240px;
+        }
+
+        .month {
+            left: 240px;
+            font-size: 50px;
+            /* bottom: 290px; */
+            top: 100px;
+            text-align: right;
+        }
+
+        .date {
+            position: absolute;
+            top: 28px;
+            display: inline-block;
+            left: 50px;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            letter-spacing: -6px;
+            font-weight: bolder;
+            font-size: 150px;
+            line-height: 150px;
+            /* text-shadow: 3px 3px 0px rgba(255, 255, 255, 1); */
+        }
+
+        .crop {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offset {
+            position: absolute;
+            overflow: visible;
+            height: 800px;
+            width: 600px;
+        }
+
+        .L {
+            position: relative;
+            display: inline-block;
+            text-align: top;
+            vertical-align: top;
+        }
+
+        .wallpaper {
+            background-image: url('./theme.jpg');
+            height: 800px;
+            width: 600px;
+            background-size: cover;
+            opacity: 0.5;
+            overflow: hidden;
+            filter: saturate(0) grayscale(1) brightness(1);
+        }
+
+        .icon-holder {
+            position: absolute;
+            top: 710px;
+            right: -20px;
+            background: white;
+            height: 1900px;
+            width: 200px;
+            border-radius: 20px;
+            border: 3px solid #ccc;
+        }
+    </style>
+    <script src="../_libs/vue.js"></script>
+
+    <div id="bg" class="template">
+        <div class='wallpaper'>
+            <div class='icon-holder'></div>
+        </div>
+    </div>
+
+    <div id="crop" class="template">
+        <div class="crop" :style="{ width: W + 'px', height: H + 'px' }">
+            <div class='offset' v-bind:style="{top: '-' + Y + 'px', left: '-' + X + 'px'}">
+                <slot></slot>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        <div v-if="alias==''" class="preview capture">
+            <bg></bg>
+            <div class='month'><span>Aug.</span></div>
+            <span class='tag'>FRIDAY</span>
+            <h1 class='date'>26</h1>
+            <div class="notification-zone">
+                <div v-for="v in news.items" class="notification">
+                    <div class='icon'>
+                        <div class="qrcode"></div>
+                    </div>
+                    <img class='overlaylogo' src="./logo.png" />
+                    <div class="title" v-html="v.title">
+                    </div>
+                    <div class="desc" v-html="v.desc">
+                    </div>
+                    <span v-html="v.content">
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+        <div v-if="alias=='NEWS'" class="L capture">
+            <crop X=50 Y=75 W=500 H=210>
+                <bg></bg>
+                <div class="notification-zone">
+                    <div v-for="v in news.items" class="notification">
+                        <div class='icon'>
+                            <div class="qrcode"></div>
+                        </div>
+                        <div class="title" v-html="v.title">
+                        </div>
+                        <div class="desc" v-html="v.desc">
+                        </div>
+                        <span v-html="v.content">
+                        </span>
+                    </div>
+                </div>
+            </crop>
+        </div>
+
+
+        <div v-if="alias=='BG'" class="preview capture">
+            <bg></bg>
+        </div>
+
+        <div v-if="alias=='ERR'" class="preview capture">
+            <bg></bg>
+            <h1 style='position:relative; top: 130px'>
+                <div style='font-size:80px;'><i class="fas fa-history"></i></div>
+                <div style="font-family: 'Roboto'; margin-top: 30px">
+                    <b>Calendar</b>
+                    <Br>
+                    <b>Syncing Clock</b>
+                    <br>
+                    <span style="display: block; font-weight: 300; margin-top:50px; font-size: 0.5em;">lost track of
+                        time due to reset or powerloss<br>content will come back to your display briefly</span>
+                    <span
+                        style="display: inline-block; padding: 20px; border: 3px solid black; opacity: 0.5; font-weight: 600; margin-top:150px; font-size: 0.5em;">this
+                        message should disappear shortly, <br> if not, please try to reconfigure the Wi-Fi
+                        connection.</span>
+                </div>
+            </h1>
+            <h1></h1>
+        </div>
+
+
+        <div v-if="alias=='ELM'" class='L capture'>
+            <crop v-for="wk in w" X=50 Y=460 W=120 H=32>
+                <bg></bg>
+                <span class='tag'>{{wk.toUpperCase()}}</span>
+            </crop>
+            <crop v-for="mth in m" X=230 Y=440 W=150 H=70>
+                <bg></bg>
+                <div class='month'><span>{{mth}}.</span></div>
+            </crop>
+        </div>
+
+        <div v-if="alias=='NUM'" class='L capture'>
+            <crop v-for="i in 31" X=30 Y=510 W=325 H=270>
+                <bg></bg>
+                <h1 class='date'>{{i}}</h1>
+            </crop>
+        </div>
+
+    </div>
+
+    <script>
+
+        (async function () {
+            var news = await fetch("./news/meta.json");
+            news = await news.json();
+            console.log(news);
+
+            var alias = location.hash.replace("#", "");
+
+            //$0.getBoundingClientRect()
+
+            var d = new Date();
+            var month = new Array();
+            month[0] = "Jan";
+            month[1] = "Feb";
+            month[2] = "Mar";
+            month[3] = "Apr";
+            month[4] = "May";
+            month[5] = "Jun";
+            month[6] = "July";
+            month[7] = "Aug";
+            month[8] = "Sept";
+            month[9] = "Oct";
+            month[10] = "Nov";
+            month[11] = "Dec";
+            var n = month[d.getMonth()];
+
+            var d = new Date();
+            var weekday = new Array(7);
+            weekday[0] = "Sunday";
+            weekday[1] = "Monday";
+            weekday[2] = "Tuesday";
+            weekday[3] = "Wednesday";
+            weekday[4] = "Thursday";
+            weekday[5] = "Friday";
+            weekday[6] = "Saturday";
+
+            var nd = weekday[d.getDay()];
+            Vue.component("bg", {
+                template: document.querySelector("#bg").innerHTML
+            });
+            Vue.component("crop", {
+                props: ["X", "Y", "W", "H"],
+                template: document.querySelector("#crop").innerHTML
+            });
+            var app = new Vue({
+                el: '#main',
+                data: {
+                    alias: alias,
+                    m: month,
+                    w: weekday,
+                    month: n,
+                    day: nd,
+                    news: news
+                },
+                mounted: function () {
+                    document.querySelectorAll(".qrcode").forEach((v, i) => {
+                        new QRCode(v,
+                            {
+                                text: news.items[i].link,
+                                width: 80,
+                                height: 80,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff",
+                                correctLevel: QRCode.CorrectLevel.M
+                            }
+                        );
+                    });
+                    window.renderDone = 1;
+                }
+            })
+        })()
+
+    </script>
+</body>
+
+</html>
