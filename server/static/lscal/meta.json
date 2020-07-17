@@ -1,6 +1,6 @@
 {
-    "version": 50,
-    "cache": 50,
+    "version": 1,
+    "cache": 1000,
     "render_alias": {
         "root.html": [
             "BG",

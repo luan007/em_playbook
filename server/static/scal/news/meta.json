@@ -1,6 +1,6 @@
 {
-    "version": 40,
-    "cache": 1,
+    "version": 2,
+    "cache": 1000,
     "showDate": {
         "m": 7,
         "d": 17

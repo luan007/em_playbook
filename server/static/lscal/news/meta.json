@@ -1,6 +1,6 @@
 {
-    "version": 46,
-    "cache": 1,
+    "version": 717,
+    "cache": 1000,
     "render_alias": {
         "root.html": [
             "NEWS"
