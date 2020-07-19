@@ -1,6 +1,6 @@
 {
-    "content": "Google ARCore 1.18 近期发布重大更新，通过 Depth API（深度 API）解决了一直横亘在开发者面前的深度理解和遮挡难题。文末更有 7/18 技术直播分享活动，不要错过！",
-    "link": "https://mp.weixin.qq.com/s/NGwC67lk8JZRibs_vQGMfg",
-    "title": "ARCore Depth API <br> 深度解析：算法原理及开发细节",
-    "desc": "2020/7/17&nbsp;&nbsp;&nbsp;#ARCore #AR #Depth API"
+    "content": "开发者们通常会在打磨应用的正常功能上花费很多时间，但是当应用出现一些意外情况时，给用户提供合适的体验也同样重要。一方面来讲，对用户来说，目睹应用崩溃是个很糟糕的体验；而另一方面，在用户操作失败时，也必须要能给出正确的提示信息。",
+    "link": "https://mp.weixin.qq.com/s/FjAyR6YPvGy4nH8WsIdpZQ",
+    "title": "协程中的取消和异常<br>异常处理详解",
+    "desc": "2020/7/18&nbsp;&nbsp;&nbsp;#Kotlin #Dev"
 }

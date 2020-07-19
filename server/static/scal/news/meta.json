@@ -1,9 +1,9 @@
 {
-    "version": 2,
+    "version": 4,
     "cache": 1000,
     "showDate": {
         "m": 7,
-        "d": 17
+        "d": 19
     },
     "render_alias": {
         "root.html": [
