@@ -4,9 +4,9 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Users/doge/Documents/Arduino/libraries/**",
-                "/Users/doge/Library/Arduino15/packages/esp32/hardware/esp32/1.0.4/**",
-                "/Users/doge/Library/Arduino15/packages/esp32/tools/ulptool/**"
+                "~/Documents/Arduino/libraries/**",
+                "~/Library/Arduino15/packages/esp32/hardware/esp32/1.0.4/**",
+                "~/Library/Arduino15/packages/esp32/tools/ulptool/**"
             ],
             "defines": [],
             "macFrameworkPath": [],

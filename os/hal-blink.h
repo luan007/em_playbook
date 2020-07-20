@@ -140,7 +140,6 @@ void hal_blink_setup()
   ledcSetup(1, 5000, 16);
   ledcAttachPin(LED1, 0);
   ledcAttachPin(LED2, 1);
-
   
   hal_led_constant(1, 0);
   hal_led_constant(0, 0);
