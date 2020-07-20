@@ -218,9 +218,11 @@ void hal_io_setup()
     //
     //(1.95 - 2.25) : 3.3
 
+
     //((x / 4096 * 3.3) - 1.95) / (2.36 - 1.95)
     //(([x / 4096] * 3.3) - 1.95) / (0.41)
-    float v = 100 * ((((float)analogRead(BAT_IN) / 4096.0f) * 3.3f) - 1.95f) / (2.25f - 1.95f);
+    // 1.80--2.21
+    float v = 100 * ((((float)analogRead(BAT_IN) / 4096.0f) * 3.3f) - 1.80f) / (2.21f - 1.80f);
     int r = (int)v;
     r = max(0, min(100, r));
     sig_set(&SIG_BAT, r);
