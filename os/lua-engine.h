@@ -36,10 +36,6 @@ extern "C"
         int led = luaL_checkinteger(lua, 1);
         float constant = luaL_checknumber(lua, 2);
         hal_led_constant(led, constant);
-
-        hal_led_blink(0, 1, 100, 5);
-        hal_led_easing(0, 0.3);
-        hal_led_wave(0, 0.2, 0.005);
     }
 
     static int expose_led_blink(lua_State *lua)

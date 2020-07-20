@@ -213,6 +213,7 @@ void hal_io_setup()
     pinMode(VBUS_IN, INPUT);
 
     hw_encoder.attachHalfQuad(DT, CLK);
+    //3.90 - 4.72
     int r = max(0, min(100, (((analogRead(BAT_IN) * 1650 / 1000) / 3) - 1000) * 198 / 1000));
     sig_set(&SIG_BAT, r);
     sig_set(&SIG_PWR_USB, digitalRead(VBUS_IN));

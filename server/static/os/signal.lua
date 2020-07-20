@@ -1,4 +1,5 @@
 -- wake sequence
+led_c(1, 1) -- actions
 
 if sig_alert("WAKE") > 0 then
     save_int("ux", "tick", 0)
@@ -55,10 +56,19 @@ function mod(a, b)
     return a - (math.floor(a/b)*b)
 end
 
-if sig_alert("ENC_COUNT") > 0 then
+if sig_alert("SW_DOWN") > 0 and load_int("ux", "menu") > 0 then
+    req_redraw(1)
+end
+
+local show_menu_force = 0
+if sig_alert("SW_DOWN") > 0 and load_int("ux", "menu") == 0 then
+    show_menu_force = 1
+end
+
+if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
     local debounce = load_int("ux", "tick")
     local prev_count = load_int("ux", "pc")
-    if debounce <= 0 or ((millis() / 100) - debounce) > 12 then
+    if show_menu_force == 1 or debounce <= 0 or ((millis() / 100) - debounce) > 12 then
         local selnum = load_int("ux", "sel")
         local d = sig_get("ENC_COUNT")
         if (d - prev_count) > 0 then
@@ -92,8 +102,11 @@ if sig_alert("ENC_COUNT") > 0 then
 
         sprint("MENU SELECT ******* " .. apps[picked + 1] .. selnum)
 
-        if(load_string("main", "APP") ~= apps[picked + 1]) then
+        if(load_string("main", "APP") ~= apps[picked + 1]) or load_int("ux", "menu") == 0 then
             save_string("main", "APP", apps[picked + 1])
+            save_int("ux", "menu", 1)
+            led_c(0, 1)
+            led_c(1, 1)
             for i=1,len do
                 local v = i * 2 - 2
                 if i == (picked + 1) then
@@ -125,3 +138,5 @@ sig_clear("SYS_BROKE", 0)
 sprint("Clearing all signal")
 
 
+
+led_c(1, 0)
