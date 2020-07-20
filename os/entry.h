@@ -264,6 +264,8 @@ void sys_init()
   FLAG_OTA_PRESSED = hal_read_ota_mode_entry();
   LED_A_ON;
   LED_B_ON;
+  hal_blink_setup();
+
   REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN); //stop ULP immediately
   reg_vars();
   sig_init();
@@ -271,7 +273,6 @@ void sys_init()
   hal_fs_setup();
   hal_io_setup();
   nap_wake();
-  hal_blink_setup();
   //waking up
   sys_wake();
 }
