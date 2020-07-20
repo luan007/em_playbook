@@ -214,12 +214,13 @@ void hal_io_setup()
     pinMode(VBUS_IN, INPUT);
 
     hw_encoder.attachHalfQuad(DT, CLK);
-    //3.90 - 4.72
-    //(1.95 - 2.36) : 3.3
+    //3.90 - 4.5
+    //
+    //(1.95 - 2.25) : 3.3
 
     //((x / 4096 * 3.3) - 1.95) / (2.36 - 1.95)
     //(([x / 4096] * 3.3) - 1.95) / (0.41)
-    float v = 100 * ((((float)analogRead(BAT_IN) / 4096.0f) * 3.3f) - 1.95f) / (2.36f - 1.95f);
+    float v = 100 * ((((float)analogRead(BAT_IN) / 4096.0f) * 3.3f) - 1.95f) / (2.25f - 1.95f);
     int r = (int)v;
     r = max(0, min(100, r));
     sig_set(&SIG_BAT, r);
