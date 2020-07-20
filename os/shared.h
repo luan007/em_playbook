@@ -310,6 +310,8 @@ void sig_save(bool LAST_CYCLE = false)
 
 void sig_tick()
 {
+    sig_save();
+    sig_external_trigger();
     for (auto sig : signals)
     {
         if (sig->visibility == SIG_ONCE_ZERO && sig->_notified_value == sig->value)
@@ -322,8 +324,6 @@ void sig_tick()
             sig->triggered = 0;
         }
     }
-    sig_save();
-    sig_external_trigger();
 }
 
 ////////////// CONFIG

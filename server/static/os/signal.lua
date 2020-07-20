@@ -56,15 +56,16 @@ function mod(a, b)
     return a - (math.floor(a/b)*b)
 end
 
-if sig_alert("SW_DOWN") > 0 and load_int("ux", "menu") > 0 then
+local ux_m = load_int("ux", "menu")
+if sig_alert("SW_CLICK") > 0 and ux_m > 0 then
     req_redraw(1)
-    sig_clear("SW_DOWN")
+    sig_clear("SW_CLICK")
 end
 
 local show_menu_force = 0
-if sig_alert("SW_DOWN") > 0 and load_int("ux", "menu") == 0 then
+if sig_alert("SW_CLICK") > 0 and ux_m == 0 then
     show_menu_force = 1
-    sig_clear("SW_DOWN")
+    sig_clear("SW_CLICK")
 end
 
 if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
@@ -104,7 +105,7 @@ if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
 
         sprint("MENU SELECT ******* " .. apps[picked + 1] .. selnum)
 
-        if(load_string("main", "APP") ~= apps[picked + 1]) or load_int("ux", "menu") == 0 then
+        if(load_string("main", "APP") ~= apps[picked + 1]) or ux_m == 0 then
             save_string("main", "APP", apps[picked + 1])
             save_int("ux", "menu", 1)
             led_c(0, 1)
@@ -124,8 +125,7 @@ if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
 end
 
 
-
-loadlib("/os/renderer.lua")
+-- loadlib("/os/renderer.lua")
 
 sig_clear("ENC_COUNT")
 sig_clear("SYS_MSG")
@@ -137,7 +137,7 @@ sig_clear("NOTIFY_RELEASE")
 sig_clear("NO_MORE_OP")
 sig_clear("APP_UPT_STATE")
 sig_clear("SYS_BROKE", 0)
-sprint("Clearing all signal")
+-- sprint("Clearing all signal")
 
 
 
