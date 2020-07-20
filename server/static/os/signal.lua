@@ -57,15 +57,15 @@ function mod(a, b)
 end
 
 local ux_m = load_int("ux", "menu")
-if sig_alert("SW_CLICK") > 0 and ux_m > 0 then
+if sig_alert("SW_UP") > 0 and ux_m > 0 then
     req_redraw(1)
-    sig_clear("SW_CLICK")
+    sig_clear("SW_UP")
 end
 
 local show_menu_force = 0
-if sig_alert("SW_CLICK") > 0 and ux_m == 0 then
+if sig_alert("SW_UP") > 0 and ux_m == 0 then
     show_menu_force = 1
-    sig_clear("SW_CLICK")
+    sig_clear("SW_UP")
 end
 
 if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
@@ -126,7 +126,6 @@ end
 
 
 loadlib("/os/renderer.lua")
-
 sig_clear("ENC_COUNT")
 sig_clear("SYS_MSG")
 sig_clear("WAKE")

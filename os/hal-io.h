@@ -214,7 +214,13 @@ void hal_io_setup()
 
     hw_encoder.attachHalfQuad(DT, CLK);
     //3.90 - 4.72
-    int r = max(0, min(100, (((analogRead(BAT_IN) * 1650 / 1000) / 3) - 1000) * 198 / 1000));
+    //(1.95 - 2.36) : 3.3
+
+    //((x / 4096 * 3.3) - 1.95) / (2.36 - 1.95)
+    //(([x / 4096] * 3.3) - 1.95) / (0.41)
+    float v = 100 * (((analogRead(BAT_IN) / 4096) * 3.3) - 1.95) / (2.36 - 1.95);
+    v = max(0, min(100, v));
+    int r = (int)v;
     sig_set(&SIG_BAT, r);
     sig_set(&SIG_PWR_USB, digitalRead(VBUS_IN));
     Serial.print("BATTERY %%% ");
