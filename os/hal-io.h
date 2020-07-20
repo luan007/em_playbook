@@ -185,7 +185,8 @@ void io_sw_update()
 #define LED_B_ON digitalWrite(LED2, HIGH)
 #define LED_B_OFF digitalWrite(LED2, LOW)
 
-bool hal_read_ota_mode_entry() {
+bool hal_read_ota_mode_entry()
+{
     pinMode(SW, INPUT);
     return !digitalRead(SW);
 }
@@ -218,9 +219,9 @@ void hal_io_setup()
 
     //((x / 4096 * 3.3) - 1.95) / (2.36 - 1.95)
     //(([x / 4096] * 3.3) - 1.95) / (0.41)
-    float v = 100 * (((analogRead(BAT_IN) / 4096) * 3.3) - 1.95) / (2.36 - 1.95);
-    v = max(0, min(100, v));
+    float v = 100 * ((((float)analogRead(BAT_IN) / 4096.0f) * 3.3f) - 1.95f) / (2.36f - 1.95f);
     int r = (int)v;
+    r = max(0, min(100, r));
     sig_set(&SIG_BAT, r);
     sig_set(&SIG_PWR_USB, digitalRead(VBUS_IN));
     Serial.print("BATTERY %%% ");
