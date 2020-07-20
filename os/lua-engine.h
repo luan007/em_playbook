@@ -5,6 +5,7 @@
 #include "Arduino.h"
 #include "shared.h"
 #include "hal-io.h"
+#include "hal-blink.h"
 #include "hal-display.h"
 #include "./src/presist.h"
 
@@ -29,6 +30,51 @@ void lua_set_shell_reason(const char *reason)
 Preferences preferences;
 extern "C"
 {
+
+    static int expose_led_constant(lua_State *lua)
+    {
+        int led = luaL_checkinteger(lua, 1);
+        float constant = luaL_checknumber(lua, 2);
+        hal_led_constant(led, constant);
+
+        hal_led_blink(0, 1, 100, 5);
+        hal_led_easing(0, 0.3);
+        hal_led_wave(0, 0.2, 0.005);
+    }
+
+    static int expose_led_blink(lua_State *lua)
+    {
+        int led = luaL_checkinteger(lua, 1);
+        float strength = luaL_checknumber(lua, 2);
+        int interval = luaL_checkinteger(lua, 3);
+        int duration = luaL_checkinteger(lua, 4);
+        int invert = 0;
+        if (lua_gettop(lua) == 5)
+        {
+             invert = luaL_checkinteger(lua, 5);
+        }
+        hal_led_blink(led, strength, interval, duration, invert);
+    }
+
+    static int expose_led_ease(lua_State *lua)
+    {
+        int led = luaL_checkinteger(lua, 1);
+        float ease = luaL_checknumber(lua, 2);
+        hal_led_easing(led, ease);
+    }
+
+    static int expose_led_wave(lua_State *lua)
+    {
+        int led = luaL_checkinteger(lua, 1);
+        float strength = luaL_checknumber(lua, 2);
+        float spd = luaL_checknumber(lua, 3);
+        float pow = 0;
+        if (lua_gettop(lua) == 4)
+        {
+            pow = luaL_checknumber(lua, 4);
+        }
+        hal_led_wave(led, strength, spd, pow);
+    }
 
     static int expose_file_as_string(lua_State *lua)
     {
@@ -522,6 +568,11 @@ void lua_shell_prep()
     lua_shell_inject_function("mem_draw", (const lua_CFunction)&expose_require_base_render);
     lua_shell_inject_function("req_redraw", (const lua_CFunction)&expose_screen_need_restore);
     lua_shell_inject_function("tainted", (const lua_CFunction)&expose_screen_need_restore);
+
+    lua_shell_inject_function("led_c", (const lua_CFunction)&expose_led_constant);
+    lua_shell_inject_function("led_b", (const lua_CFunction)&expose_led_blink);
+    lua_shell_inject_function("led_e", (const lua_CFunction)&expose_led_ease);
+    lua_shell_inject_function("led_w", (const lua_CFunction)&expose_led_wave);
 
     const int ret = luaL_dostring(_state, lua_shell_injection.c_str());
     Serial.println(lua_shell_injection);
