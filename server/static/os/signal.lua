@@ -125,7 +125,7 @@ if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
 end
 
 
--- loadlib("/os/renderer.lua")
+loadlib("/os/renderer.lua")
 
 sig_clear("ENC_COUNT")
 sig_clear("SYS_MSG")
