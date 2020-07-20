@@ -4,9 +4,11 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <WiFiAP.h>
+#include "shared.h"
+#include "hal-display.h"
 
 const char* host = "esp32";
-const char* ssid = "EM-Paper";
+const char* ssid = "EM-Paper-OTA";
 //const char* password = "emergeLAB";
 WebServer server(80);
 const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";

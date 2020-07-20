@@ -22,7 +22,7 @@ int app_full_refresh(bool force);
 #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 1 //1 hour
 #define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 6   //6 hour
 
-DynamicJsonDocument app_data(2048); //good chunk of memory
+DynamicJsonDocument app_data(4096); //enough memory
 
 //download one app & inflate
 int app_mgr_fetch_app(String app)
@@ -54,7 +54,7 @@ int app_mgr_is_update_needed(String app, JsonObject new_version)
     {
         return 1;
     }
-    DynamicJsonDocument doc(512); //load from disk
+    DynamicJsonDocument doc(1024); //load from disk
     File f = USE_FS.open(String("/") + app + "/meta.json");
     String json = f.readString();
     Serial.println(json);
@@ -230,7 +230,7 @@ int app_mgr_run_procedure(String app, String key)
     {
         return -1;
     }
-    DynamicJsonDocument doc(512); //load from disk
+    DynamicJsonDocument doc(1024); //load from disk
     File f = USE_FS.open(String("/") + app + "/meta.json");
     String json = f.readString();
     DeserializationError error = deserializeJson(doc, json);
