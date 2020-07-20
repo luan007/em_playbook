@@ -484,6 +484,8 @@ void sys_wake()
           break;
         }
       }
+
+      sig_tick(); //TODO: CHECK THIS
       if ((unsigned long)SIG_APP_REFRESH_REQUEST.value > 0 && millis() > (unsigned long)SIG_APP_REFRESH_REQUEST.value)
       {
         sig_clear(&SIG_APP_REFRESH_REQUEST, 0);

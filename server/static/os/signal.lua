@@ -58,11 +58,13 @@ end
 
 if sig_alert("SW_DOWN") > 0 and load_int("ux", "menu") > 0 then
     req_redraw(1)
+    sig_clear("SW_DOWN")
 end
 
 local show_menu_force = 0
 if sig_alert("SW_DOWN") > 0 and load_int("ux", "menu") == 0 then
     show_menu_force = 1
+    sig_clear("SW_DOWN")
 end
 
 if sig_alert("ENC_COUNT") > 0 or show_menu_force == 1 then
