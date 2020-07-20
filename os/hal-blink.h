@@ -1,3 +1,6 @@
+#ifndef _GUARD_H_BLINK
+#define _GUARD_H_BLINK
+
 #include <Ticker.h>
 
 #define LED1 32
@@ -150,3 +153,6 @@ void hal_blink_setup()
 
   blinkLed.attach_ms(10, toggleLed);
 }
+
+
+#endif

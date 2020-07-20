@@ -38,7 +38,6 @@ elseif vbat > 10 then
     render_bat_id = 2
 else
     render_bat_id = 3
-    smart_draw_r("/os/elements-en.bin", 600, 300, 0, 128 + 28 * 3, 600, 28, 0, 0, 0)
 end
 
 local render_bat_msg = 1 --default: active
@@ -54,6 +53,9 @@ if REASON == "overlay" or render_bat_msg ~= prev_render_bat_msg then
     smart_draw_r("/os/elements-en.bin", 600, 300, render_bat_id * 64, 64, 60, 64, bat_pos_x, bat_pos_y, 0)
     smart_draw_r("/os/elements-en.bin", 600, 300, 4 * 64, 64 + 10 * render_bat_msg, 22, 10, bat_pos_x + 18, bat_pos_y + 42, 0)
     save_int("os", "bat_s", render_bat_msg)
+    if render_bat_id == 3 then
+        smart_draw_r("/os/elements-en.bin", 600, 300, 0, 128 + 28 * 3, 600, 28, 0, 0, 0)
+    end
 end
 
 render_wifi()

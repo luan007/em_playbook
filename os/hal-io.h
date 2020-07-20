@@ -195,7 +195,7 @@ void hal_io_setup()
     Wire.begin();
     rtc.begin();
 
-    if (!rtc.isrunning())
+    if (!rtc.isrunning() || !rtc.now().isValid() || rtc.now().year() <= 2019)
     {
         sig_set(&SIG_RTC_INVALID, 1);
     }

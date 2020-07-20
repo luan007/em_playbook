@@ -37,6 +37,7 @@ int net_wipe()
     DEBUG("WIFI", "WIPING SETTINGS");
     wm.resetSettings();
     wm.erase(true);
+    sig_set(&SIG_RTC_INVALID, 1);
 }
 
 bool _net_config_time(int tout)
