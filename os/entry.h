@@ -196,6 +196,8 @@ void sig_external_event()
 void reg_vars()
 {
   sig_reg(&SIG_OTA);
+  sig_reg(&SIG_OTA_REQ);
+  sig_reg(&SIG_PWR_USB);
   sig_reg(&SIG_EINK_MEM_ONLY); //<--warning: things related to this one still needs to be tested
   sig_reg(&SIG_DBG_MODE);
   sig_reg(&SIG_WAKE);
@@ -237,6 +239,7 @@ void reg_vars()
   sig_reg(&SIG_APP_3PT_NUPD);
   sig_reg(&SIG_APP_3PT_NRUN);
   sig_reg(&SIG_APP_NUPD);
+  sig_reg(&SIG_UPD_REQ);
 
   cfg_reg(&CFG_SRV_ROOT);
 
@@ -261,21 +264,19 @@ void sys_init()
   FLAG_OTA_PRESSED = hal_read_ota_mode_entry();
   LED_A_ON;
   LED_B_ON;
- 
   REG_CLR_BIT(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN); //stop ULP immediately
   reg_vars();
   sig_init();
   cfg_init();
   hal_fs_setup();
   hal_io_setup();
-  nap_wake(); 
+  nap_wake();
   hal_blink_setup();
   //waking up
   sys_wake();
 }
 
 //////////////ACTUAL WAKE SEQ
-
 bool compute_sleep_preconditions()
 {
   if (SIG_DBG_MODE.value > 0)
@@ -296,16 +297,17 @@ void sys_wake()
   sig_tick();
   hal_io_loop();
 
-  if (FLAG_OTA_PRESSED && SIG_SW_PRESSING.value == 1 && SIG_WAKE.value == WAKE_NONE)
+  if (SIG_OTA_REQ.value > 0 || (FLAG_OTA_PRESSED && SIG_SW_PRESSING.value == 1 && SIG_WAKE.value == WAKE_NONE))
   {
+    sig_clear(&SIG_OTA_REQ, 0);
     while (SIG_SW_PRESSING.value == 1)
     {
       hal_io_loop();
-      if (millis() > 1000)
+      if (millis() > 6000) //this should keep most user away
       {
+        sig_set(&SIG_OTA, 1);
         if (SIG_SW_PRESSING.value == 1)
         {
-          sig_set(&SIG_OTA, 1);
           while (SIG_SW_PRESSING.value == 1)
           {
             hal_io_loop();
@@ -404,7 +406,14 @@ void sys_wake()
   if (SIG_WAKE.value == WAKE_TIMER || SIG_WAKE.value == WAKE_NONE)
   {
     //app needs update?
-    if (rtc_unix_time() > (uint32_t)SIG_APP_NUPD.value)
+    if (SIG_UPD_REQ.value > 0)
+    {
+      DEBUG("force update", "BY SIGNAL SUBSYS");
+      int _val = SIG_UPD_REQ.value;
+      sig_clear(&SIG_UPD_REQ, 0);
+      net_wifi_connect() && app_mgr_upgrade(_val == 2);
+    }
+    else if (rtc_unix_time() > (uint32_t)SIG_APP_NUPD.value)
     {
       if (app_mgr_upgrade_auto_net() < 0)
       {

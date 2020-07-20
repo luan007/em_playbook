@@ -18,6 +18,8 @@ long ota_time = millis();
 bool ota_config() {
   DEBUG("START OTA", "");
   WiFi.softAP(ssid);
+  sig_clear(&SIG_OTA, 0);
+  sig_clear(&SIG_OTA_REQ, 0);
   IPAddress myIP = WiFi.softAPIP();
   if (!MDNS.begin(host)) { //http://esp32.local
     DEBUG("Error setting up MDNS responder!", "");
@@ -84,6 +86,7 @@ bool ota_config() {
   while (1) {
     server.handleClient();
     delay(1);
+    yield();
     if (millis() - ota_time > (240 * 1000) || (SIG_SW_CLICK.triggered > 0 && SIG_SW_CLICK.value > 0))
     {
       OTADebug += "\n\n  Time Out Or Press The Button To Exit !!!";

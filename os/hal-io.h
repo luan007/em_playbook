@@ -210,10 +210,12 @@ void hal_io_setup()
     pinMode(BAT_IN, INPUT);
     pinMode(LED1, OUTPUT);
     pinMode(LED2, OUTPUT);
+    pinMode(VBUS_IN, INPUT);
 
     hw_encoder.attachHalfQuad(DT, CLK);
     int r = max(0, min(100, (((analogRead(BAT_IN) * 1650 / 1000) / 3) - 1000) * 198 / 1000));
     sig_set(&SIG_BAT, r);
+    sig_set(&SIG_PWR_USB, digitalRead(VBUS_IN));
     Serial.print("BATTERY %%% ");
     Serial.print(r);
     Serial.println(" %%% ");
