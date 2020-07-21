@@ -1,5 +1,8 @@
 -- wake sequence
-led_c(1, 1) -- actions
+
+if _G["led_c"] ~= nil then
+    _G["led_c"](1, 1)
+end
 
 if sig_alert("WAKE") > 0 then
     save_int("ux", "tick", 0)
@@ -140,4 +143,6 @@ sig_clear("SYS_BROKE", 0)
 
 
 
-led_c(1, 0)
+if _G["led_c"] ~= nil then
+    _G["led_c"](1, 0)
+end
