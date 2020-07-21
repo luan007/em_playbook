@@ -1,6 +1,6 @@
 {
-    "content": "开发者们通常会在打磨应用的正常功能上花费很多时间，但是当应用出现一些意外情况时，给用户提供合适的体验也同样重要。一方面来讲，对用户来说，目睹应用崩溃是个很糟糕的体验；而另一方面，在用户操作失败时，也必须要能给出正确的提示信息。",
-    "link": "https://mp.weixin.qq.com/s/FjAyR6YPvGy4nH8WsIdpZQ",
-    "title": "协程中的取消和异常<br>异常处理详解",
-    "desc": "2020/7/18&nbsp;&nbsp;&nbsp;#Kotlin #Dev"
+    "content": "Android Jetpack 集合了一系列的开发库，旨在帮助开发者更容易地创作高质量的应用，同时也更好地兼容老旧版本的 Android 系统。在正式发布 Jetpack 两年后的今天，我们已经看到大量的应用开发开始采用 Jetpack 中的开发库，这其中既包括大型开发团队的产品，也有那些刚起步的应用。而这一切仅仅是开始，因为近期我们发布了一系列新的开发库，以及过去一年我们对于现有开发库的重要更新。",
+    "link": "https://mp.weixin.qq.com/s/iX31RclvKX7Bz8EYvMN-rA",
+    "title": "划重点<br>Android Jetpack 三大重要更新！",
+    "desc": "2020/7/21&nbsp;&nbsp;&nbsp;#Android Jetpack"
 }

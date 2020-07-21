@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "Android Jetpack 集合了一系列的开发库，旨在帮助开发者更容易地创作高质量的应用，同时也更好地兼容老旧版本的 Android 系统。在正式发布 Jetpack 两年后的今天，我们已经看到大量的应用开发开始采用 Jetpack 中的开发库，这其中既包括大型开发团队的产品，也有那些刚起步的应用。而这一切仅仅是开始，因为近期我们发布了一系列新的开发库，以及过去一年我们对于现有开发库的重要更新。",
+            "link": "https://mp.weixin.qq.com/s/iX31RclvKX7Bz8EYvMN-rA",
+            "title": "划重点<br>Android Jetpack 三大重要更新！",
+            "desc": "2020/7/21&nbsp;&nbsp;&nbsp;#Android Jetpack"
+        },
+        {
             "content": "开发者们通常会在打磨应用的正常功能上花费很多时间，但是当应用出现一些意外情况时，给用户提供合适的体验也同样重要。一方面来讲，对用户来说，目睹应用崩溃是个很糟糕的体验；而另一方面，在用户操作失败时，也必须要能给出正确的提示信息。",
             "link": "https://mp.weixin.qq.com/s/FjAyR6YPvGy4nH8WsIdpZQ",
             "title": "协程中的取消和异常<br>异常处理详解",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/NGwC67lk8JZRibs_vQGMfg",
             "title": "ARCore Depth API <br> 深度解析：算法原理及开发细节",
             "desc": "2020/7/17&nbsp;&nbsp;&nbsp;#ARCore #AR #Depth API"
-        },
-        {
-            "content": "Google 为 Flutter 设置的目标始终不变: 提供便携的工具包，用于构建以原生速度运行的精美 UI，且不受目标平台限制。为了验证这一能力，我们首先着眼于 Android 和 iOS 移动平台。目前在 Google Play 上已有超过 8 万款运行流畅、设计精美的 Flutter 应用发布。",
-            "link": "https://mp.weixin.qq.com/s/5RpAEaGfpZGAz-X9uR6Z4Q",
-            "title": "Canonical 在 Linux 上<br>提供 Flutter 桌面应用支持",
-            "desc": "2020/7/16&nbsp;&nbsp;&nbsp;#Flutter"
         }
     ]
 }
