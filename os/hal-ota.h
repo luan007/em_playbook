@@ -17,6 +17,12 @@ boolean ledTrigger = false;
 long ota_time = millis();
 bool ota_config() {
   DEBUG("START OTA", "");
+  OTADebug = "   Connect To [ EM-Paper ] To Update Your Device.\n\n";
+  OTADebug += "   Open Brower And Enter [ http://192.168.4.1 ] To Upload Your File.\n\n";
+  OTADebug += "   \n\n";
+  OTADebug += "   This Configurator Will Stay Online 240 Seconds\n\n";
+  OTADebug += "   If You Want To Cancel, Press The Button Again\n\n";
+  display_dbg_print(OTADebug);
   WiFi.softAP(ssid);
   sig_clear(&SIG_OTA, 0);
   sig_clear(&SIG_OTA_REQ, 0);
@@ -89,7 +95,7 @@ bool ota_config() {
     yield();
     if (millis() - ota_time > (240 * 1000) || (SIG_SW_CLICK.triggered > 0 && SIG_SW_CLICK.value > 0))
     {
-      OTADebug += "\n\n  Time Out Or Press The Button To Exit !!!";
+      OTADebug = "\n\n  Time Out Or Press The Button To Exit !!!";
       display_dbg_print(OTADebug);
       break;
     }
