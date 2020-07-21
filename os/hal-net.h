@@ -27,7 +27,7 @@ const int daylightOffset_sec = 0;
 
 SIGNAL(WIFI, SIG_IMMEDIATE, SIG_RUNTIME, 0)
 SIGNAL(TIME, SIG_IMMEDIATE, SIG_RUNTIME, 0)
-SIGNAL(WIFI_TRY, SIG_ALL, SIG_POWERLOSS, 0)
+SIGNAL(WIFI_TRY, SIG_IMMEDIATE, SIG_POWERLOSS, 0)
 
 WiFiManagerParameter server_addr_param("server", "application server", "http://emerge.ltd:1919/", 40);
 WiFiManager wm; // global wm instance
