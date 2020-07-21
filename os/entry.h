@@ -89,11 +89,6 @@ void fallback_renderer()
     changed = true;
     message = "   \n\n";
     message += "   OTA Configurator Is Up, Please Relese The Button.\n\n";
-    message += "   Connect To [ EM-Paper ] To Update Your Device.\n\n";
-    message += "   Open Brower And Enter [ http://192.168.4.1 ] To Upload Your File.\n\n";
-    message += "   \n\n";
-    message += "   This Configurator Will Stay Online 240 Seconds\n\n";
-    message += "   If You Want To Cancel, Press The Button Again\n\n";
   }
   if (SIG_SYS_MSG.triggered)
   {
