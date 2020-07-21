@@ -188,8 +188,10 @@ void fallback_renderer()
 void sig_external_event()
 {
   DEBUG("SIG_EXT", "UPDATE TRIGGERED");
-  app_inject_signals();
-  app_before_sleep_cleanup();
+  if(SIG_SYS_BROKE.value == 0 && SIG_OTA.value == 0) {
+    app_inject_signals();
+    app_before_sleep_cleanup();
+  }
   fallback_renderer();
 }
 
@@ -295,8 +297,8 @@ void sys_wake()
 {
   //check bootup hold
   wdt_start();
-  sig_tick();
   hal_io_loop();
+  sig_tick();
 
   if (SIG_OTA_REQ.value > 0 || (FLAG_OTA_PRESSED && SIG_SW_PRESSING.value == 1 && SIG_WAKE.value == WAKE_NONE))
   {
@@ -307,11 +309,15 @@ void sys_wake()
       if (millis() > 6000) //this should keep most user away
       {
         sig_set(&SIG_OTA, 1);
+        sig_tick();
         if (SIG_SW_PRESSING.value == 1)
         {
+          DEBUG("! STILL PRESSING AFTER 6000", "");
+          // sig_set(&SIG_NOTIFY_RELEASE, 1);
           while (SIG_SW_PRESSING.value == 1)
           {
             hal_io_loop();
+            sig_tick();
           }
         }
         ota_config();
@@ -499,7 +505,8 @@ void sys_wake()
       yield();
     }
   }
-  return nap_try_sleep(true); //this should be your end
+  nap_try_sleep(true); //this should be your end
+  return sig_tick(); //TODO: CHECK THIS
 }
 
 #endif

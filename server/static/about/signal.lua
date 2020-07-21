@@ -1,8 +1,8 @@
 local app = load_string("main", "APP")
 local last_touch = load_int("about", "page")
 sprint("SELECTED APP ***** " .. app)
-if app == "about" and sig_alert("TOUCH_CLICK") > 0 then
-    local touch = sig_get("TOUCH_CLICK")
+if app == "about" and sig_alert("TOUCH_DOWN") > 0 and sig_get("TOUCH_DOWN") > 0 then
+    local touch = sig_get("TOUCH_DOWN")
     if last_touch ~= touch then
         save_int("about", "page", touch)
         if touch > 0 then
