@@ -546,7 +546,7 @@ void lua_shell_prep()
     lua_shell_inject_function("unix", (const lua_CFunction)&expose_unix_time);
     lua_shell_inject_function("now", (const lua_CFunction)&expose_now);
     lua_shell_inject_function("appoint", (const lua_CFunction)&expose_appoint_reboot_sec);
-    lua_shell_inject_function("appointUpdate", (const lua_CFunction)&expose_appoint_reboot_sec);
+    lua_shell_inject_function("appointUpdate", (const lua_CFunction)&expose_appoint_update_sec);
 
     lua_shell_inject_function("load_float", (const lua_CFunction)&expose_load_float);
     lua_shell_inject_function("load_int", (const lua_CFunction)&expose_load_int);
