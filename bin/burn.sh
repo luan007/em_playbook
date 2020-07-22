@@ -1,0 +1,1 @@
+esptool.py --baud 921600 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0x0 em_playbook_burn_1_0_0.img
