@@ -1,6 +1,12 @@
 {
     "items": [
         {
+                "content": "全新的 pub.dev 网站已经正式上线！新的评分指标能够帮助您更好地了解有价值的 package，并为 package 发布者提供更切实可行的反馈，提升 package 质量。为了帮您找到需要的 package 来支持您感兴趣的平台，我们添加了支持多平台 package 的识别和搜索功能。此外，我们还重新设计了整个网站的界面，沿用了 dart.dev 和 dartpad.dev 网站简洁明快的风格。",
+                "link": "https://mp.weixin.qq.com/s/NodeZQs4Krkmcz_bOfjOAQ",
+                "title": "我们重新设计了 pub.dev<br>不来试试？",
+                "desc": "2020/7/23&nbsp;&nbsp;&nbsp;#pub.dev #Flutter"
+        },
+        {
             "content": "“大家好，作为国内首个“吃螃蟹”的开发者，我很荣幸能第一时间参与 TensorFlow 开发者认证计划，并在今年3月获得了证书。这次有机会和大家深入交流，我将毫无保留地分享关于 TensorFlow 开发者认证的经验、对深度学习框架的进阶心得，帮助各位顺利闯关。",
             "link": "https://mp.weixin.qq.com/s/y6zB2PJjREmZC_Eq2BmI8Q",
             "title": "码上作答第二期（上）<br>TensorFlow 开发者认证怎么考？",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/iX31RclvKX7Bz8EYvMN-rA",
             "title": "划重点<br>Android Jetpack 三大重要更新！",
             "desc": "2020/7/21&nbsp;&nbsp;&nbsp;#Android Jetpack"
-        },
-        {
-            "content": "开发者们通常会在打磨应用的正常功能上花费很多时间，但是当应用出现一些意外情况时，给用户提供合适的体验也同样重要。一方面来讲，对用户来说，目睹应用崩溃是个很糟糕的体验；而另一方面，在用户操作失败时，也必须要能给出正确的提示信息。",
-            "link": "https://mp.weixin.qq.com/s/FjAyR6YPvGy4nH8WsIdpZQ",
-            "title": "协程中的取消和异常<br>异常处理详解",
-            "desc": "2020/7/18&nbsp;&nbsp;&nbsp;#Kotlin #Dev"
         }
     ]
 }
