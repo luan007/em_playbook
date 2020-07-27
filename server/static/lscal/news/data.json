@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "根据世界银行的统计，中东和北非地区 (MENA) 横跨超过 16 个国家，人口约 4 亿，拥有共同的文化、媒介和语言 (阿拉伯语)。25 岁以下人口占比 60%。该地区可划分为快速增长的富裕市场，如沙特阿拉伯和阿拉伯联合酋长国，以及有庞大用户群处在获利早期阶段的国家，如埃及和伊拉克。",
+            "link": "https://mp.weixin.qq.com/s/ExR402s82XwUH4Tad07sOg",
+            "title": "成功在中东和北非地区<br>发布应用或游戏的 7 个技巧",
+            "desc": "2020/7/26&nbsp;&nbsp;&nbsp;#助力出海"
+        },
+        {
             "content": "在几个月密集的准备后，本月初我们完成了有史以来的第一次线上谷歌 Web 开发者大会，给全球 Web 开发者带来完美的线上体验和大量的技术干货。今天我们通过 bilibili 和腾讯视频发布内嵌中文字幕的所有演讲视频，希望可以为中国开发者们带来机会再次与 Web 技术接轨。",
             "link": "https://mp.weixin.qq.com/s/HJX3Vr7p-r_xsVzKWf1l3A",
             "title": "盛况回顾<br>谷歌 Web 开发者大会的重要发布",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/NodeZQs4Krkmcz_bOfjOAQ",
             "title": "我们重新设计了 pub.dev<br>不来试试？",
             "desc": "2020/7/23&nbsp;&nbsp;&nbsp;#pub.dev #Flutter"
-        },
-        {
-            "content": "“大家好，作为国内首个“吃螃蟹”的开发者，我很荣幸能第一时间参与 TensorFlow 开发者认证计划，并在今年3月获得了证书。这次有机会和大家深入交流，我将毫无保留地分享关于 TensorFlow 开发者认证的经验、对深度学习框架的进阶心得，帮助各位顺利闯关。",
-            "link": "https://mp.weixin.qq.com/s/y6zB2PJjREmZC_Eq2BmI8Q",
-            "title": "码上作答第二期（上）<br>TensorFlow 开发者认证怎么考？",
-            "desc": "2020/7/22&nbsp;&nbsp;&nbsp;#Tensorflow #认证 #码上作答"
         }
     ]
 }
