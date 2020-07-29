@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "地震、飓风和洪水等自然灾害影响着大片地区和数百万人，而这对于后勤救援是一项巨大的挑战。包括政府、非政府组织和联合国组织在内的危机响应机构，需要在灾害发生后快速而全面准确的评估，以规划如何优化配置有限的资源。为此，能提供充足信息的工具愈发重要，如分辨率高达 0.3 米的超高分辨率 (VHR) 卫星图像，成为应对危机的重要工具，可以向危机响应机构呈现灾害给地形、基础设施和人口带来的变化。",
+            "link": "https://mp.weixin.qq.com/s/CKuA8wzo3Vq5PhIi-iBDew",
+            "title": "利用 AI 评估灾害损失<br>为救援工作助力",
+            "desc": "2020/7/29&nbsp;&nbsp;&nbsp;#AI"
+        },
+        {
             "content": "我们正式为各位开发者们介绍在 GitHub 上最新的一个开源库 (和开源组织) —— androidx！这是 Android Jetpack 各种组件库的源码和开发环境，与 AOSP 的主分支代码同步。",
             "link": "https://mp.weixin.qq.com/s/tLKvytXqkHYVhtmrXT0D0w",
             "title": "来 GitHub <br>参与 Jetpack 开源协作！",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/ExR402s82XwUH4Tad07sOg",
             "title": "成功在中东和北非地区<br>发布应用或游戏的 7 个技巧",
             "desc": "2020/7/26&nbsp;&nbsp;&nbsp;#助力出海"
-        },
-        {
-            "content": "在几个月密集的准备后，本月初我们完成了有史以来的第一次线上谷歌 Web 开发者大会，给全球 Web 开发者带来完美的线上体验和大量的技术干货。今天我们通过 bilibili 和腾讯视频发布内嵌中文字幕的所有演讲视频，希望可以为中国开发者们带来机会再次与 Web 技术接轨。",
-            "link": "https://mp.weixin.qq.com/s/HJX3Vr7p-r_xsVzKWf1l3A",
-            "title": "盛况回顾<br>谷歌 Web 开发者大会的重要发布",
-            "desc": "2020/7/24&nbsp;&nbsp;&nbsp;#Conf #web.dev"
         }
     ]
 }
