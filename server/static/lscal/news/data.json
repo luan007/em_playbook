@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "Flutter 团队每季度进行一次为期十天的问卷调研，以听取大家使用 Flutter 的体验。问卷中除了帮助团队了解各种持续性趋势的既有问题之外，也有用于收集用户即时反馈的新问题。通过这些调研，我们得以更好地专注于核心领域。",
+            "link": "https://mp.weixin.qq.com/s/3NAa-uNSZ-KmGsZoVgKs3Q",
+            "title": "Flutter 季度调研<br>结果分享 / 开发者的选择",
+            "desc": "2020/7/30&nbsp;&nbsp;&nbsp;#Flutter"
+        },
+        {
             "content": "地震、飓风和洪水等自然灾害影响着大片地区和数百万人，而这对于后勤救援是一项巨大的挑战。包括政府、非政府组织和联合国组织在内的危机响应机构，需要在灾害发生后快速而全面准确的评估，以规划如何优化配置有限的资源。为此，能提供充足信息的工具愈发重要，如分辨率高达 0.3 米的超高分辨率 (VHR) 卫星图像，成为应对危机的重要工具，可以向危机响应机构呈现灾害给地形、基础设施和人口带来的变化。",
             "link": "https://mp.weixin.qq.com/s/CKuA8wzo3Vq5PhIi-iBDew",
             "title": "利用 AI 评估灾害损失<br>为救援工作助力",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/tLKvytXqkHYVhtmrXT0D0w",
             "title": "来 GitHub <br>参与 Jetpack 开源协作！",
             "desc": "2020/7/28&nbsp;&nbsp;&nbsp;#AndroidX #Jetpack"
-        },
-        {
-            "content": "根据世界银行的统计，中东和北非地区 (MENA) 横跨超过 16 个国家，人口约 4 亿，拥有共同的文化、媒介和语言 (阿拉伯语)。25 岁以下人口占比 60%。该地区可划分为快速增长的富裕市场，如沙特阿拉伯和阿拉伯联合酋长国，以及有庞大用户群处在获利早期阶段的国家，如埃及和伊拉克。",
-            "link": "https://mp.weixin.qq.com/s/ExR402s82XwUH4Tad07sOg",
-            "title": "成功在中东和北非地区<br>发布应用或游戏的 7 个技巧",
-            "desc": "2020/7/26&nbsp;&nbsp;&nbsp;#助力出海"
         }
     ]
 }
