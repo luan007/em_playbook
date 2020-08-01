@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "虚拟物体为什么看起来真实？很大程度是因为光照。现实中光源的方向、色温、高光等条件，会改变物体的外观，有光感明暗交错，有阴影，一个物体才能看上去真实。因此模拟现实环境中的光照感觉，是 AR 物体栩栩如生的关键。",
+            "link": "https://mp.weixin.qq.com/s/hBvOKXIEgbVpZc1ZtQA3cA",
+            "title": "ARCore HDR<br>光估测深度解析",
+            "desc": "2020/8/1&nbsp;&nbsp;&nbsp;#ARCore #AR"
+        },
+        {
             "content": "Flutter 团队每季度进行一次为期十天的问卷调研，以听取大家使用 Flutter 的体验。问卷中除了帮助团队了解各种持续性趋势的既有问题之外，也有用于收集用户即时反馈的新问题。通过这些调研，我们得以更好地专注于核心领域。",
             "link": "https://mp.weixin.qq.com/s/3NAa-uNSZ-KmGsZoVgKs3Q",
             "title": "Flutter 季度调研<br>结果分享 / 开发者的选择",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/CKuA8wzo3Vq5PhIi-iBDew",
             "title": "利用 AI 评估灾害损失<br>为救援工作助力",
             "desc": "2020/7/29&nbsp;&nbsp;&nbsp;#AI"
-        },
-        {
-            "content": "我们正式为各位开发者们介绍在 GitHub 上最新的一个开源库 (和开源组织) —— androidx！这是 Android Jetpack 各种组件库的源码和开发环境，与 AOSP 的主分支代码同步。",
-            "link": "https://mp.weixin.qq.com/s/tLKvytXqkHYVhtmrXT0D0w",
-            "title": "来 GitHub <br>参与 Jetpack 开源协作！",
-            "desc": "2020/7/28&nbsp;&nbsp;&nbsp;#AndroidX #Jetpack"
         }
     ]
 }
