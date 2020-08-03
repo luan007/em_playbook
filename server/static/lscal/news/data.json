@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "Kotlin 协程让我们可以用同步代码来建立异步问题的模型。这是非常好的特性，但是目前大部分用例都专注于 I/O 任务或是并发操作。其实协程不仅在处理跨线程的问题有优势，还可以用来处理同一线程中的异步问题。",
+            "link": "https://mp.weixin.qq.com/s/W0hqiQl2mIpnR92qIhDvFA",
+            "title": "在 View <br>上使用挂起函数",
+            "desc": "2020/8/3&nbsp;&nbsp;&nbsp;#Kotlin"
+        },
+        {
             "content": "虚拟物体为什么看起来真实？很大程度是因为光照。现实中光源的方向、色温、高光等条件，会改变物体的外观，有光感明暗交错，有阴影，一个物体才能看上去真实。因此模拟现实环境中的光照感觉，是 AR 物体栩栩如生的关键。",
             "link": "https://mp.weixin.qq.com/s/hBvOKXIEgbVpZc1ZtQA3cA",
             "title": "ARCore HDR<br>光估测深度解析",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/3NAa-uNSZ-KmGsZoVgKs3Q",
             "title": "Flutter 季度调研<br>结果分享 / 开发者的选择",
             "desc": "2020/7/30&nbsp;&nbsp;&nbsp;#Flutter"
-        },
-        {
-            "content": "地震、飓风和洪水等自然灾害影响着大片地区和数百万人，而这对于后勤救援是一项巨大的挑战。包括政府、非政府组织和联合国组织在内的危机响应机构，需要在灾害发生后快速而全面准确的评估，以规划如何优化配置有限的资源。为此，能提供充足信息的工具愈发重要，如分辨率高达 0.3 米的超高分辨率 (VHR) 卫星图像，成为应对危机的重要工具，可以向危机响应机构呈现灾害给地形、基础设施和人口带来的变化。",
-            "link": "https://mp.weixin.qq.com/s/CKuA8wzo3Vq5PhIi-iBDew",
-            "title": "利用 AI 评估灾害损失<br>为救援工作助力",
-            "desc": "2020/7/29&nbsp;&nbsp;&nbsp;#AI"
         }
     ]
 }

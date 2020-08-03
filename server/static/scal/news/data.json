@@ -1,6 +1,6 @@
 {
-    "content": "虚拟物体为什么看起来真实？很大程度是因为光照。现实中光源的方向、色温、高光等条件，会改变物体的外观，有光感明暗交错，有阴影，一个物体才能看上去真实。因此模拟现实环境中的光照感觉，是 AR 物体栩栩如生的关键。",
-    "link": "https://mp.weixin.qq.com/s/hBvOKXIEgbVpZc1ZtQA3cA",
-    "title": "ARCore HDR<br>光估测深度解析",
-    "desc": "2020/8/1&nbsp;&nbsp;&nbsp;#ARCore #AR"
+    "content": "Kotlin 协程让我们可以用同步代码来建立异步问题的模型。这是非常好的特性，但是目前大部分用例都专注于 I/O 任务或是并发操作。其实协程不仅在处理跨线程的问题有优势，还可以用来处理同一线程中的异步问题。",
+    "link": "https://mp.weixin.qq.com/s/W0hqiQl2mIpnR92qIhDvFA",
+    "title": "在 View <br>上使用挂起函数",
+    "desc": "2020/8/3&nbsp;&nbsp;&nbsp;#Kotlin"
 }
