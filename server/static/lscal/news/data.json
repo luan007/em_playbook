@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "得益于专家学者的多年研究和深度神经网络等 ML 算法，机器学习 (ML) 近来取得巨大成功。这些研究驱动着 AutoML，AutoML 旨在实现 ML 算法设计自动化。到目前为止，AutoML 始终专注于通过结合复杂的手工设计组件构建解决方案。一个典型的例子是 神经架构搜索，在此子领域中可以从复杂层（例如卷积、批次标准化和 dropout）自动构建神经网络，这也是许多研究的主题。",
+            "link": "https://mp.weixin.qq.com/s/lQMq86ZOZHDe7js71gjTlQ",
+            "title": "推出 AutoML-Zero<br>不断进化的学习型代码",
+            "desc": "2020/8/4&nbsp;&nbsp;&nbsp;#AutoML"
+        },
+        {
             "content": "Kotlin 协程让我们可以用同步代码来建立异步问题的模型。这是非常好的特性，但是目前大部分用例都专注于 I/O 任务或是并发操作。其实协程不仅在处理跨线程的问题有优势，还可以用来处理同一线程中的异步问题。",
             "link": "https://mp.weixin.qq.com/s/W0hqiQl2mIpnR92qIhDvFA",
             "title": "在 View <br>上使用挂起函数",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/hBvOKXIEgbVpZc1ZtQA3cA",
             "title": "ARCore HDR<br>光估测深度解析",
             "desc": "2020/8/1&nbsp;&nbsp;&nbsp;#ARCore #AR"
-        },
-        {
-            "content": "Flutter 团队每季度进行一次为期十天的问卷调研，以听取大家使用 Flutter 的体验。问卷中除了帮助团队了解各种持续性趋势的既有问题之外，也有用于收集用户即时反馈的新问题。通过这些调研，我们得以更好地专注于核心领域。",
-            "link": "https://mp.weixin.qq.com/s/3NAa-uNSZ-KmGsZoVgKs3Q",
-            "title": "Flutter 季度调研<br>结果分享 / 开发者的选择",
-            "desc": "2020/7/30&nbsp;&nbsp;&nbsp;#Flutter"
         }
     ]
 }

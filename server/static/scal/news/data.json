@@ -1,6 +1,6 @@
 {
-    "content": "Kotlin 协程让我们可以用同步代码来建立异步问题的模型。这是非常好的特性，但是目前大部分用例都专注于 I/O 任务或是并发操作。其实协程不仅在处理跨线程的问题有优势，还可以用来处理同一线程中的异步问题。",
-    "link": "https://mp.weixin.qq.com/s/W0hqiQl2mIpnR92qIhDvFA",
-    "title": "在 View <br>上使用挂起函数",
-    "desc": "2020/8/3&nbsp;&nbsp;&nbsp;#Kotlin"
+    "content": "得益于专家学者的多年研究和深度神经网络等 ML 算法，机器学习 (ML) 近来取得巨大成功。这些研究驱动着 AutoML，AutoML 旨在实现 ML 算法设计自动化。到目前为止，AutoML 始终专注于通过结合复杂的手工设计组件构建解决方案。一个典型的例子是 神经架构搜索，在此子领域中可以从复杂层（例如卷积、批次标准化和 dropout）自动构建神经网络，这也是许多研究的主题。",
+    "link": "https://mp.weixin.qq.com/s/lQMq86ZOZHDe7js71gjTlQ",
+    "title": "推出 AutoML-Zero<br>不断进化的学习型代码",
+    "desc": "2020/8/4&nbsp;&nbsp;&nbsp;#AutoML"
 }
