@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "非注意盲视 (Inattentional Blindness) 是一种心理现象：在人们聚焦于某项任务时，他们会忽视与之无关的细节，这就是 选择性注意力 (Selective Attention) 的结果。",
+            "link": "https://mp.weixin.qq.com/s/E3Mxf5qf3AbbbfVvEzDcuw",
+            "title": "选择性注意力<br>在强化学习中的应用",
+            "desc": "2020/8/6&nbsp;&nbsp;&nbsp;#AI"
+        },
+        {
             "content": "在往期 #11WeeksOfAndroid 系列文章中我们介绍了联系人和身份、隐私和安全、Android 11 兼容性、开发语言，本期将聚焦 Jetpack。我们将为大家陆续带来 #11WeeksOfAndroid 内容，深入探讨 Android 的各个关键技术点，您不会错过任何重要内容。",
             "link": "https://mp.weixin.qq.com/s/XbxDxhv09O-7_2zK35yTog",
             "title": "聚焦 Android 11<br>Jetpack",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/lQMq86ZOZHDe7js71gjTlQ",
             "title": "推出 AutoML-Zero<br>不断进化的学习型代码",
             "desc": "2020/8/4&nbsp;&nbsp;&nbsp;#AutoML"
-        },
-        {
-            "content": "Kotlin 协程让我们可以用同步代码来建立异步问题的模型。这是非常好的特性，但是目前大部分用例都专注于 I/O 任务或是并发操作。其实协程不仅在处理跨线程的问题有优势，还可以用来处理同一线程中的异步问题。",
-            "link": "https://mp.weixin.qq.com/s/W0hqiQl2mIpnR92qIhDvFA",
-            "title": "在 View <br>上使用挂起函数",
-            "desc": "2020/8/3&nbsp;&nbsp;&nbsp;#Kotlin"
         }
     ]
 }
