@@ -1,6 +1,6 @@
 {
-    "content": "得益于专家学者的多年研究和深度神经网络等 ML 算法，机器学习 (ML) 近来取得巨大成功。这些研究驱动着 AutoML，AutoML 旨在实现 ML 算法设计自动化。到目前为止，AutoML 始终专注于通过结合复杂的手工设计组件构建解决方案。一个典型的例子是 神经架构搜索，在此子领域中可以从复杂层（例如卷积、批次标准化和 dropout）自动构建神经网络，这也是许多研究的主题。",
-    "link": "https://mp.weixin.qq.com/s/lQMq86ZOZHDe7js71gjTlQ",
-    "title": "推出 AutoML-Zero<br>不断进化的学习型代码",
-    "desc": "2020/8/4&nbsp;&nbsp;&nbsp;#AutoML"
+    "content": "在往期 #11WeeksOfAndroid 系列文章中我们介绍了联系人和身份、隐私和安全、Android 11 兼容性、开发语言，本期将聚焦 Jetpack。我们将为大家陆续带来 #11WeeksOfAndroid 内容，深入探讨 Android 的各个关键技术点，您不会错过任何重要内容。",
+    "link": "https://mp.weixin.qq.com/s/XbxDxhv09O-7_2zK35yTog",
+    "title": "聚焦 Android 11<br>Jetpack",
+    "desc": "2020/8/5&nbsp;&nbsp;&nbsp;#Android 11 #Jetpack"
 }
