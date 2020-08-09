@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "如今，越来越多的人希望考虑能够支持远程办公的职业，而从事应用开发或许可以实现。对于希望获得新机遇的人而言，即使过去没有编程经验，也可以立即开始学习 Android。",
+            "link": "https://mp.weixin.qq.com/s/roM0NfkEF2ikhhP_XRrkDw",
+            "title": "新课程 - 学习使用 Kotlin<br>进行 Android 开发的最佳时机！",
+            "desc": "2020/8/9&nbsp;&nbsp;&nbsp;#Android"
+        },
+        {
             "content": "我们将通过这篇文章深入分享将 Flutter 引入 web 平台的最新进展，重点介绍我们为与 web 平台进行深度、原生集成所做的努力。我们对 Flutter 的愿景是提供一个可移植的工具包。",
             "link": "https://mp.weixin.qq.com/s/VjicTubTr8UU4XMWrC3nyQ",
             "title": "深度解析<br>Flutter web 支持的最新进展",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/E3Mxf5qf3AbbbfVvEzDcuw",
             "title": "选择性注意力<br>在强化学习中的应用",
             "desc": "2020/8/6&nbsp;&nbsp;&nbsp;#AI"
-        },
-        {
-            "content": "在往期 #11WeeksOfAndroid 系列文章中我们介绍了联系人和身份、隐私和安全、Android 11 兼容性、开发语言，本期将聚焦 Jetpack。我们将为大家陆续带来 #11WeeksOfAndroid 内容，深入探讨 Android 的各个关键技术点，您不会错过任何重要内容。",
-            "link": "https://mp.weixin.qq.com/s/XbxDxhv09O-7_2zK35yTog",
-            "title": "聚焦 Android 11<br>Jetpack",
-            "desc": "2020/8/5&nbsp;&nbsp;&nbsp;#Android 11 #Jetpack"
         }
     ]
 }
