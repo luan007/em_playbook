@@ -1,6 +1,12 @@
 {
     "items": [
         {
+            "content": "全球数十亿人正在使用以 AI 为核心的产品或服务，因此以 负责任 的方式部署 AI (Responsible AI) 显得尤为重要：保持信任并将用户利益放在首位。打造具有包容性、合乎道德准则且对社区负责任的产品一直是我们的首要任务，我们也将继续将之作为工作的重中之重。",
+            "link": "https://mp.weixin.qq.com/s/3jiwK_yT_zmbvr45KRPK0g",
+            "title": "TensorFlow 在行动<br>打造负责任的 AI",
+            "desc": "2020/8/10&nbsp;&nbsp;&nbsp;#AI"
+        },
+        {
             "content": "如今，越来越多的人希望考虑能够支持远程办公的职业，而从事应用开发或许可以实现。对于希望获得新机遇的人而言，即使过去没有编程经验，也可以立即开始学习 Android。",
             "link": "https://mp.weixin.qq.com/s/roM0NfkEF2ikhhP_XRrkDw",
             "title": "新课程 - 学习使用 Kotlin<br>进行 Android 开发的最佳时机！",
@@ -11,12 +17,6 @@
             "link": "https://mp.weixin.qq.com/s/VjicTubTr8UU4XMWrC3nyQ",
             "title": "深度解析<br>Flutter web 支持的最新进展",
             "desc": "2020/8/7&nbsp;&nbsp;&nbsp;#Flutter"
-        },
-        {
-            "content": "非注意盲视 (Inattentional Blindness) 是一种心理现象：在人们聚焦于某项任务时，他们会忽视与之无关的细节，这就是 选择性注意力 (Selective Attention) 的结果。",
-            "link": "https://mp.weixin.qq.com/s/E3Mxf5qf3AbbbfVvEzDcuw",
-            "title": "选择性注意力<br>在强化学习中的应用",
-            "desc": "2020/8/6&nbsp;&nbsp;&nbsp;#AI"
         }
     ]
 }
