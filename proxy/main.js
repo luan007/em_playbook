@@ -60,13 +60,10 @@ function get_page_0(params) {
 			// })
 
 			datas.push({
+				content: contents[i],
+				link: data[i].app_msg_ext_info.content_url,
 				title: data[i].app_msg_ext_info.title,
-				author: data[i].app_msg_ext_info.author,
-				multi_app_msg_item_list: data[i].app_msg_ext_info.author.multi_app_msg_item_list,
-				details: contents[i],
-				datetime: data[i].comm_msg_info.datetime,
-				time: getMyDate(data[i].comm_msg_info.datetime).base,
-				content_url: data[i].app_msg_ext_info.content_url,
+				desc: getMyDate(data[i].comm_msg_info.datetime).base + "&nbsp;&nbsp;&nbsp;#" + data[i].app_msg_ext_info.author,
 			})
 		}
 
