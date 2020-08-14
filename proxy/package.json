@@ -12,6 +12,7 @@
     "cheerio": "^1.0.0-rc.3",
     "express": "^4.17.1",
     "html-to-text": "^5.1.1",
+    "json-to-pretty-yaml": "^1.2.2",
     "node-fetch": "^2.6.0"
   }
 }
