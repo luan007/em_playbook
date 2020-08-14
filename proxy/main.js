@@ -34,41 +34,32 @@ async function fetchUrl(url) {
 
 var lastUpdate = 0;
 var interval = 1000 * 60 * 60 * 6;
-var datas = [];
+var datas = {items: []};
 function get_page_0(params) {
 	if (Date.now() - lastUpdate < interval) return console.log("skip");
 	params.offset = 0;
 	params.action = "getmsg";
-	//    console.log(params);
 	var str = qs.stringify(params);
-	   console.log(str);
 	fetch('https://mp.weixin.qq.com/mp/profile_ext?' + str).then(res => res.json()).then(async (json) => {
 		lastUpdate = Date.now();
 		var data = JSON.parse(json.general_msg_list).list;
-		//data.length = 3;
+		data.length = 3;
 		var contents = [];
 		for (var i = 0; i < data.length; i++) {
 			contents[i] = await fetchUrl(data[i].app_msg_ext_info.content_url);
 			console.log(data[i]);
 			console.log(contents[i]);
 			console.log("---");
-
-			// datas.push({
-			// 	...data[i].app_msg_ext_info,
-			// 	details: contents[i],
-			// 	...data[i].comm_msg_info
-			// })
-
-			datas.push({
+			datas.items.push({
 				content: contents[i],
 				link: data[i].app_msg_ext_info.content_url,
 				title: data[i].app_msg_ext_info.title,
-				desc: getMyDate(data[i].comm_msg_info.datetime).base + "&nbsp;&nbsp;&nbsp;#" + data[i].app_msg_ext_info.author,
+				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base  + "&nbsp;&nbsp;&nbsp;#" + data[i].app_msg_ext_info.author,
 			})
 		}
 
 		var str = JSON.stringify(datas);
-		fs.writeFile("json/google_data.json", str, function (err, data) {
+		fs.writeFile("../server/static/lscal/news/data.json", str, function (err, data) {
 			if (err) {
 				console.error(err);
 			}
