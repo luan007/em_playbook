@@ -1,0 +1,30 @@
+var e = require('express')();
+const fetch = require('node-fetch');
+var qs = require('querystring');
+
+var lastUpdate = 0;
+var interval = 1000 * 60 * 60 * 6;
+function get_page_0(params) {
+   if(Date.now() - lastUpdate < interval) return console.log("skip");
+   params.offset = 0;
+   params.action = "getmsg";
+   console.log(params);
+   var str = qs.stringify(params);
+   console.log(str);
+ fetch('https://mp.weixin.qq.com/mp/profile_ext?' + str).then(res => res.json()).then((json)=>{
+	lastUpdate = Date.now();
+	var data = JSON.parse(json.general_msg_list);
+	data.length = 3;
+	console.log(data);
+ });
+}
+
+e.get("*", (req, res)=>{
+	get_page_0(qs.parse(req.originalUrl.substring(1)));
+	
+	fetch('https://mp.weixin.qq.com/mp/profile_ext?action=getmsg' + req.originalUrl.substring(1))
+	   	 .then(res => res.json())
+   		 .then(json => res.json(json).end());
+});
+
+e.listen(9999);
