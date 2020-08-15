@@ -38,19 +38,19 @@ TODO: files & docs
 
 
 
-## proxy
+## /proxy
 
 TODO: docs
 
-### 按键精灵 [下载](https://dl.pconline.com.cn/html_2/1/59/id=2598&pn=0.html "下载")
+#### 步骤一：按键精灵 [下载](https://dl.pconline.com.cn/html_2/1/59/id=2598&pn=0.html "下载")
 
-### Fiddler Everywhere [下载](https://www.telerik.com/download/fiddler-everywhere "下载")
+#### 步骤二：Fiddler Everywhere [下载](https://www.telerik.com/download/fiddler-everywhere "下载")
 1. Settings -> HTTPS -> 勾选` Capture HTTPS traffic ` 
 2. 开启` Auto Responder ` -> Add New Rule -> 
     * MATCH: ` regex:https://mp.weixin.qq.com/mp/profile_ext\?action\=getmsg(\w*) ` 
     * ACTION: ` http://localhost:9999/ `
 
-### proxy
+#### 步骤三：proxy
 ```
     cd proxy
     node main.js
