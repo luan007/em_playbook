@@ -5,6 +5,7 @@ const cheerio = require('cheerio')
 const htmlToText = require('html-to-text');
 const fs = require("fs");
 const YAML = require('json-to-pretty-yaml');
+const { timeEnd } = require('console');
 
 async function fetchUrl(url) {
 	var a = await fetch(url);
@@ -46,14 +47,24 @@ function get_page_0(params) {
 		var data = JSON.parse(json.general_msg_list).list;
 		data.length = 3;
 		var contents = [];
+		var url = null, tem = null, tag=['__biz=', 'mid=', 'sn=', 'idx='];
 		for (var i = 0; i < data.length; i++) {
 			contents[i] = await fetchUrl(data[i].app_msg_ext_info.content_url);
 			console.log(data[i]);
 			console.log(contents[i]);
 			console.log("---");
+			url = data[i].app_msg_ext_info.content_url.replace(/amp;/g, "").split("?")
+			url[1] = qs.parse(url[1]);
+			url[1] = {
+				__biz: url[1].__biz,
+				mid: url[1].mid,
+				sn: url[1].sn,
+				idx: url[1].idx
+			}
+			url[1] = qs.stringify(url[1]);
 			datas.items.push({
 				content: contents[i],
-				link: data[i].app_msg_ext_info.content_url.replace(/amp;/g, ""),
+				link: url.join("?"),
 				title: data[i].app_msg_ext_info.title,
 				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base  + "&nbsp;&nbsp;&nbsp;#" + data[i].app_msg_ext_info.author,
 			})
