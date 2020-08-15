@@ -47,7 +47,7 @@ TODO: docs
 
 #### 步骤二：Fiddler Everywhere [下载](https://www.telerik.com/download/fiddler/fiddler-everywhere-osx "下载")
 * Settings -> HTTPS -> 勾选` Capture HTTPS traffic ` 
-* 打开浏览器输入 ` ip地址 + 8888 `，下载证书并双击安装（在电脑端抓包）
+* 打开浏览器输入 ` http://ip:8888 `，下载证书并双击安装（在电脑端抓包）
 * 开启` Auto Responder ` -> Add New Rule -> 
     * MATCH: ` regex:https://mp.weixin.qq.com/mp/profile_ext\?action\=getmsg(\w*) ` 
     * ACTION: ` http://localhost:9999/ `
