@@ -42,14 +42,16 @@ TODO: files & docs
 
 TODO: docs
 
-### 按键精灵 *[下载]<https://dl.pconline.com.cn/html_2/1/59/id=2598&pn=0.html>
+### 按键精灵 
+*[下载]<https://dl.pconline.com.cn/html_2/1/59/id=2598&pn=0.html>
 
-### Fiddler Everywhere [下载]<https://www.telerik.com/download/fiddler-everywhere>
+### Fiddler Everywhere 
+0. *[下载]<https://www.telerik.com/download/fiddler-everywhere>
 1. Settings -> HTTPS -> 勾选` Capture HTTPS traffic ` 
 2. 开启` Auto Responder ` -> Add New Rule -> 
     * MATCH: ` regex:https://mp.weixin.qq.com/mp/profile_ext\?action\=getmsg(\w*) ` 
     * ACTION: ` http://localhost:9999/ `
-    
+
 ### proxy
 ```
     cd proxy
