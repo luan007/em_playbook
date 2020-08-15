@@ -43,6 +43,7 @@ TODO: files & docs
 TODO: docs
 
 #### 步骤一：按键精灵 [下载](https://dl.pconline.com.cn/html_2/1/59/id=2598&pn=0.html "下载")
+* 未完待续
 
 #### 步骤二：Fiddler Everywhere [下载](https://www.telerik.com/download/fiddler-everywhere "下载")
 * Settings -> HTTPS -> 勾选` Capture HTTPS traffic ` 
