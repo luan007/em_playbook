@@ -55,3 +55,4 @@ TODO: docs
     cd proxy
     node main.js
 ```
+* 指路：[data.json](https://github.com/lulu-s/em_playbook/blob/master/server/static/lscal/news/data.json)
