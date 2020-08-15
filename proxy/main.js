@@ -47,7 +47,7 @@ function get_page_0(params) {
 		var data = JSON.parse(json.general_msg_list).list;
 		data.length = 3;
 		var contents = [];
-		var url = null, tem = null, tag=['__biz=', 'mid=', 'sn=', 'idx='];
+		var url = null;
 		for (var i = 0; i < data.length; i++) {
 			contents[i] = await fetchUrl(data[i].app_msg_ext_info.content_url);
 			console.log(data[i]);
