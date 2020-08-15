@@ -40,6 +40,7 @@ function get_page_0(params) {
 	params.offset = 0;
 	params.action = "getmsg";
 	var str = qs.stringify(params);
+	console.log(str)
 	fetch('https://mp.weixin.qq.com/mp/profile_ext?' + str).then(res => res.json()).then(async (json) => {
 		lastUpdate = Date.now();
 		var data = JSON.parse(json.general_msg_list).list;
@@ -52,7 +53,7 @@ function get_page_0(params) {
 			console.log("---");
 			datas.items.push({
 				content: contents[i],
-				link: data[i].app_msg_ext_info.content_url,
+				link: data[i].app_msg_ext_info.content_url.replace(/amp;/g, ""),
 				title: data[i].app_msg_ext_info.title,
 				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base  + "&nbsp;&nbsp;&nbsp;#" + data[i].app_msg_ext_info.author,
 			})
