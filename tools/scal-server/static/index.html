@@ -7,10 +7,10 @@
     <title>Document</title>
     <script src="./vue.min.js"></script>
     <style>
-        /* * {
+        body {
             padding: 0;
             margin: 0;
-        } */
+        }
         #app {
             padding: 20px 20px 0 20px;
         }
@@ -27,7 +27,7 @@
 
         hr {
             background: darkcyan; 
-            height: 2px;
+            height: 1px;
         }
         .list,
         .title {
@@ -68,6 +68,10 @@
             right: 20px;
             top: 20px;
         }
+
+        .commit-save {
+            background: rgba(0, 138, 138, 0.6);
+        }
     </style>
 </head>
 
@@ -87,7 +91,7 @@
             </div>
             <hr>
         </div>
-        <button class="commit" v-if="d.items" @click="commit">{{save ? '已提交' : '提交到远程'}}</button>
+        <button :disabled="save" class="commit" :class="{'commit-save': save}" v-if="d.items" @click="commit">{{save ? '已提交' : '提交到远程'}}</button>
     </div>
     <script>
         // 读取数据
@@ -106,7 +110,6 @@
                 },
                 methods: {
                     commit() {
-                        if (this.save) return;
                         fetch(this.url + "/commit", {
                             method: 'GET',
                             mode: 'cors',// 避免cors攻击
@@ -117,9 +120,6 @@
                             })
                             .catch(err => console.log("err : ", err));
                     }
-                },
-                mounted() {
-                    console.log(this.items);
                 }
             })
         }

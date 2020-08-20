@@ -7,10 +7,10 @@ LeftClick 1
 MoveTo 421, 300
 Delay 1000
 LeftClick 1
-MoveTo 679, 179
+MoveTo 759, 179
 Delay 1777
 LeftClick 1
-MoveTo 880, 382
+MoveTo 960, 418
 Delay 1000
 LeftClick 1
 MoveTo 444, 59
