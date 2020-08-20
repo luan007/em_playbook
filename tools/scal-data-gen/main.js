@@ -141,7 +141,7 @@ async function get_page_0(params) {
 		// if(datas.items != null) {
 		var str = JSON.stringify(datas);
 		fs.writeFileSync("json/data.json", str);
-		var r = await fetch('http://192.168.40.173:8081/upload', {
+		var r = await fetch('http://emerge.ltd:10011/upload', {
 			method: 'post',
 			body:    JSON.stringify(datas),
 			headers: { 'Content-Type': 'application/json' },

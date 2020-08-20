@@ -124,6 +124,9 @@
             font-size: 20px;
             margin-bottom: 10px;
             padding-left: 115px;
+            padding-right: 70px;
+            word-break: keep-all;
+            min-height: 54px;
         }
 
         .notification .overlaylogo {
@@ -293,7 +296,7 @@
 
         (async function () {
             var news = await fetch("./news/data.json");
-            news = await news.json();
+            news = (await news.json()).items[0];
             console.log(news);
 
             var alias = location.hash.replace("#", "");

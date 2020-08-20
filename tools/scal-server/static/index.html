@@ -110,15 +110,16 @@
                 },
                 methods: {
                     commit() {
-                        fetch(this.url + "/commit", {
-                            method: 'GET',
-                            mode: 'cors',// 避免cors攻击
-                            crossDomain: true
-                        })
-                            .then(response => {
-                                this.save = true
-                            })
-                            .catch(err => console.log("err : ", err));
+                        // fetch(this.url + "/commit", {
+                        //     method: 'GET',
+                        //     mode: 'cors',// 避免cors攻击
+                        //     crossDomain: true
+                        // })
+                        //     .then(response => {
+                        //         this.save = true
+                        //     })
+                        //     .catch(err => console.log("err : ", err));
+                        location.href = "/commit";
                     }
                 }
             })
