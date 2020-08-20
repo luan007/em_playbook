@@ -6,9 +6,7 @@ const htmlToText = require('html-to-text');
 const fs = require("fs");
 const YAML = require('json-to-pretty-yaml');
 var argv = require('yargs').argv;
-const { timeEnd } = require('console');
 
-var fs = require("fs");
 var text = fs.readFileSync('script.txt').toString()
 var robot = require("robotjs");
 
@@ -36,34 +34,30 @@ function runCommand(data, i, cb) {
 	if (!obj) return;
 	switch (obj.type) {
 		case 'MoveTo':
-			robot.moveMouse(obj.args[0], obj.args[1]);
-			// console.log('MoveTo');
+			robot.moveMouse(obj.args[0] + Math.random(), obj.args[1] + Math.random());
+			console.log("send MoveTo: " + obj.args[0] + "," + obj.args[1]);
 			break;
 		case 'LeftDown':
 		case 'LeftClick':
 			robot.mouseClick();
-			// console.log('LeftClick');
+			console.log("send LeftClick");
 			break;
-
 		case 'PageDown':
 			robot.keyTap('pagedown');
-			console.log('pd');
+			console.log("send pagedown");
 			break;
 		case 'MouseWheel':
-			console.log(obj.args[0]);
 			robot.scrollMouse(0, obj.args[0]);
-			// console.log('MouseWheel');
+			console.log("send MouseWheel : " + obj.args[0]);
 			break;
 		case 'Delay':
-			// console.log('Delay');
-			// robot.setKeyboardDelay(obj.args[0] * 1000)
 			return setTimeout(() => {
-				console.log("len :", data.length, i + 1);
+				console.log("send Delay: " + obj.args[0]);
 				runCommand(data, i + 1, cb);
-			}, obj.args[0])
+			}, obj.args[0] + Math.random() * 2)
 			break;
 		default:
-			console.log("未知命令: ", obj.type);
+			console.log("unknown: ", obj.type);
 	}
 	return runCommand(data, i + 1, cb);
 }
@@ -73,9 +67,6 @@ async function mouseControls() {
 		runCommand(data, 0, res)
 	});
 }
-
-
-// console.log(argv);
 
 async function fetchUrl(url) {
 	var a = await fetch(url);
@@ -103,18 +94,17 @@ async function fetchUrl(url) {
 	return text.substring(0, 300);
 }
 
-
-// 
 var lastUpdate = 0;
 var interval = 1000 * 60 * 60 * 6;
 function skip_update() {
-	return Date.now() - lastUpdate < interval;
+	return (Date.now() - lastUpdate) < interval;
 }
 async function get_page_0(params) {
 	if (skip_update()) return console.log("skip");
 	try {
 		var datas = { items: [] };
 		lastUpdate = Date.now();
+		console.log("下一次loop: " + getMyDate(interval + lastUpdate).full );
 		params.offset = 0;
 		params.action = "getmsg";
 		var str = qs.stringify(params);
@@ -129,7 +119,7 @@ async function get_page_0(params) {
 		for (var i = 0; i < data.length; i++) {
 			contents[i] = await fetchUrl(data[i].app_msg_ext_info.content_url);
 			// console.log(data[i]);
-			// console.log(contents[i]);
+			console.log(contents[i]);
 			console.log("---");
 			url = data[i].app_msg_ext_info.content_url.replace(/amp;/g, "").split("?")
 			url[1] = qs.parse(url[1]);
@@ -140,30 +130,22 @@ async function get_page_0(params) {
 				idx: url[1].idx
 			}
 			url[1] = qs.stringify(url[1]);
+			console.log(getMyDate(data[i].comm_msg_info.datetime * 1000).base);
 			datas.items.push({
 				content: contents[i],
 				link: url.join("?"),
 				title: data[i].app_msg_ext_info.title,
-				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base + "&nbsp;&nbsp;&nbsp;#" + data[i].app_msg_ext_info.author,
+				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base + "&nbsp;&nbsp;&nbsp;" + (data[i].app_msg_ext_info.author != null ? "#" + data[i].app_msg_ext_info.author : ""),
 			})
 		}
 		// if(datas.items != null) {
 		var str = JSON.stringify(datas);
 		fs.writeFileSync("json/data.json", str);
-		// } else {
-		// 	lastUpdate = 0;
-		// 	clickHistoryList();
-		// 	get_page_0(params);
-		// }
-
-		// var str = YAML.stringify(datas);
-		// fs.writeFile("yaml/google_data.yaml", str, function (err, data) {
-		// 	if (err) {
-		// 		console.error(err);
-		// 	}
-		// 	console.log("----------新增成功-------------");
-		// });
-		//console.log(contents);
+		var r = await fetch('http://192.168.40.173:8081/upload', {
+			method: 'post',
+			body:    JSON.stringify(datas),
+			headers: { 'Content-Type': 'application/json' },
+		})
 	} catch (e) {
 		lastUpdate = 0;
 		console.error(e);
@@ -189,7 +171,8 @@ function getMyDate(str) {
 		oHour = oDate.getHours(),
 		oMin = oDate.getMinutes(),
 		oSen = oDate.getSeconds(),
-		oBase = oYear + '/' + oMonth + '/' + oDay
+		oBase = oYear + '/' + oMonth + '/' + oDay,
+		oFull = oYear + '/' + oMonth + '/' + oDay + " " + oHour + ":" + oMin + ":" + oSen
 	return {
 		years: oYear,
 		months: oMonth,
@@ -198,10 +181,12 @@ function getMyDate(str) {
 		minutes: oMin,
 		seconds: oSen,
 		base: oBase,
+		full: oFull,
 		ms: oDate.getTime()
 	}
 }
 
+mouseControls();
 setInterval(() => {
 	if (busy) return;
 	if (skip_update()) return;
