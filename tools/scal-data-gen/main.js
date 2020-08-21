@@ -23,10 +23,10 @@ for (let i = 0; i < str.length; i++) {
 }
 
 var busy = false;
-
 function runCommand(data, i, cb) {
 	busy = true;
 	var obj = data[i];
+	var x = 0, y = 0;
 	if (data.length <= i) {
 		busy = false;
 		return cb();
@@ -34,8 +34,9 @@ function runCommand(data, i, cb) {
 	if (!obj) return;
 	switch (obj.type) {
 		case 'MoveTo':
-			robot.moveMouse(obj.args[0] + Math.random(), obj.args[1] + Math.random());
-			console.log("send MoveTo: " + obj.args[0] + "," + obj.args[1]);
+			robot.moveMouse(obj.args[0], obj.args[1] );
+			console.log("send MoveTo");
+			// console.log("send MoveTo: " + obj.args[0] + "," + obj.args[1]);
 			break;
 		case 'LeftDown':
 		case 'LeftClick':
@@ -48,13 +49,19 @@ function runCommand(data, i, cb) {
 			break;
 		case 'MouseWheel':
 			robot.scrollMouse(0, obj.args[0]);
-			console.log("send MouseWheel : " + obj.args[0]);
+			console.log("send MouseWheel");
 			break;
 		case 'Delay':
 			return setTimeout(() => {
-				console.log("send Delay: " + obj.args[0]);
+				console.log("send Delay");
 				runCommand(data, i + 1, cb);
-			}, obj.args[0] + Math.random() * 2)
+			}, (obj.args[0] + Math.floor(Math.random() * 100)) )
+			break;
+		case 'Random': 
+			x = Math.floor(Math.random() * 1000);
+			y = Math.floor(Math.random() * 650);
+			robot.moveMouse(x, y);
+			console.log("send Random: " + x + "," + y);
 			break;
 		default:
 			console.log("unknown: ", obj.type);
@@ -95,7 +102,7 @@ async function fetchUrl(url) {
 }
 
 var lastUpdate = 0;
-var interval = 1000 * 60 * 60 * 6;
+var interval = 1000 * 60 * 60 * 1;
 function skip_update() {
 	return (Date.now() - lastUpdate) < interval;
 }
@@ -104,14 +111,12 @@ async function get_page_0(params) {
 	try {
 		var datas = { items: [] };
 		lastUpdate = Date.now();
-		console.log("下一次loop: " + getMyDate(interval + lastUpdate).full );
 		params.offset = 0;
 		params.action = "getmsg";
 		var str = qs.stringify(params);
 		// console.log(str)
 		var r = await fetch('https://mp.weixin.qq.com/mp/profile_ext?' + str);
 		var json = await r.json();
-
 		var data = JSON.parse(json.general_msg_list).list;
 		data.length = 3;
 		var contents = [];
@@ -186,9 +191,15 @@ function getMyDate(str) {
 	}
 }
 
-mouseControls();
+mouse_loop();
 setInterval(() => {
 	if (busy) return;
 	if (skip_update()) return;
-	mouseControls();
+	mouse_loop();
 }, 30000);
+
+function mouse_loop(){
+	mouseControls().then(v=>{
+		console.log("下一次loop: " + getMyDate(interval + lastUpdate).full );
+	})
+}
