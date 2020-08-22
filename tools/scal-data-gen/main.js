@@ -140,7 +140,8 @@ async function get_page_0(params) {
 				content: contents[i],
 				link: url.join("?"),
 				title: data[i].app_msg_ext_info.title,
-				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base + "&nbsp;&nbsp;&nbsp;" + (data[i].app_msg_ext_info.author != null ? "#" + data[i].app_msg_ext_info.author : ""),
+				// todo: 兼容多个author 
+				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base + "&nbsp;&nbsp;&nbsp;" + (data[i].app_msg_ext_info.author != null ? "#" + data[i].app_msg_ext_info.author  : ""),
 			})
 		}
 		// if(datas.items != null) {
