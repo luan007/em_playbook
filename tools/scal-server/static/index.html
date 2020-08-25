@@ -184,7 +184,7 @@
                 </div>
                 <hr>
             </div>
-            <h1 class="list"> 活动列表 </h1>
+            <!-- <h1 class="list"> 活动列表 </h1>
             <hr>
             <div v-if="activity.length === 0">
                 <h3>暂无活动</h3>
@@ -197,31 +197,32 @@
                     <a class="italic link" :href="i.link">查看详情</a>
                 </div>
                 <hr>
-            </div>
+            </div> -->
             <h1 id="activity" class="list"> 活动模版 </h1>
             <hr>
             <div class="item">
                 <form id="form" method="post">
                     <label for="form_title">
                         <span class="tip">*</span> 标题:<br>
-                        <input id="form_title" class="form_text" placeholder="标题" ref="title" name="title">
+                        <input id="form_title" :value="activity.title || ''" class="form_text" placeholder="标题" ref="title" name="title">
                     </label>
                     <label for="form_time">
                         <span class="tip">*</span> 日期:<br>
-                        <input id="form_time" class="form_text" type="date" ref="date" name="date">
+                        <input id="form_time" :value="activity.time" class="form_text" type="date" ref="date" name="date">
                     </label>
                     <label for="form_content">
                         <span class="tip">*</span> 简述:<br>
-                        <textarea id="form_content" class="form_text" placeholder="最多可编辑300字" ref="content"
+                        <textarea id="form_content" :value="activity.content || ''" class="form_text" placeholder="最多可编辑300字" ref="content"
                             name="content"></textarea>
                     </label>
                     <label for="form_tag">
                         <span class="tip-display">*</span> 标签:<br>
-                        <input id="form_tag" class="form_text" placeholder="例：AI" ref="tag" name="tag">
+                        <input id="form_tag" :value="activity.tag" class="form_text" placeholder="例：AI" ref="tag" name="tag">
                     </label>
                     <label for="form_link">
                         <span class="tip">*</span> 链接:<br>
                         <input id="form_link" class="form_text"
+                            :value="activity.link || ''"
                             placeholder="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwODY4OTk2Mg==&hid=9" ref="link"
                             name="link">
                     </label>
@@ -251,7 +252,11 @@
                 // return read("json/history_activity.json");
             })
             .then(v => {
-                data.activity = v.activity;
+                data.activity = v;
+                var t = data.activity.desc.split("&nbsp;&nbsp;&nbsp;");
+                data.activity.time = t[0].replace(/\//g, "-");
+                data.activity.tag = t[1].replace(/#/g, "");
+                // data.activity = v.activity;
                 init(data)
             })
 

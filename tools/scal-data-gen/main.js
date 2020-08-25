@@ -192,11 +192,17 @@ function getMyDate(str) {
 	}
 }
 
+
+var len = 0;
 mouse_loop();
 setInterval(() => {
 	if (busy) return;
 	if (skip_update()) return;
 	mouse_loop();
+	len++;
+	if(len == 3){
+		require('child_process').execFileSync("exit.bat");
+	}
 }, 30000);
 
 function mouse_loop(){
