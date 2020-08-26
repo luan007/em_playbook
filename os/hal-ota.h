@@ -21,7 +21,7 @@ long ota_time = millis();
 bool ota_config()
 {
   DEBUG("START OTA", "");
-  OTADebug = "   Connect To [ EM-Paper ] To Update Your Device.\n\n";
+  OTADebug =  "   Connect To [ EM-Paper-OTA ] To Update Your Device.\n\n";
   OTADebug += "   Open Brower And Enter [ http://192.168.4.1 ] To Upload Your File.\n\n";
   OTADebug += "   \n\n";
   OTADebug += "   This Configurator Will Stay Online 240 Seconds\n\n";
