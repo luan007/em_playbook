@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./vue.min.js"></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        #app {
+            padding: 20px 20px 0 20px;
+        }
+
+        .item {
+            padding-top: 20px;
+        }
+
+        .content {
+            line-break: anywhere;
+            line-height: 25px;
+            letter-spacing: 0.5px;
+        }
+
+        hr {
+            background: darkcyan; 
+            height: 1px;
+        }
+        .list,
+        .title {
+            color: darkcyan; 
+        }
+
+        .box {
+            overflow: hidden;
+        }
+
+        .italic {
+            font-style: italic;
+            font-size: 14px;
+            color: darkcyan;
+        }
+
+        .desc {
+            float: left;
+            /* padding-left: 5px; */
+        }
+
+        .link {
+            float: right;
+            font-weight: bold;
+            text-decoration: none;
+            padding-right: 5px;
+        }
+
+        .commit {
+            border: 0;
+            color: #fff;
+            background: darkcyan;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            position: fixed;
+            right: 20px;
+            top: 20px;
+        }
+
+        .commit-save {
+            background: rgba(0, 138, 138, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h1 class="list">文章列表</h1>
+        <hr>
+        <div v-if="d.items == null">
+            <h3>暂无文章</h3>
+        </div>
+        <div class="item" v-for="i in d.items">
+            <h2 class="title">{{i.title}}</h2>
+            <p class="content">{{i.content}}</p>
+            <div class="box">
+                <span class="italic desc" v-html="i.desc"></span>
+                <a class="italic link" :href="i.link">查看详情</a>
+            </div>
+            <hr>
+        </div>
+        <button :disabled="save" class="commit" :class="{'commit-save': save}" v-if="d.items" @click="commit">{{save ? '已提交' : '提交到远程'}}</button>
+    </div>
+    <script>
+        // 读取数据
+        fetch("json/data.json")
+            .then((j) => j.text())
+            .then(j => init(j))
+            .catch(e => alert(e));
+
+        function init(data) {
+            new Vue({
+                el: "#app",
+                data: {
+                    d: JSON.parse(data),
+                    url: "",// "http://192.168.40.173:8081"
+                    save: false
+                },
+                methods: {
+                    commit() {
+                        // fetch(this.url + "/commit", {
+                        //     method: 'GET',
+                        //     mode: 'cors',// 避免cors攻击
+                        //     crossDomain: true
+                        // })
+                        //     .then(response => {
+                        //         this.save = true
+                        //     })
+                        //     .catch(err => console.log("err : ", err));
+                        location.href = "/commit";
+                    }
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>
