@@ -4,18 +4,22 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <WiFiAP.h>
+#include <Update.h>
 #include "shared.h"
 #include "hal-display.h"
-
-const char* host = "esp32";
-const char* ssid = "EM-Paper-OTA";
+#define OS_VERSION 10000
+#define BUFSIZE 512
+uint8_t FileBuf[BUFSIZE];
+const char *host = "esp32";
+const char *ssid = "EM-Paper-OTA";
 //const char* password = "emergeLAB";
 WebServer server(80);
-const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+const char *serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
 String OTADebug;
 boolean ledTrigger = false;
 long ota_time = millis();
-bool ota_config() {
+bool ota_config()
+{
   DEBUG("START OTA", "");
   OTADebug = "   Connect To [ EM-Paper ] To Update Your Device.\n\n";
   OTADebug += "   Open Brower And Enter [ http://192.168.4.1 ] To Upload Your File.\n\n";
@@ -27,18 +31,19 @@ bool ota_config() {
   sig_clear(&SIG_OTA, 0);
   sig_clear(&SIG_OTA_REQ, 0);
   IPAddress myIP = WiFi.softAPIP();
-  if (!MDNS.begin(host)) { //http://esp32.local
+  if (!MDNS.begin(host))
+  { //http://esp32.local
     DEBUG("Error setting up MDNS responder!", "");
   }
   server.on("/", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", serverIndex);
   });
-  server.on("/update", HTTP_POST, []() {
+  server.on(
+      "/update", HTTP_POST, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
-    ESP.restart();
-  }, []() {
+    ESP.restart(); }, []() {
     HTTPUpload& upload = server.upload();
     if (upload.status == UPLOAD_FILE_START) {
       OTADebug  = "  Start Upload The File \n\n";
@@ -60,7 +65,8 @@ bool ota_config() {
         LED_A_OFF;
       }
       ledTrigger = !ledTrigger;
-      
+      Serial.print("-------------------");
+      Serial.println(upload.currentSize);
       if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
         Update.printError(Serial);
       }
@@ -84,12 +90,12 @@ bool ota_config() {
       OTADebug += "\n\n   System Restart !!!";
       display_dbg_print(OTADebug);
       ESP.restart();
-    }
-  });
+    } });
   server.begin();
   hal_io_loop();
   sig_clear(&SIG_SW_CLICK, 0);
-  while (1) {
+  while (1)
+  {
     server.handleClient();
     delay(1);
     yield();
@@ -102,4 +108,74 @@ bool ota_config() {
     hal_io_loop();
   }
   ESP.restart();
+}
+
+int ota_dowload_then_save(String name, String url)
+{
+  String nameLoc = String("/") + name;
+  USE_FS.remove(nameLoc);
+  if (!net_download_from_server(nameLoc, url, 3))
+  {
+    DEBUG("Network Error", "");
+    return -1;
+  }
+  _dbg_ls_dir("/", 10);
+  DEBUG("Download OTA file sucessful", "");
+  return 1;
+}
+
+int ota_process(String otaFile)
+{
+  File f = USE_FS.open(otaFile, "r");
+  if (!f)
+  {
+    Serial.println("Failed to open file for reading");
+    f.close();
+    return 0;
+  }
+  Serial.print("Read from file: ");
+  if (!f.available())
+  {
+    Serial.println("Failed to read file");
+    f.close();
+    return 0;
+  }
+
+  if (!Update.begin(UPDATE_SIZE_UNKNOWN))
+  {
+    Serial.println("OTA begin error!");
+    Update.printError(Serial);
+    f.close();
+    return 0;
+  }
+  else
+  {
+    while (f.available())
+    {
+      f.read(FileBuf, BUFSIZE);
+      f.peek();
+      if (Update.write(FileBuf, BUFSIZE) != BUFSIZE)
+      {
+        Serial.println("OTA process error!");
+        Update.printError(Serial);
+        f.close();
+        return 0;
+      }
+    }
+    if (Update.end(true))
+    {
+      Serial.println("Update Success: \nRebooting...\n");
+    }
+    else
+    {
+      Update.printError(Serial);
+      f.close();
+      return 0;
+    }
+  }
+  f.close();
+  return 1;
+}
+int ota_version(){
+  return OS_VERSION;
 }

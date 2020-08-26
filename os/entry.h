@@ -183,7 +183,8 @@ void fallback_renderer()
 void sig_external_event()
 {
   DEBUG("SIG_EXT", "UPDATE TRIGGERED");
-  if(SIG_SYS_BROKE.value == 0 && SIG_OTA.value == 0) {
+  if (SIG_SYS_BROKE.value == 0 && SIG_OTA.value == 0)
+  {
     app_inject_signals();
     app_before_sleep_cleanup();
   }
@@ -501,7 +502,7 @@ void sys_wake()
     }
   }
   nap_try_sleep(true); //this should be your end
-  return sig_tick(); //TODO: CHECK THIS
+  return sig_tick();   //TODO: CHECK THIS
 }
 
 #endif
