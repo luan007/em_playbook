@@ -1,3 +1,18 @@
+#ifndef _OTA_HAL_
+#define _OTA_HAL_
+
+#define OTA_PAPP "os-ota"
+#define OTA_FOLDER "/os-ota"
+#define OTA_LOCATION "/os-ota/ota.firmware"
+
+
+int ota_version();
+int ota_upgrade_from_file(String otaFile);
+int ota_default_update();
+bool ota_config();
+
+
+
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
@@ -8,7 +23,6 @@
 #include "shared.h"
 #include "hal-display.h"
 #include "app-engine.h"
-#define OS_VERSION 10000
 #define BUFSIZE 512
 uint8_t FileBuf[BUFSIZE];
 const char *host = "esp32";
@@ -125,10 +139,6 @@ bool ota_config()
 //   return 1;
 // }
 
-#define OTA_PAPP "os-ota"
-#define OTA_FOLDER "/os-ota"
-#define OTA_LOCATION "/os-ota/ota.firmware"
-
 int ota_upgrade_from_file(String otaFile)
 {
   File f = USE_FS.open(otaFile, "r");
@@ -210,9 +220,9 @@ int ota_default_update()
     return -1;             //bad, this os is newer than firmware
   }
   sig_set(&SIG_AUTO_OTA, 1);
-  Serial.println("----OTA DEFAULT UPDATE----")
+  Serial.println("----OTA DEFAULT UPDATE----");
   int result = ota_upgrade_from_file(OTA_LOCATION);
-  Serial.println("----COMPUTED----")
+  Serial.println("----COMPUTED----");
   sig_set(&SIG_AUTO_OTA, result);
 }
 
@@ -220,3 +230,5 @@ int ota_version()
 {
   return OS_VERSION;
 }
+
+#endif
