@@ -1,6 +1,9 @@
 #ifndef _GUARD_APP_ENGINE
 #define _GUARD_APP_ENGINE
 
+
+int app_mgr_package_healthy(String app);
+int app_mgr_get_app_version(String app);
 #include <ArduinoJson.h>
 #include "src/presist.h"
 #include "shared.h"
