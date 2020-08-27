@@ -102,28 +102,29 @@ void fallback_renderer()
     sys_broke = true;
     sig_clear(&SIG_WAKE);
     changed = true;
-    message += "\n\n  ! Bootstrap Required !\n\n  >> Hold down the knob for 6 seconds to configure Wi-Fi.\n\n";
+    message += "\n\n !! Bootstrap Required , Please to configure Wi-Fi!\n\n ";
+    message += "\n\n >> Hold down the knob for 6 seconds to configure Wi-Fi.\n\n";
   }
   if (SIG_BEFORE_SLEEP.triggered)
   {
     sig_clear(&SIG_BEFORE_SLEEP);
     changed = true;
     message += "\n\n  [ Powered down ]";
-    message += String("\n\n  Wake Scheduled = ") + SIG_WAKE_AFTER.value + "\n\n";
+    //message += String("\n\n  Wake Scheduled = ") + SIG_WAKE_AFTER.value + "\n\n";
   }
   if (SIG_RTC_INVALID.triggered)
   {
     sys_broke = true;
     sig_clear(&SIG_RTC_INVALID);
     changed = true;
-    message += "\n\n  ! Time Invalid !\n\n  Wi-Fi connection is required to setup time.\n\n";
+    //message += "\n\n  ! Time Invalid !\n\n  Wi-Fi connection is required to setup time.\n\n";
   }
   if (SIG_WIFI.triggered)
   {
     sys_broke = true;
     sig_clear(&SIG_WIFI);
     changed = true;
-    message += String("\n\n  WIFI STATE = ") + SIG_WIFI.value;
+    //message += String("\n\n  WIFI STATE = ") + SIG_WIFI.value;
   }
   if (SIG_NOTIFY_RELEASE.triggered)
   {
@@ -131,7 +132,8 @@ void fallback_renderer()
     sys_broke = true;
     sig_clear(&SIG_NOTIFY_RELEASE);
     changed = true;
-    message += String("\n\n  Release button to continue.\n\n");
+    message += "\n\n  Release button to continue.\n\n";
+    message += "\n\n  Connect to [ EMPaper_CFG ] to configure Wi-Fi.\n\n";
   }
   if (SIG_NO_MORE_OP.triggered)
   {
@@ -160,6 +162,7 @@ void fallback_renderer()
     else if (SIG_APP_UPT_STATE.value == APP_UPT_STATE_SUCC)
     {
       sig_app_upt_msg = "Completed!";
+       ESP.restart();
     }
     changed = true;
     message += String("\n\n  Application Updator => ") + sig_app_upt_msg;
@@ -183,7 +186,8 @@ void fallback_renderer()
 void sig_external_event()
 {
   DEBUG("SIG_EXT", "UPDATE TRIGGERED");
-  if(SIG_SYS_BROKE.value == 0 && SIG_OTA.value == 0) {
+  if (SIG_SYS_BROKE.value == 0 && SIG_OTA.value == 0)
+  {
     app_inject_signals();
     app_before_sleep_cleanup();
   }
@@ -501,7 +505,7 @@ void sys_wake()
     }
   }
   nap_try_sleep(true); //this should be your end
-  return sig_tick(); //TODO: CHECK THIS
+  return sig_tick();   //TODO: CHECK THIS
 }
 
 #endif
