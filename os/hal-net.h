@@ -213,7 +213,7 @@ int net_download_from_server(String fileName, String url)
     http.begin(url);
 
     http.addHeader("CHIPID", get_chip_id());
-    http.addHeader("OS_CORE_VERSION",OS_CORE_VERSION);
+    http.addHeader("OS_VERSION", String(OS_VERSION));
     http.addHeader("BATTERY", String(SIG_BAT.value));
 
     // Serial.printf("[HTTP] GET...\n", url.c_str());

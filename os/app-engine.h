@@ -1,7 +1,6 @@
 #ifndef _GUARD_APP_ENGINE
 #define _GUARD_APP_ENGINE
 
-
 #include <ArduinoJson.h>
 #include "src/presist.h"
 #include "shared.h"
@@ -20,7 +19,7 @@ int app_full_refresh(bool force);
 
 #define APP_NEXT_RUN_BAD_INTERVAL 60 * 60 * 4     //10sec - for debug only
 #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 8 //8 hour
-#define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 12   //12 hour
+#define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 12  //12 hour
 
 // #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 1 //1 hour
 // #define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 6   //6 hour
@@ -47,6 +46,29 @@ int app_mgr_package_healthy(String app)
         return -1;
     }
     return 1;
+}
+
+int app_mgr_get_app_version(String app)
+{
+    if (app_mgr_package_healthy(app) <= 0)
+    {
+        return -1; //horrible
+    }
+    DynamicJsonDocument doc(1024); //load from disk
+    File f = USE_FS.open(String("/") + app + "/meta.json");
+    String json = f.readString();
+    Serial.println(json);
+    DeserializationError error = deserializeJson(doc, json);
+    f.close();
+    if (error)
+    {
+        Serial.println(json);
+        Serial.println(app + " malformed json meta file.");
+        return -2;
+    }
+    JsonObject root = doc.as<JsonObject>();
+    int o_version = root["version"];
+    return o_version;
 }
 
 //download package if needed
@@ -402,6 +424,7 @@ void app_before_sleep_cleanup()
             //clear out taint
             app_full_refresh(true);
         }
+        ota_default_update(); //try update if needed..
     }
 }
 

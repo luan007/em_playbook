@@ -131,7 +131,7 @@ app.get("/app/:name", async (req, res) => {
     await preprocess_folder(path, app, sub);
     var files = fs.readdirSync(real_path)
         .filter(v => {
-            return v.endsWith(".bin") || v.endsWith(".lua") || v.endsWith(".txt") || v.trim().toLowerCase() == "meta.json"
+            return v.endsWith(".bin") || v.endsWith(".firmware") || v.endsWith(".lua") || v.endsWith(".txt") || v.trim().toLowerCase() == "meta.json"
         });
 
     tar.c( // or tar.create

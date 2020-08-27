@@ -121,6 +121,8 @@ typedef struct signal
 
 #define SIGNAL(NAME, visibility, presist_behavior, default_value) struct signal SIG_##NAME = {#NAME, visibility, presist_behavior, default_value, 0, 0};
 
+SIGNAL(AUTO_OTA, SIG_IMMEDIATE, SIG_RUNTIME, 0)
+
 SIGNAL(CONFIG_CHANGED, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(WAKE, SIG_ALL, SIG_RUNTIME, 0)
 SIGNAL(NOTIFY_RELEASE, SIG_IMMEDIATE, SIG_RUNTIME, 0)

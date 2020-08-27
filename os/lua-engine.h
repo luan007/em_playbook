@@ -5,6 +5,7 @@
 #include "Arduino.h"
 #include "shared.h"
 #include "hal-io.h"
+#include "hal-ota.h"
 #include "hal-blink.h"
 #include "hal-display.h"
 #include "./src/presist.h"
@@ -30,6 +31,15 @@ void lua_set_shell_reason(const char *reason)
 Preferences preferences;
 extern "C"
 {
+    static int expose_os_version(lua_State *lua)
+    {
+        lua_pushnumber(lua, ota_version());
+    }
+
+    static int expose_ota_update_to_version(lua_State *lua)
+    {
+        lua_pushnumber(lua, ota_default_update());
+    }
 
     static int expose_led_constant(lua_State *lua)
     {
@@ -47,7 +57,7 @@ extern "C"
         int invert = 0;
         if (lua_gettop(lua) == 5)
         {
-             invert = luaL_checkinteger(lua, 5);
+            invert = luaL_checkinteger(lua, 5);
         }
         hal_led_blink(led, strength, interval, duration, invert);
     }
@@ -569,6 +579,9 @@ void lua_shell_prep()
     lua_shell_inject_function("led_b", (const lua_CFunction)&expose_led_blink);
     lua_shell_inject_function("led_e", (const lua_CFunction)&expose_led_ease);
     lua_shell_inject_function("led_w", (const lua_CFunction)&expose_led_wave);
+
+    lua_shell_inject_function("os_version", (const lua_CFunction)&expose_os_version);
+    lua_shell_inject_function("ota_update", (const lua_CFunction)&expose_ota_update_to_version);
 
     const int ret = luaL_dostring(_state, lua_shell_injection.c_str());
     Serial.println(lua_shell_injection);

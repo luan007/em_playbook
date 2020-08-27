@@ -1,4 +1,3 @@
-#define OS_CORE_VERSION "1.0.0"
 char esp_chip_id[20];
 char *get_chip_id()
 {

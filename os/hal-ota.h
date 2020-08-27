@@ -7,6 +7,7 @@
 #include <Update.h>
 #include "shared.h"
 #include "hal-display.h"
+#include "app-engine.h"
 #define OS_VERSION 10000
 #define BUFSIZE 512
 uint8_t FileBuf[BUFSIZE];
@@ -21,7 +22,7 @@ long ota_time = millis();
 bool ota_config()
 {
   DEBUG("START OTA", "");
-  OTADebug =  "   Connect To [ EM-Paper-OTA ] To Update Your Device.\n\n";
+  OTADebug = "   Connect To [ EM-Paper-OTA ] To Update Your Device.\n\n";
   OTADebug += "   Open Brower And Enter [ http://192.168.4.1 ] To Upload Your File.\n\n";
   OTADebug += "   \n\n";
   OTADebug += "   This Configurator Will Stay Online 240 Seconds\n\n";
@@ -110,35 +111,41 @@ bool ota_config()
   ESP.restart();
 }
 
-int ota_dowload_then_save(String name, String url)
-{
-  String nameLoc = String("/") + name;
-  USE_FS.remove(nameLoc);
-  if (!net_download_from_server(nameLoc, url, 3))
-  {
-    DEBUG("Network Error", "");
-    return -1;
-  }
-  _dbg_ls_dir("/", 10);
-  DEBUG("Download OTA file sucessful", "");
-  return 1;
-}
+// int ota_download_pack(String url)
+// {
+//   String nameLoc = String("/") + name;
+//   USE_FS.remove(nameLoc);
+//   if (!net_download_from_server(nameLoc, url, 3))
+//   {
+//     DEBUG("Network Error", "");
+//     return -1;
+//   }
+//   _dbg_ls_dir("/", 10);
+//   DEBUG("Download OTA file sucessful", "");
+//   return 1;
+// }
 
-int ota_process(String otaFile)
+#define OTA_PAPP "os-ota"
+#define OTA_FOLDER "/os-ota"
+#define OTA_LOCATION "/os-ota/ota.firmware"
+
+int ota_upgrade_from_file(String otaFile)
 {
   File f = USE_FS.open(otaFile, "r");
   if (!f)
   {
     Serial.println("Failed to open file for reading");
     f.close();
-    return 0;
+    _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+    return -1;
   }
   Serial.print("Read from file: ");
   if (!f.available())
   {
     Serial.println("Failed to read file");
     f.close();
-    return 0;
+    _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+    return -1;
   }
 
   if (!Update.begin(UPDATE_SIZE_UNKNOWN))
@@ -146,7 +153,8 @@ int ota_process(String otaFile)
     Serial.println("OTA begin error!");
     Update.printError(Serial);
     f.close();
-    return 0;
+    _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+    return -1;
   }
   else
   {
@@ -159,7 +167,8 @@ int ota_process(String otaFile)
         Serial.println("OTA process error!");
         Update.printError(Serial);
         f.close();
-        return 0;
+        _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+        return -1;
       }
     }
     if (Update.end(true))
@@ -170,12 +179,42 @@ int ota_process(String otaFile)
     {
       Update.printError(Serial);
       f.close();
-      return 0;
+      return -1;
     }
   }
   f.close();
+  ESP.restart();
   return 1;
 }
-int ota_version(){
+
+int ota_default_update()
+{
+  if (app_mgr_package_healthy(OTA_FOLDER) != 1)
+  {
+    _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+    return -2;             //failed
+  }
+  int ver = app_mgr_get_app_version(OTA_PAPP);
+  if (ver <= 0)
+  {
+    _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+    return -2;             //failed
+  }
+  if (ver == OS_VERSION)
+  {
+    return 0; //latest
+  }
+  if (ver < OS_VERSION)
+  {
+    _rm_recur(OTA_FOLDER); //BAD OTA FIRMWARE
+    return -1;             //bad, this os is newer than firmware
+  }
+  sig_set(&SIG_AUTO_OTA, 1);
+  int result = ota_upgrade_from_file(OTA_LOCATION);
+  sig_set(&SIG_AUTO_OTA, result);
+}
+
+int ota_version()
+{
   return OS_VERSION;
 }

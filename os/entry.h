@@ -102,14 +102,14 @@ void fallback_renderer()
     sys_broke = true;
     sig_clear(&SIG_WAKE);
     changed = true;
-    message += "\n\n !! Bootstrap Required , Please to configure Wi-Fi!\n\n ";
+    message += "\n\n Please connect your device to Wi-Fi Hotspot.\n\n ";
     message += "\n\n >> Hold down the knob for 6 seconds to configure Wi-Fi.\n\n";
   }
   if (SIG_BEFORE_SLEEP.triggered)
   {
     sig_clear(&SIG_BEFORE_SLEEP);
     changed = true;
-    message += "\n\n  [ Powered down ]";
+    message += "\n\n  [ Powered down, Rebooting soon ]";
     //message += String("\n\n  Wake Scheduled = ") + SIG_WAKE_AFTER.value + "\n\n";
   }
   if (SIG_RTC_INVALID.triggered)
@@ -122,9 +122,24 @@ void fallback_renderer()
   if (SIG_WIFI.triggered)
   {
     sys_broke = true;
-    sig_clear(&SIG_WIFI);
     changed = true;
-    //message += String("\n\n  WIFI STATE = ") + SIG_WIFI.value;
+    switch (SIG_WIFI.value)
+    {
+    case WIFI_SUCC:
+      message += String("\n\n  Wi-Fi connection established.\n\n");
+      break;
+    case WIFI_CONNECTING:
+      message += String("\n\n  ... Connecting\n\n");
+      break;
+    case WIFI_FAILED:
+      message += String("\n\n  Wi-Fi connection failed, retry pending upon reboot.");
+      break;
+    case WIFI_CONFIG:
+      message += String("\n\n  Wi-Fi configurator activated\n\n");
+      message += String("\n\n  To begin, please connect to [ EMPaper_CFG ].\n\n");
+      break;
+    }
+    sig_clear(&SIG_WIFI);
   }
   if (SIG_NOTIFY_RELEASE.triggered)
   {
@@ -133,7 +148,6 @@ void fallback_renderer()
     sig_clear(&SIG_NOTIFY_RELEASE);
     changed = true;
     message += "\n\n  Release button to continue.\n\n";
-    message += "\n\n  Connect to [ EMPaper_CFG ] to configure Wi-Fi.\n\n";
   }
   if (SIG_NO_MORE_OP.triggered)
   {
@@ -162,7 +176,7 @@ void fallback_renderer()
     else if (SIG_APP_UPT_STATE.value == APP_UPT_STATE_SUCC)
     {
       sig_app_upt_msg = "Completed!";
-       ESP.restart();
+      ESP.restart();
     }
     changed = true;
     message += String("\n\n  Application Updator => ") + sig_app_upt_msg;
@@ -196,6 +210,7 @@ void sig_external_event()
 
 void reg_vars()
 {
+  sig_reg(&SIG_AUTO_OTA);
   sig_reg(&SIG_OTA);
   sig_reg(&SIG_OTA_REQ);
   sig_reg(&SIG_PWR_USB);
@@ -385,8 +400,14 @@ void sys_wake()
     return nap_try_sleep(true); //end
   }
 
+  sig_tick(); //push all signal to os & apps & see if crap happens
+
   if (SIG_SYS_BROKE.value > 0)
   {
+    //OK now you're causing trouble.
+
+    ota_default_update(); //see if there's OTA firmware, launch full auto upgrade
+
     //FIXING DISK (FORMAT)
     //start network and update
     if (net_wifi_connect() < 0 || app_mgr_upgrade() < 0)
