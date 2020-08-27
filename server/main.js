@@ -84,6 +84,7 @@ async function preprocess_folder(folder, app, work_folder) {
     var alias = meta.render_alias || {};
     var cache = meta.cache || 0;
 
+    if(meta.noRender) return;
     var html_to_render = fs.readdirSync(folder).filter(v => {
         return v.endsWith(".html")
     });

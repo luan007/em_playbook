@@ -1,7 +1,8 @@
 {
-    "version": 10000,
+    "version": 10,
     "render_alias": {},
     "capability": {
         "asset-pack": 1
-    }
+    },
+    "noRender": 1
 }
