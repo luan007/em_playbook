@@ -210,7 +210,9 @@ int ota_default_update()
     return -1;             //bad, this os is newer than firmware
   }
   sig_set(&SIG_AUTO_OTA, 1);
+  Serial.println("----OTA DEFAULT UPDATE----")
   int result = ota_upgrade_from_file(OTA_LOCATION);
+  Serial.println("----COMPUTED----")
   sig_set(&SIG_AUTO_OTA, result);
 }
 
