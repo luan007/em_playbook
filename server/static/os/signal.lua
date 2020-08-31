@@ -16,6 +16,7 @@ if sig_alert("APP_UPT_STATE") > 0 and sig_get("APP_UPT_STATE") == 1 then
     smart_draw_r("/os/elements-en.bin", 600, 300, 0, 128 + 28 * 5, 600, 28, 0, 0, 0)
 end
 
+
 local wifi_state = sig_get("WIFI")
 -- local wifi_ui_state = load_int("ux", "wifi", -1)
 wifi_id = -1
@@ -33,6 +34,7 @@ if sig_alert("WIFI") > 0 and wifi_state ~= WIFI_IDLE then
         save_int("ux", "wlan_e", 1)
         wifi_id = 1
     end
+
 end
 
 if sig_alert("BEFORE_SLEEP") > 0 then
@@ -48,6 +50,11 @@ if sig_alert("BEFORE_SLEEP") > 0 then
         end
     elseif wifi_state == WIFI_FAILED and sig_get("WIFI_TRY") > 2 then
         wifi_id = 2
+    end
+
+    if wifi_id == 2 and sig_get("RTC_INVALID") == 1 then 
+        --total fail
+        smart_draw_r("/shared/wizardWIFI.bin", 600, 800, 0, 0, 600, 800, 0, 0, 0)
     end
 end
 

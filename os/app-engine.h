@@ -184,7 +184,7 @@ int app_mgr_upgrade(bool FORCE = false)
     }
     _dbg_ls_dir("/", 100);
 
-    //APP UPDATED, rerender must happen
+    //APP UPDATED, rerender must happen - but when result = 1.. stuff need to be done too as toast is present
     if (result == 2)
     {
         app_full_refresh(false);

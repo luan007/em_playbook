@@ -1,5 +1,10 @@
 {
-    "version": 1004,
+    "version": 1007,
+    "render_alias": {
+        "wizard.html": [
+            "WIFI"
+        ]
+    },
     "capability": {
         "asset-pack": 1
     }

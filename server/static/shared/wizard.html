@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Test</title>
+</head>
+
+<body>
+    <link rel="stylesheet" href="../_libs/font-awesome/css/all.css">
+    <script src="../_libs/qrcode.min.js"></script>
+
+    <style>
+        /* https://stackoverflow.com/questions/9122904/how-to-make-the-body-or-div-of-fixed-size-stay-always-in-the-center-of-the-pag */
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        * {
+            font-family: 'open sans', "Roboto", "roboto", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-weight: bolder;
+        }
+
+        .preview {
+            position: relative;
+            height: 800px;
+            width: 600px;
+            background: #fff;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .month {
+            font-size: 60px;
+            font-weight: 300;
+            text-align: right;
+        }
+
+
+        .tag {
+            font-size: 20px;
+            display: inline-block;
+            border-radius: 90px;
+            padding: 6px 15px;
+            color: #fff;
+            background: #000;
+            font-size: 0.95em;
+            font-weight: bolder;
+            margin-bottom: 13px;
+        }
+
+        .ring {
+            position: absolute;
+            height: 400px;
+            width: 400px;
+            /* background-color: black; */
+            border-radius: 99999em;
+            border: 4px solid #000;
+            opacity: 0.1;
+            transform: translate(-204px, -204px);
+        }
+
+        .scaler {
+            transform-origin: 0 0;
+            transform: scale(2);
+        }
+
+        .notification {
+            white-space: normal;
+            word-break: break-all;
+            color: white;
+            position: absolute;
+            width: 500px;
+            top: 0;
+            left: 0;
+            height: 185px;
+            transform: translate(-50%, 0);
+            left: 50%;
+            top: 100px;
+            background: #333;
+            font-size: 18px;
+            text-align: left;
+            border-radius: 10px;
+        }
+
+        .notification span {
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            margin: 20px;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+
+        .notification .icon {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 5px solid #333;
+            background: white;
+            top: -25px;
+            border-radius: 10px;
+            left: 15px;
+        }
+
+        .notification .icon .qrcode {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            height: 90px;
+            width: 90px;
+        }
+
+        .notification .title {
+            margin: 20px;
+            margin-top: 18px;
+            font-size: 20px;
+            margin-bottom: 10px;
+            padding-left: 115px;
+            padding-right: 70px;
+            word-break: keep-all;
+            min-height: 54px;
+
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .notification .overlaylogo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 30px;
+            width: 30px;
+            transform: translate(-50%, -50%);
+            color: black;
+            border-radius: 999px;
+        }
+
+
+
+        .template {
+            display: none;
+        }
+
+        .month,
+        .tag {
+            position: absolute;
+            bottom: 295px;
+            display: inline-block;
+            left: 50px;
+        }
+
+        .month {
+            left: 240px;
+            bottom: 290px;
+            text-align: right;
+        }
+
+        .date {
+            position: absolute;
+            bottom: 20px;
+            display: inline-block;
+            left: 30px;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            letter-spacing: -16px;
+            font-weight: bolder;
+            font-size: 300px;
+            line-height: 270px;
+        }
+
+        .crop {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offset {
+            position: absolute;
+            overflow: visible;
+            height: 800px;
+            width: 600px;
+        }
+
+        .L {
+            position: relative;
+            display: inline-block;
+            text-align: top;
+            vertical-align: top;
+        }
+    </style>
+    <script src="../_libs/vue.js"></script>
+
+    <div id="bg" class="template">
+        <div class="bg" style="transform: translate(300px, 193px)">
+            <div v-for='i in 6' class="scaler" v-bind:style="{transform: `scale(${ i / 2.2 })`}">
+                <div class='ring'></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="crop" class="template">
+        <div class="crop" :style="{ width: W + 'px', height: H + 'px' }">
+            <div class='offset' v-bind:style="{top: '-' + Y + 'px', left: '-' + X + 'px'}">
+                <slot></slot>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        <div v-if="alias=='WIFI'" class="preview capture">
+            <bg></bg>
+            <h1 style='position:relative; top: 130px'>
+                <div style='font-size:70px;'>
+                    <i class="fas fa-wifi" style="position: relative;">
+                        <i class="fas fa-cog" style="position:absolute; bottom: 0; right: 0; font-size: 25px;"></i>
+                    </i>
+                </div>
+                <div style="font-family: 'Roboto'; margin-top: 30px">
+                    <b>Wi-Fi</b>
+                    <Br>
+                    <b>Setup is Needed</b>
+                    <br>
+                    <span style="display: block; font-weight: 300; margin-top:50px; font-size: 0.8em; line-height: 1.8em;">
+                        Press and Hold the <Br> <b style='font-size:1.2em'><i class="fas fa-genderless" style='padding-right:0.2em;'> </i>Knob</b> <Br> for 10 seconds to begin <br>
+                    </span>
+                    <span
+                        style="display: inline-block; padding: 20px; border: 3px solid black; opacity: 0.5; font-weight: 600; margin-top:80px; font-size: 0.5em;">
+                        your device will resume displaying latest content<br> once connected.</span>
+                </div>
+            </h1>
+            <h1></h1>
+        </div>
+
+    </div>
+
+    <script>
+
+        (async function () {
+            var alias = location.hash.replace("#", "");
+            Vue.component("bg", {
+                template: document.querySelector("#bg").innerHTML
+            });
+            Vue.component("crop", {
+                props: ["X", "Y", "W", "H"],
+                template: document.querySelector("#crop").innerHTML
+            });
+            var app = new Vue({
+                el: '#main',
+                data: {
+                    alias: alias
+                },
+                mounted: function () {
+                    window.renderDone = 1;
+                }
+            })
+        })()
+
+    </script>
+</body>
+
+</html>
