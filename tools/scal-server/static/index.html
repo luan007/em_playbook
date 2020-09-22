@@ -83,6 +83,9 @@
         .commit-save {
             background: rgba(0, 138, 138, 0.6);
         }
+        .commit-server {
+            background: brown;
+        }
 
 
         /* 8.21 */
@@ -164,9 +167,9 @@
     <div id="app">
         <div class="control">
             <button class="commit">
-                <a href="#activity">编辑活动信息</a>
+                <a href="#activity">编辑信息</a>
             </button>
-            <button :disabled="save" class="commit" :class="{'commit-save': save}" v-if="items"
+            <button :disabled="save" class="commit commit-server" :class="{'commit-save': save}" v-if="items"
                 @click="commit">{{save ? '已提交' : '提交到远程'}}</button>
         </div>
         <div class="content-list">
@@ -175,7 +178,7 @@
             <div v-if="items.length === 0">
                 <h3>暂无文章</h3>
             </div>
-            <div class="item" v-for="i in items">
+            <div class="item"  v-for="i in items">
                 <h2 class="title" v-html="i.title"></h2>
                 <p class="content" v-html="i.content"></p>
                 <div class="box">
@@ -204,31 +207,41 @@
                 <form id="form" method="post">
                     <label for="form_title">
                         <span class="tip">*</span> 标题:<br>
-                        <input id="form_title" :value="activity.title || ''" class="form_text" placeholder="标题" ref="title" name="title">
+                        <input id="form_title" class="form_text" placeholder="标题" ref="title" name="title">
+                        <!-- <input id="form_title" :value="activity.title || ''" class="form_text" placeholder="标题" ref="title" name="title"> -->
                     </label>
                     <label for="form_time">
                         <span class="tip">*</span> 日期:<br>
-                        <input id="form_time" :value="activity.time" class="form_text" type="date" ref="date" name="date">
+                        <input id="form_time" class="form_text" type="date" ref="date" name="date">
+                        <!-- <input id="form_time" :value="activity.time" class="form_text" type="date" ref="date" name="date"> -->
                     </label>
                     <label for="form_content">
                         <span class="tip">*</span> 简述:<br>
-                        <textarea id="form_content" :value="activity.content || ''" class="form_text" placeholder="最多可编辑300字" ref="content"
+                        <textarea id="form_content" class="form_text" placeholder="最多可编辑300字" ref="content"
                             name="content"></textarea>
+                        <!-- <textarea id="form_content" :value="activity.content || ''" class="form_text" placeholder="最多可编辑300字" ref="content"
+                            name="content"></textarea> -->
                     </label>
                     <label for="form_tag">
                         <span class="tip-display">*</span> 标签:<br>
-                        <input id="form_tag" :value="activity.tag" class="form_text" placeholder="例：AI" ref="tag" name="tag">
+                        <input id="form_tag" class="form_text" placeholder="例：AI" ref="tag" name="tag">
+                        <!-- <input id="form_tag" :value="activity.tag" class="form_text" placeholder="例：AI" ref="tag" name="tag"> -->
                     </label>
                     <label for="form_link">
                         <span class="tip">*</span> 链接:<br>
                         <input id="form_link" class="form_text"
-                            :value="activity.link || ''"
                             placeholder="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwODY4OTk2Mg==&hid=9" ref="link"
                             name="link">
+                        <!-- <input id="form_link" class="form_text"
+                            :value="activity.link || ''"
+                            placeholder="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwODY4OTk2Mg==&hid=9" ref="link"
+                            name="link"> -->
                     </label>
                     <div class="form-control">
                         <span class="form-msg">{{msg}}</span>
                         <button ref="reset" type="reset" class="commit">重置</button>
+                        <!-- <button type="button" :disabled="saveForm" class="commit" :class="{'commit-save': saveForm}"
+                            @click="commitForm">{{ saveForm ? '保存成功' : '保存'}}</button> -->
                         <button type="button" :disabled="saveForm" class="commit" :class="{'commit-save': saveForm}"
                             @click="commitForm">{{ saveForm ? '保存成功' : '保存'}}</button>
                     </div>
@@ -280,6 +293,7 @@
                             title: form["title"].value,
                             desc: date + "&nbsp;&nbsp;&nbsp;" + (form["tag"].value ? "#" + form["tag"].value : "")
                         }
+                        this.items.unshift(news)
                         console.log(news.desc);
                         if (!news.content || !news.link || !news.title || !date) {
                             this.msg = "* 输入不能为空";
@@ -297,7 +311,9 @@
                         })
                             .then(response => {
                                 this.saveForm = true;
-                                this.activity.splice(0, 0, news)
+                                // this.activity.splice(0, 0, news)
+                                // this.items.splice(0, news)
+                                this.items.length = 3;
                                 this.$refs.reset.click();
                             })
                             .catch(err => console.log("err : ", err));
