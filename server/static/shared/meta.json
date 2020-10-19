@@ -1,8 +1,9 @@
 {
-    "version": 1007,
+    "version": 1010,
     "render_alias": {
         "wizard.html": [
-            "WIFI"
+            "WIFI",
+            "CON"
         ]
     },
     "capability": {

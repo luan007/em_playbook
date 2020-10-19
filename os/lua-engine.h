@@ -179,6 +179,10 @@ extern "C"
     {
         String ns = String(luaL_checkstring(lua, 1));
         auto sig = sig_find(ns.c_str());
+        if(sig == NULL) {
+            lua_pushnumber(lua, 0);
+            return 1;
+        }
         lua_pushnumber(lua, sig->value);
         return 1;
     }

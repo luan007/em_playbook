@@ -17,12 +17,13 @@
 
 void factory_reset()
 {
-  sig_set(&SIG_SYS_MSG, 1);
+  DEBUG("D: factory reset!", "");
   cfg_flush_store();
   hal_fs_wipe();
   net_wipe();
   nap_set_sleep_duration(1000);
   nap_try_sleep(true);
+  // sig_set(&SIG_SYS_MSG, 1);
 }
 
 ////////////ALL SIGNALS
@@ -312,7 +313,7 @@ void sys_wake()
   //check bootup hold
   wdt_start();
   hal_io_loop();
-  sig_tick();
+  // sig_tick();
 
   if (SIG_OTA_REQ.value > 0 || (FLAG_OTA_PRESSED && SIG_SW_PRESSING.value == 1 && SIG_WAKE.value == WAKE_NONE))
   {
