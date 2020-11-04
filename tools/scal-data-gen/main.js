@@ -124,7 +124,7 @@ async function get_page_0(params) {
 		for (var i = 0; i < data.length; i++) {
 			contents[i] = await fetchUrl(data[i].app_msg_ext_info.content_url);
 			// console.log(data[i]);
-			console.log(contents[i]);
+			// console.log(contents[i]);
 			console.log("---");
 			url = data[i].app_msg_ext_info.content_url.replace(/amp;/g, "").split("?")
 			url[1] = qs.parse(url[1]);
@@ -135,11 +135,23 @@ async function get_page_0(params) {
 				idx: url[1].idx
 			}
 			url[1] = qs.stringify(url[1]);
-			console.log(getMyDate(data[i].comm_msg_info.datetime * 1000).base);
+			// console.log(getMyDate(data[i].comm_msg_info.datetime * 1000).base);
+
+			let title = data[i].app_msg_ext_info.title;
+			title = title.replace(/&(l|g|quo)t;/g, function(a,b){
+				return {
+					l   : '<',
+					g   : '>',
+					quo : '"'
+				}[b];
+			})
+
+			console.log(title)
+
 			datas.items.push({
 				content: contents[i],
 				link: url.join("?"),
-				title: data[i].app_msg_ext_info.title,
+				title: title, // data[i].app_msg_ext_info.title,
 				// todo: 兼容多个author 
 				desc: getMyDate(data[i].comm_msg_info.datetime * 1000).base + "&nbsp;&nbsp;&nbsp;" + (data[i].app_msg_ext_info.author != null ? "#" + data[i].app_msg_ext_info.author  : ""),
 			})
