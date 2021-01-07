@@ -145,6 +145,13 @@ async function get_page_0(params) {
 					quo : '"'
 				}[b];
 			})
+			// 2021.1 增加 & 和 空格适配
+			title.replace(/&(amp|nbsp);/g, function(a,b){
+				return {
+					amp : '&',
+					nbsp: " "
+				}[b];
+			})
 
 			console.log(title)
 
