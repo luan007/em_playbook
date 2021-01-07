@@ -1,11 +1,18 @@
-MoveTo 516, 746
+MoveTo 485, 1895
 Delay 1168
 LeftClick 1
 Random 0, 0
 Random 0, 0
 Random 0, 0
 Random 0, 0
-MoveTo 285, 225
+MoveTo 9, 620
+Delay 1000
+LeftClick 1
+Random 0, 0
+Delay 1000
+Random 0, 0
+Delay 1000
+MoveTo 6, 577
 Delay 2000
 LeftClick 1
 Random 0, 0
@@ -15,7 +22,7 @@ Delay 1000
 Random 0, 0
 Delay 1000
 Random 0, 0
-MoveTo 421, 300
+MoveTo 247, 925
 Delay 1000
 LeftClick 1
 Random 0, 0
@@ -26,7 +33,7 @@ Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo 759, 179
+MoveTo 912, 566
 Delay 1777
 LeftClick 1
 Random 0, 0
@@ -37,21 +44,24 @@ Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo 960, 418
+MoveTo 729, 1040
 Delay 1000
 LeftClick 1
-MoveTo 444, 59 
-Delay 200
-MoveTo 445, 54
-Delay 3452
 Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo 447, 100
+MoveTo 1000, 637
 LeftClick 1
-MoveTo 447, 355
 Delay 3047
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
 PageDown 1
 Delay 681
 PageDown 1
@@ -75,13 +85,13 @@ Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo 978, 17
+MoveTo 1159, 181
 Delay 1602
 LeftClick 1
 Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo 1096, 83
+MoveTo 1146, 360
 Delay 1884
 LeftClick 1
