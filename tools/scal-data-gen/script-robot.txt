@@ -1,21 +1,18 @@
-MoveTo -10000, -10000
-MoveTo 85, 355
+MoveTo 485, 1895
 Delay 1168
 LeftClick 1
 Random 0, 0
 Random 0, 0
 Random 0, 0
 Random 0, 0
-MoveTo -10000, -10000
-MoveTo 1, 120
+MoveTo 9, 620
 Delay 1000
 LeftClick 1
 Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo -10000, -10000
-MoveTo 30, 170
+MoveTo 6, 577
 Delay 2000
 LeftClick 1
 Random 0, 0
@@ -25,8 +22,7 @@ Delay 1000
 Random 0, 0
 Delay 1000
 Random 0, 0
-MoveTo -10000, -10000
-MoveTo 175, 110
+MoveTo 247, 925
 Delay 1000
 LeftClick 1
 Random 0, 0
@@ -37,8 +33,7 @@ Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo -10000, -10000
-MoveTo 130, 170 // 点击历史列表icon
+MoveTo 912, 566
 Delay 1777
 LeftClick 1
 Random 0, 0
@@ -49,14 +44,16 @@ Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo -10000, -10000
-MoveTo 195, 80 
+MoveTo 729, 1040
 Delay 1000
 LeftClick 1
 Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
+MoveTo 1000, 637
+LeftClick 1
+Delay 3047
 PageDown 1
 Delay 681
 PageDown 1
@@ -88,14 +85,13 @@ Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo -10000, -10000
-MoveTo 223, 33
+MoveTo 1159, 181
 Delay 1602
 LeftClick 1
 Random 0, 0
 Delay 1000
 Random 0, 0
 Delay 1000
-MoveTo 215, 68
+MoveTo 1146, 360
 Delay 1884
 LeftClick 1

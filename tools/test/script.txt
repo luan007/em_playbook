@@ -1,0 +1,62 @@
+MoveTo -10000, -10000
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 42, 355
+Delay 2000
+LeftClick 1
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 1, 140
+Delay 2000
+LeftClick 1
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 30, 175
+Delay 2000
+LeftClick 1
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 175, 130
+Delay 2000
+LeftClick 1
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 138, 218
+Delay 2000
+LeftClick 1
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 195, 100 
+Delay 2000
+LeftClick 1
+Delay 2000
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+PageDown 1
+Delay 681
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 223, 33
+Delay 2000
+LeftClick 1
+Delay 2000
+MoveTo -10000, -10000
+Delay 2000
+MoveTo 215, 75
+Delay 2000
+LeftClick 1
