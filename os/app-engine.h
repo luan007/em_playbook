@@ -21,8 +21,8 @@ int app_full_refresh(bool force);
 #define APP_UPT_STATE_FAILED -1
 
 #define APP_NEXT_RUN_BAD_INTERVAL 60 * 60 * 4     //10sec - for debug only
-#define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 8 //8 hour
-#define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 12  //12 hour
+#define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 48 //48 hour
+#define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 24  //24 hour per update
 
 // #define APP_NEXT_RUN_DEFAULT_INTERVAL 60 * 60 * 1 //1 hour
 // #define APP_NEXT_RUN_DEFAULT_UPDATE 60 * 60 * 6   //6 hour
