@@ -27,29 +27,15 @@ app.post('/upload', function (req, res) {
     res.end();
 })
 
-// app.post("/form", function (req, res) {
-//     // console.log(req.body);
-//     var activity = req.body;
-//     var old = fs.readFileSync("static/json/history_activity.json", 'utf-8');
-//     old = JSON.parse(old)
-//     old.activity.splice(0, 0, activity)
-//     old.length = 3;
-//     fs.writeFileSync("static/json/activity.json", JSON.stringify(old.activity[0]));
-//     fs.writeFileSync("static/json/history_activity.json", JSON.stringify(old));
-//     res.end();
-// })
-
-
 app.post("/form", function (req, res) {
     // console.log(req.body);
-    var item = req.body;
-    var old = fs.readFileSync("static/json/data.json", 'utf-8');
+    var activity = req.body;
+    var old = fs.readFileSync("static/json/history_activity.json", 'utf-8');
     old = JSON.parse(old)
-    old.items.unshift(item)
-    old.items.length = 3;
-    fs.writeFileSync("static/json/data.json", JSON.stringify(old));
-    // fs.writeFileSync("static/json/activity.json", JSON.stringify(old.activity[0]));
-    // fs.writeFileSync("static/json/history_activity.json", JSON.stringify(old));
+    old.activity.splice(0, 0, activity)
+    old.length = 3;
+    fs.writeFileSync("static/json/activity.json", JSON.stringify(old.activity[0]));
+    fs.writeFileSync("static/json/history_activity.json", JSON.stringify(old));
     res.end();
 })
 

@@ -1,38 +1,38 @@
-MoveTo -10000, -10000
+MoveTo -10000, -10000 // 根据相对位置进行
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 42, 355
+MoveTo 42, 355 // 点击任务栏微信
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 1, 140
+MoveTo 1, 140 // 点击微信通讯录
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 30, 175
+MoveTo 30, 175 // 点击公众号列表 btn
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 175, 130
+MoveTo 175, 130 // 点击 target 公众号 btn 
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 138, 218
+MoveTo 138, 218 // 点击历史列表 btn
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 195, 100 
+MoveTo 195, 100 // 点击空白处
 Delay 2000
 LeftClick 1
 Delay 2000
@@ -51,12 +51,12 @@ Delay 681
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 223, 33
+MoveTo 223, 33 // 关闭历史列表
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 215, 80
+MoveTo 215, 80 // 最小化微信
 Delay 2000
 LeftClick 1
