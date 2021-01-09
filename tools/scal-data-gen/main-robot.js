@@ -6,13 +6,10 @@ const htmlToText = require('html-to-text');
 const fs = require("fs");
 const YAML = require('json-to-pretty-yaml');
 var argv = require('yargs').argv;
-const { exec } = require('child_process');
 
 var text = fs.readFileSync('script.txt').toString()
-// var robot = require("robotjs");
+var robot = require("robotjs");
 
-
-//test MoveTo 138, 218 小助手 // 140 210 me
 var str = text.split("\n");
 var data = [], tem = null, args = null;
 for (let i = 0; i < str.length; i++) {
@@ -37,45 +34,21 @@ function runCommand(data, i, cb) {
 	if (!obj) return;
 	switch (obj.type) {
 		case 'MoveTo':
-			exec(`nircmd sendmouse move ${obj.args[0]} ${obj.args[1]}`, function(error, stdout, stderr) {
-				if(error){
-					console.error(error);
-				}
-				else{
-					console.log("send MoveTo", obj.args[0], obj.args[1]);
-				}
-			});
-		
-			// robot.moveMouse(obj.args[0], obj.args[1] );
-			// console.log("send MoveTo");
+			robot.moveMouse(obj.args[0], obj.args[1] );
+			console.log("send MoveTo");
 			// console.log("send MoveTo: " + obj.args[0] + "," + obj.args[1]);
 			break;
 		case 'LeftDown':
 		case 'LeftClick':
-			// robot.mouseClick();
-			exec("nircmd sendmouse left click", function(error, stdout, stderr) {
-				if(error){
-					console.error(error);
-				}
-				else{
-					console.log("send LeftClick");
-				}
-			});
+			robot.mouseClick();
+			console.log("send LeftClick");
 			break;
 		case 'PageDown':
-			exec("nircmd sendmouse wheel -1000", function(error, stdout, stderr) {
-				if(error){
-					console.error(error);
-				}
-				else{
-					console.log("send LeftClick");
-				}
-			});
-			//  robot.keyTap('pagedown');
+			robot.keyTap('pagedown');
 			console.log("send pagedown");
 			break;
 		case 'MouseWheel':
-			// robot.scrollMouse(0, obj.args[0]);
+			robot.scrollMouse(0, obj.args[0]);
 			console.log("send MouseWheel");
 			break;
 		case 'Delay':
@@ -87,15 +60,8 @@ function runCommand(data, i, cb) {
 		case 'Random': 
 			x = Math.floor(Math.random() * 1000);
 			y = Math.floor(Math.random() * 650);
-			// robot.moveMouse(x, y);
-			exec(`nircmd sendmouse move ${x} ${y}`, function(error, stdout, stderr) {
-				if(error){
-					console.error(error);
-				}
-				else{
-					console.log("send Random: " + x + "," + y);
-				}
-			});
+			robot.moveMouse(x, y);
+			console.log("send Random: " + x + "," + y);
 			break;
 		default:
 			console.log("unknown: ", obj.type);
@@ -248,11 +214,9 @@ function getMyDate(str) {
 
 var len = 0;
 mouse_loop();
-
 setInterval(() => {
 	if (busy) return;
-	if (skip_update()) require('child_process').execFileSync("exit.bat"); // 执行一次
-	// if (skip_update()) return; // 重复执行
+	if (skip_update()) return;
 	mouse_loop();
 	len++;
 	if(len == 3){
@@ -263,9 +227,5 @@ setInterval(() => {
 function mouse_loop(){
 	mouseControls().then(v=>{
 		console.log("下一次loop: " + getMyDate(interval + lastUpdate).full );
-		// 只执行一次，需重复执行注释掉
-		if(lastUpdate != 0){
-			require('child_process').execFileSync("exit.bat");
-		}
 	})
 }

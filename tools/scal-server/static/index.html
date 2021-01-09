@@ -11,6 +11,7 @@
             padding: 0;
             margin: 0;
         }
+
         #app {
             padding: 20px 20px 0 20px;
         }
@@ -26,12 +27,17 @@
         }
 
         hr {
-            background: darkcyan; 
+            background: darkcyan;
             height: 1px;
         }
-        .list,
+
+        .list {
+            color: darkcyan;
+            margin-top: 80px;
+        }
+
         .title {
-            color: darkcyan; 
+            color: darkcyan;
         }
 
         .box {
@@ -49,10 +55,14 @@
             /* padding-left: 5px; */
         }
 
+        a {
+            text-decoration: none;
+            color: #fff;
+        }
+
         .link {
             float: right;
             font-weight: bold;
-            text-decoration: none;
             padding-right: 5px;
         }
 
@@ -61,64 +71,254 @@
             color: #fff;
             background: darkcyan;
             padding: 10px 15px;
-            border-radius: 25px;
+            /* border-radius: 25px; */
             font-weight: bold;
             font-size: 14px;
-            position: fixed;
+            /* position: fixed;
             right: 20px;
-            top: 20px;
+            top: 20px; */
+            margin: 20px;
         }
 
         .commit-save {
             background: rgba(0, 138, 138, 0.6);
+        }
+        .commit-server {
+            background: brown;
+        }
+
+
+        /* 8.21 */
+        .control {
+            position: fixed;
+            left: 0;
+            top: 0;
+            /* text-align: center; */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            background: #fff;
+            /* border-bottom: 2px solid rgba(0, 139, 139, 1); */
+            box-shadow: 1px 1px 5px 0px #000;
+        }
+
+        .content-list {
+            margin-top: 100px;
+        }
+
+        label {
+            display: flex;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: baseline;
+        }
+
+        .form_text {
+            margin-left: 30px;
+            width: 250px;
+            height: 25px;
+            border: 1px solid darkcyan;
+            border-radius: 0px;
+            font-size: 15px;
+        }
+
+        #form_time {
+            width: 150px;
+        }
+
+        #form_content {
+            width: 270px;
+            height: 150px;
+        }
+
+        .tip {
+            color: darkcyan;
+            padding: 5px;
+        }
+
+        .tip-display {
+            visibility: hidden;
+            padding: 5px;
+
+        }
+
+        .form-control {
+            margin-left: 60px;
+        }
+
+        .btn-tab {
+            background: transparent;
+        }
+
+        .btn-tab .btn-tab a {
+            color: #000
+        }
+
+        .form-msg {
+            color: darkcyan;
+            font-size: 14px;
+            display: block;
         }
     </style>
 </head>
 
 <body>
     <div id="app">
-        <h1 class="list">文章列表</h1>
-        <hr>
-        <div v-if="d.items == null">
-            <h3>暂无文章</h3>
+        <div class="control">
+            <button class="commit">
+                <a href="#activity">编辑信息</a>
+            </button>
+            <button :disabled="save" class="commit commit-server" :class="{'commit-save': save}" v-if="items"
+                @click="commit">{{save ? '已提交' : '提交到远程'}}</button>
         </div>
-        <div class="item" v-for="i in d.items">
-            <h2 class="title">{{i.title}}</h2>
-            <p class="content">{{i.content}}</p>
-            <div class="box">
-                <span class="italic desc" v-html="i.desc"></span>
-                <a class="italic link" :href="i.link">查看详情</a>
-            </div>
+        <div class="content-list">
+            <h1 class="list"> 文章列表 </h1>
             <hr>
+            <div v-if="items.length === 0">
+                <h3>暂无文章</h3>
+            </div>
+            <div class="item"  v-for="i in items">
+                <h2 class="title" v-html="i.title"></h2>
+                <p class="content" v-html="i.content"></p>
+                <div class="box">
+                    <span class="italic desc" v-html="i.desc"></span>
+                    <a class="italic link" :href="i.link">查看详情</a>
+                </div>
+                <hr>
+            </div>
+            <!-- <h1 class="list"> 活动列表 </h1>
+            <hr>
+            <div v-if="activity.length === 0">
+                <h3>暂无活动</h3>
+            </div>
+            <div class="item" v-for="i in activity">
+                <h2 class="title" v-html="i.title"></h2>
+                <p class="content" v-html="i.content"></p>
+                <div class="box">
+                    <span class="italic desc" v-html="i.desc"></span>
+                    <a class="italic link" :href="i.link">查看详情</a>
+                </div>
+                <hr>
+            </div> -->
+            <h1 id="activity" class="list"> 活动模版 </h1>
+            <hr>
+            <div class="item">
+                <form id="form" method="post">
+                    <label for="form_title">
+                        <span class="tip">*</span> 标题:<br>
+                        <input id="form_title" class="form_text" placeholder="标题" ref="title" name="title">
+                        <!-- <input id="form_title" :value="activity.title || ''" class="form_text" placeholder="标题" ref="title" name="title"> -->
+                    </label>
+                    <label for="form_time">
+                        <span class="tip">*</span> 日期:<br>
+                        <input id="form_time" class="form_text" type="date" ref="date" name="date">
+                        <!-- <input id="form_time" :value="activity.time" class="form_text" type="date" ref="date" name="date"> -->
+                    </label>
+                    <label for="form_content">
+                        <span class="tip">*</span> 简述:<br>
+                        <textarea id="form_content" class="form_text" placeholder="最多可编辑300字" ref="content"
+                            name="content"></textarea>
+                        <!-- <textarea id="form_content" :value="activity.content || ''" class="form_text" placeholder="最多可编辑300字" ref="content"
+                            name="content"></textarea> -->
+                    </label>
+                    <label for="form_tag">
+                        <span class="tip-display">*</span> 标签:<br>
+                        <input id="form_tag" class="form_text" placeholder="例：AI" ref="tag" name="tag">
+                        <!-- <input id="form_tag" :value="activity.tag" class="form_text" placeholder="例：AI" ref="tag" name="tag"> -->
+                    </label>
+                    <label for="form_link">
+                        <span class="tip">*</span> 链接:<br>
+                        <input id="form_link" class="form_text"
+                            placeholder="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwODY4OTk2Mg==&hid=9" ref="link"
+                            name="link">
+                        <!-- <input id="form_link" class="form_text"
+                            :value="activity.link || ''"
+                            placeholder="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwODY4OTk2Mg==&hid=9" ref="link"
+                            name="link"> -->
+                    </label>
+                    <div class="form-control">
+                        <span class="form-msg">{{msg}}</span>
+                        <button ref="reset" type="reset" class="commit">重置</button>
+                        <!-- <button type="button" :disabled="saveForm" class="commit" :class="{'commit-save': saveForm}"
+                            @click="commitForm">{{ saveForm ? '保存成功' : '保存'}}</button> -->
+                        <button type="button" :disabled="saveForm" class="commit" :class="{'commit-save': saveForm}"
+                            @click="commitForm">{{ saveForm ? '保存成功' : '保存'}}</button>
+                    </div>
+                </form>
+            </div>
+
         </div>
-        <button :disabled="save" class="commit" :class="{'commit-save': save}" v-if="d.items" @click="commit">{{save ? '已提交' : '提交到远程'}}</button>
+
     </div>
     <script>
-        // 读取数据
-        fetch("json/data.json")
-            .then((j) => j.text())
-            .then(j => init(j))
-            .catch(e => alert(e));
+
+        var data = { items: [], activity: [] }
+        function read(url) {
+            return fetch(url).then(res => res.json())
+        }
+
+        read("json/data.json")
+            .then(v => {
+                data.items = v.items;
+                return read("json/activity.json");
+                // return read("json/history_activity.json");
+            })
+            .then(v => {
+                data.activity = v;
+                var t = data.activity.desc.split("&nbsp;&nbsp;&nbsp;");
+                data.activity.time = t[0].replace(/\//g, "-");
+                data.activity.tag = t[1].replace(/#/g, "");
+                // data.activity = v.activity;
+                init(data)
+            })
 
         function init(data) {
             new Vue({
                 el: "#app",
                 data: {
-                    d: JSON.parse(data),
+                    ...data,
                     url: "",// "http://192.168.40.173:8081"
-                    save: false
+                    save: false,
+                    saveForm: false,
+                    msg: ""
                 },
                 methods: {
+                    commitForm() {
+                        var form = document.getElementById("form").elements
+                        var date = form["date"].value.replace(/-/g, "/");
+                        var news = {
+                            content: form["content"].value,
+                            link: form["link"].value,
+                            title: form["title"].value,
+                            desc: date + "&nbsp;&nbsp;&nbsp;" + (form["tag"].value ? "#" + form["tag"].value : "")
+                        }
+                        this.items.unshift(news)
+                        console.log(news.desc);
+                        if (!news.content || !news.link || !news.title || !date) {
+                            this.msg = "* 输入不能为空";
+                            return;
+                        } else this.msg = "";
+                        fetch(this.url + "/form", {
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            method: "POST",
+                            body: JSON.stringify(news),
+                            mode: 'cors',// 避免cors攻击
+                            crossDomain: true
+                        })
+                            .then(response => {
+                                this.saveForm = true;
+                                // this.activity.splice(0, 0, news)
+                                // this.items.splice(0, news)
+                                this.items.length = 3;
+                                this.$refs.reset.click();
+                            })
+                            .catch(err => console.log("err : ", err));
+                    },
                     commit() {
-                        // fetch(this.url + "/commit", {
-                        //     method: 'GET',
-                        //     mode: 'cors',// 避免cors攻击
-                        //     crossDomain: true
-                        // })
-                        //     .then(response => {
-                        //         this.save = true
-                        //     })
-                        //     .catch(err => console.log("err : ", err));
                         location.href = "/commit";
                     }
                 }

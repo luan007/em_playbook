@@ -1,0 +1,62 @@
+
+<!-- 
+    键盘精灵不能用时，用来测量位置
+ -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测量位置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        #coord {
+            position: fixed;
+            left: 50px;
+            top: 50px;
+            font-size: 30px;
+            font-weight: bolder;
+            color: #00441c;
+            background: rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+        }
+
+        .img {
+            width: 1200px;
+            height: 1920px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <img class="img" src="./test1.jpg" alt=""> -->
+    <img src="./test2.png" alt="">
+    <div id="coord"></div>
+
+
+    <script>
+        var coord = document.getElementById("coord");
+        document.body.addEventListener("click", (e) => {
+            var ex = e.clientX || e.changedTouches[0].clientX,
+                ey = e.clientY || e.changedTouches[0].clientY;
+            coord.innerHTML = `x: ${ex} y: ${ey} - click`
+        })
+        document.body.addEventListener("touchstart", (e) => {
+            var ex = e.clientX || e.changedTouches[0].clientX,
+                ey = e.clientY || e.changedTouches[0].clientY;
+            coord.innerHTML = `x: ${ex} y: ${ey} - touch`
+        })
+    </script>
+</body>
+
+</html>
