@@ -2,7 +2,7 @@
 
 ## 前期准备
 1. 微信账户
-2. Fiddler Everywhere 账户
+2. Fiddler Everywhere 账户，[注册账户](https://dashboard.getfiddler.com/login)
 3. **禁止**移动微信窗口 / 图标 / 任务栏位置
 
 ## 操作
