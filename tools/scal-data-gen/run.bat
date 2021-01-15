@@ -1,4 +1,4 @@
-:start
-cd C:\Users\emerge\Desktop\tools\scal-data-gen
+cd C:\Users\Google\Desktop\tools\scal-data-gen
 node main.js
-goto start
+
+start /min index.bat
