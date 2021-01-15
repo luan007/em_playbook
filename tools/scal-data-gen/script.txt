@@ -20,13 +20,13 @@ LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 175, 130
+MoveTo 140, 130
 Delay 2000
 LeftClick 1
 Delay 2000
 MoveTo -10000, -10000
 Delay 2000
-MoveTo 138, 218
+MoveTo 103, 218
 Delay 2000
 LeftClick 1
 Delay 2000
