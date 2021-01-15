@@ -12,7 +12,7 @@
 1. 登陆微信并最小化，**禁止移动窗口**
 2. 登陆 Fiddler Everywhere 确认以下信息，无误后最小化。登陆时等待的时间略长为正常现象。
     * `Auto Responder`为开启状态
-    * rule 存在并相同，如不存在查看 FAQ - [Rule 为空解决办法](#-rule-为空解决办法)
+    * rule 存在并相同，显示时会有些延迟(1分钟内)，如不存在查看 FAQ - [Rule 为空解决办法](#-rule-为空解决办法)
     ![Auto Responder](./image/AutoResponder.jpg)
 3. 双击桌面 run.bat，**会进行自动操作直到自动关闭微信，请勿在此期间操作 Ipad**
 4. 自动弹出以下页面 [查看信息](http://emerge.ltd:10011/)，确认无误点击`提交给远程`。
